@@ -14,7 +14,7 @@ class App extends Component {
         
         this.state = { 
             menuItems: [
-                { name: "Tools", path: "/tools"}, 
+                {name: "Tools", path: "/tools"}, 
                 {name: "Projects", path: "/projects"}, 
                 {name: "About", path: "/about"}
             ]
