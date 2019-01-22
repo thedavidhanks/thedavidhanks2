@@ -6,16 +6,10 @@ class BSnavbar extends Component {
       return (
               <div className="navbar navbar-expand-md navbar-dark bg-dark fixed-top row">
                   <a className="navbar-brand" href="/">TheDavidHanks</a>
-                  <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-                      <span className="navbar-toggler-icon"></span>
-                  </button>
                   <div className="collapse navbar-collapse">
                       <ul className="navbar-nav mr-auto">
                         <li className="nav-item">
-                          <NavLink className="nav-link" to="/projects" activeClassName="active">Projects <span className="sr-only">(current)</span></NavLink>
-                        </li>
-                        <li className="nav-item">
-                          <NavLink className="nav-link" to="/rigs" activeClassName="active">Rigs</NavLink>
+                          <NavLink className="nav-link" to="/projects" activeClassName="active">Projects<span className="sr-only">(current)</span></NavLink>
                         </li>
                         <li className="nav-item dropdown">
                           <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" rel="noreferrer" activeClassName="active">Tools</NavLink>
@@ -23,6 +17,9 @@ class BSnavbar extends Component {
                             <NavLink className="dropdown-item" to="/tools/shearcalc" activeClassName="active">Shear Calculator</NavLink>
                             <NavLink className="dropdown-item" to="/tools/accumcalc" activeClassName="active">Accumulator Calculator</NavLink>
                           </div>
+                        </li>
+                        <li className="nav-item">
+                          <NavLink className="nav-link" to="/about" activeClassName="active">About<span className="sr-only">(current)</span></NavLink>
                         </li>
                       </ul>
                       <div className=" my-2 my-lg-0">

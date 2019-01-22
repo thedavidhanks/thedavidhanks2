@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route } from 'react-router-dom';
-import { auth, provider } from './firebase.js'
+//import { auth, provider } from './firebase.js'
 import BSnavbar from './components/BSnavbar';
 import ToolHome from './components/tool_home';
 import ProjectHome from './components/project_home';
