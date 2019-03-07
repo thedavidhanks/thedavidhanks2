@@ -6,6 +6,7 @@ import BSnavbar from './components/BSnavbar';
 import ToolHome from './components/tool_home';
 import ProjectHome from './components/project_home';
 import AboutMe from './components/about_me';
+import NWmap from './components/nwmap';
 import './index.css';
 
 class App extends Component {
@@ -26,7 +27,8 @@ class App extends Component {
             <div className="container">
                 <BSnavbar user={this.state.user} login={this.login} logout={this.logout}/>
                 <div role="main" className="row">
-                    <Route path="/tools" component={ToolHome}/>
+                    <Route exact path="/tools" component={ToolHome}/>
+                    <Route path="/tools/nwmap" component={NWmap} />
                     <Route path="/projects" component={ProjectHome}/>
                     <Route path="/about" component={AboutMe}/>
                 </div>

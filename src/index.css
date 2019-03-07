@@ -3,6 +3,10 @@
     padding-top: 10px;
     color: #fff;
 }
+.leaflet-container {
+  height: 800px;
+  width: 100%;
+}
 .navbar{
     padding-top: 10px;
     margin: 0px;
