@@ -3,20 +3,23 @@ import { ImageOverlay, Map, Marker, Popup } from 'react-leaflet';
 import { CRS, Icon } from 'leaflet';
 
 import MapImage from '../images/CombinedNW.png';
-import { iconConstruction, iconLandmark } from './icons.js';
-//import MapImage from '../images/FNmap.jpg';
+import { iconConstruction, iconLandmark, iconPeak } from './icons.js';
+import PopUpMarker from './nwmap/PopUpMarker';
 
-const NewMarker =  props => {
-    return (
-        <Marker 
-            icon={iconLandmark}
+
+const NewMarker = props => {
+    return(
+        <PopUpMarker 
+            icon={iconPeak}
             position={props.position}>
-            <Popup position={props.position}>
+            <Popup>
               A new Marker!!
             </Popup>
-        </Marker>
-    ); 
+        </PopUpMarker>
+    );
 };
+
+        
 class NWmap extends Component {
    constructor(){
         super();
@@ -25,7 +28,7 @@ class NWmap extends Component {
             newMarker: false,
             lat: 0,
             lng: 0,
-            zoom: 2
+            zoom: 0
         };
     }
     onDoubleClick = (e) => {
