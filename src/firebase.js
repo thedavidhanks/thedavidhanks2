@@ -1,6 +1,6 @@
 import firebase from 'firebase'
 
-const apikey = process.env.TDH_FIREBASE_API_KEY;
+const apikey = process.env.REACT_APP_FIREBASE_API_KEY;
 console.log(process.env);
 const config = {
     apiKey: apikey,
