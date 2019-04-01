@@ -13,8 +13,8 @@ import './index.css';
 class App extends Component {
     constructor(props){
         super(props);
-        this.login = this.login.bind(this);
-        this.logout = this.logout.bind(this);
+        //this.login = this.login.bind(this);
+        //this.logout = this.logout.bind(this);
         
         this.state = { 
             menuItems: [
@@ -26,9 +26,7 @@ class App extends Component {
             user: null
         };
     }
-    logout(){
-        console.log('logout'+this.state.user);
-
+    logout = () => {
         auth.signOut()
             .then(() => {
                 this.setState({
@@ -36,15 +34,13 @@ class App extends Component {
                 });
              });
     }
-    login(){
-        console.log('login before',this.state.user);
+    login = () => {
         auth.signInWithPopup(provider)
                 .then((result) =>{
                     const user = result.user;
                     this.setState({
                         user
                     });
-                    console.log('login after',this.state.user);
         });
     }  
     render(){

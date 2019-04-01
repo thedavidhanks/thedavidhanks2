@@ -1,7 +1,7 @@
 import React from 'react';
 import { Marker } from 'react-leaflet';
 
-//This marker starts with a popup
+//This marker's popup is displayed when placed.
 const PopUpMarker = props => {
     const initMarker = ref => {
         if (ref) {
