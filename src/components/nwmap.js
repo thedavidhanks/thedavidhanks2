@@ -7,13 +7,6 @@ import MapImage from '../images/CombinedNW.png';
 import { iconPeak, iconLandmark, iconConstruction } from './icons.js';
 import PopUpMarker from './nwmap/PopUpMarker';
 
-var fs_mapPoints = db.collection('/Games/PM2ahWu01w0wb5KQcoV8/Points');
-fs_mapPoints.get().then((points) =>{
-    points.forEach( (point) =>{
-        console.log(point.data()); 
-    });
-});
-
 function iconFromType(type){
     switch(type){
         case 'stone':
@@ -54,7 +47,8 @@ const MarkerList = props =>{
 class NWmap extends Component {
    constructor(){
         super();
-
+        this.refPoints = db.collection('/Games/PM2ahWu01w0wb5KQcoV8/Points');
+        
         this.state = {
             newMarker: false,
             newType: '',
@@ -69,26 +63,36 @@ class NWmap extends Component {
                 addedOn: "April 1, 2019",
                 type: "stone",
                 notes: 'stone here',
-                latlong: [156, -377]},
+                latlong: {lat: 156, lng: -377}},
                 {
                 type: "wood",
                 notes: 'big wood',
-                latlong: [20, -238.875]},
+                latlong: {lat: 20, lng: -238.875}},
                 {
                 type: "default",
                 notes: 'small wood',
-                latlong: [30, -209.625]}
+                latlong: {lat: 30, lng: -209.625}}
             ]                
             };
-        };
-    handleSubmit = (e) => {
+    };
+    onCollectionUpdate = (points) =>{
+        var markers = [];
+        points.forEach( (point) =>{
+            markers.push(point.data());
+            console.log(point.data()); 
+        });
+        console.log(markers);
+        this.setState({markers});      
+    };
+
+        handleSubmit = (e) => {
         e.preventDefault();
         var user = firebase.auth().currentUser;
         var newPoint = {
             addedBy: user.email,
             type: this.state.newType,
             notes: this.state.newNotes,
-            latLong: {lat: this.state.newMarkerLatLong.lat, lng: this.state.newMarkerLatLong.lng}
+            latlong: {lat: this.state.newMarkerLatLong.lat, lng: this.state.newMarkerLatLong.lng}
         };
         //{ Lat: 100, Lng: -100 }
         //latlong: this.state.newMarkerLatLong
@@ -116,6 +120,9 @@ class NWmap extends Component {
         });
         //close or lose focus, save the point.
     };
+    componentDidMount() {
+      this.unsubscribe = this.refPoints.onSnapshot(this.onCollectionUpdate);
+    }
     render(){
         const position = this.state.markers[1].latlong;//[this.state.lat, this.state.lng];
         const overstyle = {
@@ -142,7 +149,8 @@ class NWmap extends Component {
                 </Map>
             </div>
         );
-  }  
+  }
+  
 };
  
 export default NWmap;
