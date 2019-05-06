@@ -102,7 +102,7 @@ class NWmap extends Component {
             newMarker: false,
             newType: '',
             newNotes: ''
-        })
+        });
         
     };
     handleChange = (e) => {
@@ -125,13 +125,9 @@ class NWmap extends Component {
     }
     render(){
         const position = this.state.markers[1].latlong;//[this.state.lat, this.state.lng];
-        const overstyle = {
-            border: '1px solid',
-            width: '100%'
-        };
         const bounds = [[-500,-500],[500,500]];      
         return (
-            <div style={overstyle}>
+            <div className="mapOverStyle">
                 <h4>New World</h4>
                 <Map 
                     center={position}

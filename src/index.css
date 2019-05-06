@@ -3,15 +3,45 @@
     padding-top: 10px;
     color: #fff;
 }
+.ck-button {
+    margin: 4px;
+    background-color: #EFEFEF;
+    border-radius: 4px;
+    border: 1px solid #D0D0D0;
+    overflow: auto;
+    padding: 0px;
+    text-align: center;
+}
+.ck-button label {
+    margin: 0px;
+    padding: 0px;
+}
+.ck-button label span {
+    text-align:center;
+    padding:3px 0px;
+    display:block;
+}
+.ck-button input:checked + span{
+    background-color:#911;
+    color:#fff;
+}
+
+.highlight{
+    font-weight: bold;
+}
 .leaflet-container {
   height: 800px;
   width: 100%;
+}
+.mapOverStyle {
+    border: 1px solid;
+    width: 100%;
 }
 .navbar{
     padding-top: 10px;
     margin: 0px;
 }
-navbardiv{
+.navbardiv{
     border: 1px dashed orange;
 }
 .navbar-wrapper{
@@ -20,5 +50,39 @@ navbardiv{
 }
 .nav-menu{
     
+}
+.resume{
+    padding: 10px;
+    border: solid 1px #42c5f4;
+    border-radius: 12px;
+    width: 100%;
+    font-size: medium;
+}
+.resume .header{
+    font-variant: small-caps;
+    font-size: 1.6em;
+    text-align: center;
+}
+.resumeCo{
+    padding-top: 10px;
+}
+.resumeCoName{
+    font-family: Merriweather, serif;
+    font-size: 1.1em;
+}
+.resumeDates{
+    font-size: 0.75em;
+    font-variant: small-caps;
+}
+.resumeHeader{
+    font-size: 1.2em;
+}
+.resumePosition{
+    font-style: italic;
+    font-size: 1em;
+}
+.workExperience ul{
+    list-style-type: none;
+    font-size: 0.75em;
 }
 body { padding-top: 90px; }
