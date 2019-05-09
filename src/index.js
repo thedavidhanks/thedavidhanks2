@@ -49,6 +49,7 @@ class App extends Component {
             <div className="container">
                 <BSnavbar user={this.state.user} login={this.login} logout={this.logout}/>
                 <div role="main" className="row">
+                    <Route exact path="/" component={AboutMe}/>
                     <Route exact path="/tools" component={ToolHome}/>
                     <Route path="/tools/nwmap" component={NWmap} />
                     <Route path="/projects" component={ProjectHome}/>

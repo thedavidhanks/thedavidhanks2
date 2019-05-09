@@ -18,9 +18,6 @@ class BSnavbar extends Component {
                             <NavLink className="dropdown-item" to="/tools/accumcalc" activeClassName="active">Accumulator Calculator</NavLink>
                           </div>
                         </li>
-                        <li className="nav-item">
-                          <NavLink className="nav-link" to="/about" activeClassName="active">About<span className="sr-only">(current)</span></NavLink>
-                        </li>
                       </ul>
                       <div className=" my-2 my-lg-0">
                       {this.props.user ? <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={this.props.logout}>Logout</button> : <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={this.props.login}>Login</button>}
