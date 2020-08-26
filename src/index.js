@@ -5,7 +5,7 @@ import { auth, provider } from './firebase.js'
 
 import BSnavbar from './components/BSnavbar';
 import ToolHome from './components/tool_home';
-import ProjectHome from './components/project_home';
+import ProjectHome from './components/projects/';
 import AboutMe from './components/about_me';
 import NWmap from './components/nwmap';
 import './index.css';

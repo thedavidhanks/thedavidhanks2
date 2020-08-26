@@ -112,4 +112,11 @@
     list-style-type: circle outside;
     font-size: 0.85em;
 }
+/** Tags **/
+.tagbox{
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 0px 5px;
+    margin:  0px 5px;
+}
 body { padding-top: 90px; }

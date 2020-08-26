@@ -27,11 +27,13 @@ class AboutMe extends Component {
     return (
         <div className="resume">
             <div className="row">
-                <div className="header col-md-10">Resume</div>
                 <div className="col block-links">
                     <div className="row">
                         <div className="col-8 profileDiv">
-                            <img src={profile} className="profileImg "/>
+                            <img src={profile} 
+                                className="profileImg" 
+                                alt="David Hanks"
+                            />
                         </div>
                         <div className="col-4 socialDiv">
                             <a className="fa fa-linkedin-square" style={socialBlock} href="https://www.linkedin.com/in/thedavidhanks"></a>
@@ -72,7 +74,7 @@ class AboutMe extends Component {
                         </ResumePosition>
                     </ResumeCompany>
                     <ResumeCompany company="Oceaneering" start="Oct 2014" end="Nay 2015">
-                        <ResumePosition title="Senion Subsea Controls Engineer">
+                        <ResumePosition title="Senior Subsea Controls Engineer">
                             <ul>
                                 <li>Lead a team of engineers and designers in the development of blow out preventer hydraulic control systems</li>
                                 <li>Reviewed drawings, Solidworks models and calculations for the release of new product</li>
