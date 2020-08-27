@@ -1,20 +1,34 @@
 import React, { Component } from 'react';
 import CardColumns from 'react-bootstrap/CardColumns';
+import Container from 'react-bootstrap/Container';
 import {  
   Switch,
   Route,
 } from "react-router-dom";
+//project images
+import mimo from './mimo.png';
+
+//Project Pages
+import CricketAntenna from './pages/CricketAntenna';
+import GpsTracker from './pages/GpsTracker';
 
 import ProjectCard from './ProjectCard';
 
 const projectlist = [
   {
+    path: "/projects/gps-tracker",
+    component: GpsTracker,
+    title: "GPS Tracking Site",
+    description: "tracks my RV as I travel.  It utilizes an arduino GPS module, React site and PHP backend",
+    tags: ["Arduino", "React"]
+  },
+  {
     path: "/projects/cellantenna",
-    component: CellAntenna,
+    component: CricketAntenna,
     title: "Cell Antenna",
     description: "a mobile directional cellular/wifi antenna providing internet connection utilizing a 12V source",
     tags: ["Design"],
-    imgsrc: "./mimo.png"
+    imgsrc: mimo
   },
   {
     path: "/projects/shearcalculator",
@@ -24,18 +38,18 @@ const projectlist = [
     tags: ["Engineering", "PHP", "mySQL"]
   },
   {
-    path: "/projects/gps-tracker",
-    component: GpsTracker,
-    title: "GPS Tracking Site",
-    description: "tracks the cricket",
-    tags: ["Arduino", "React"]
-  },
-  {
       path: "/projects/kaleidoscope",
       component: Kaleidoscope,
       title: "Kaleidoscope",
       description: "a present for my wife",
       tags: ["CNC", "3dPrinters", "3dModeling"]
+  },
+  {
+      path: "/projects/temphumiditysensor",
+      component: ClimateSensor,
+      title: "Temp & Humidy Sensor",
+      description: "a sensor loggs environment conditions and is graphed on website.",
+      tags: ["Arduino", "HTML5", "mySQL", "PHP", "javascript"]
   }
   
 ];
@@ -71,17 +85,14 @@ class ProjectHome extends Component {
     }  
 };
 
-function CellAntenna() {
-  return <h3>Cell Antenna</h3>;
-}
 function ShearCalculator() {
-  return <h3>Shear Calculator</h3>;
-}
-function GpsTracker() {
-  return <h3>GPS Tracker</h3>;
+    return <Container><h3>Shear Calculator</h3><p>More to come...</p></Container>;
 }
 function Kaleidoscope() {
-  return <h3>K-scoper</h3>;
+  return <Container><h3>Kaleidoscope</h3><p>More to come...</p></Container>;
+}
+function ClimateSensor() {
+  return <Container><h3>Temperature & Humidity Sensor</h3><p>More to come...</p></Container>;
 }
 
 export default ProjectHome;

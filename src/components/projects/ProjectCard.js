@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import { Link } from 'react-router-dom';
 
-import mimo from './mimo.png';
 
 const ProjectCard = (props) => (
     //TODO: add background image and default
@@ -24,16 +23,30 @@ const TagBox = (props) => (
     </span>
 );
 
-const CardWithImageOverlay = (props) => (    
-    <Card>
-        <Card.Img src={mimo} alt="Card image" />
+const CardWithImageOverlay = (props) => {
+    const [showText, setShowText] = useState(true);
+    const [imgOpacity, setImgOpacity] = useState(0.4);
+    
+    const mouseEnterProjectCard = () => {
+        setImgOpacity(1);
+        setShowText(false);
+    };
+    const mouseLeaveProjectCard = () => {
+        setImgOpacity(0.4);
+        setShowText(true);
+    };
+    
+    return(
+    <Card onMouseEnter={mouseEnterProjectCard} onMouseLeave={mouseLeaveProjectCard}>
+        <Card.Img src={props.imgsrc} alt="Card image" style={{opacity: imgOpacity}}/>
         <Card.ImgOverlay>
             <Card.Title>{props.title}</Card.Title>
-            <Card.Subtitle className="mb-2 text-muted">{props.sub}</Card.Subtitle>
+            {showText?<Card.Subtitle className="mb-2 text-muted">{props.sub}</Card.Subtitle>:null}
+            {showText?
             <Card.Text>
                 {props.children}
-                {console.log(props.imgsrc)}
-            </Card.Text>
+            </Card.Text>:
+            null}
         </Card.ImgOverlay>
         <Card.Footer>
             {props.tags.map( (tag) => (
@@ -41,7 +54,9 @@ const CardWithImageOverlay = (props) => (
             ))}
         </Card.Footer>
     </Card>
-);
+    );
+};
+
 const CardNoOverlay = (props) => (
     <Card bg={props.bg}>
         <Card.Body>
