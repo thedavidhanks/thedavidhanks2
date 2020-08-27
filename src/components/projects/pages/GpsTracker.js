@@ -56,14 +56,14 @@ const GpsTracker = (props) => {
             <li>Backend Firestore database</li>
             <li>Backend Node.js server</li>
           </ul>
-          <b>Open-source hardware</b>  (<a href="https://github.com/thedavidhanks/arduinoCricketGPS" target="_blank">gps tracker repo</a>
+          <b>Open-source hardware</b>  (<a href="https://github.com/thedavidhanks/arduinoCricketGPS" target="_blank" rel="noopener noreferrer">gps tracker repo</a>
           )- At the core of the 
             hardware is an Arduino NodeMCU board with integrated ESP8266 chip.  
             The arduino reads coordinates from a connected gps module and sends 
             a post request to a PHP server.
             <br />
             <b>Backend PHP server</b> -(
-            <a href="https://github.com/thedavidhanks/tdh-scripts" target="_blank">tdh-scripts 
+            <a href="https://github.com/thedavidhanks/tdh-scripts" target="_blank" rel="noopener noreferrer">tdh-scripts 
             repo</a>) The php server 
             receives a post request.  If the gps coordinates are in a new 
             location, the PHP server will add a new row to the  mySQL database.  
@@ -72,8 +72,8 @@ const GpsTracker = (props) => {
             (assuming the maximum API requests have not been used for the month).
             <br />
             <b>Front-end React website</b> - 
-            (<a href="http://www.margeeanddave.com/whereintheworld" target="_blank">link</a>)
-            (<a href="https://github.com/thedavidhanks/mad" target="_blank">website repo</a>) 
+            (<a href="http://www.margeeanddave.com/whereintheworld" target="_blank" rel="noopener noreferrer">link</a>)
+            (<a href="https://github.com/thedavidhanks/mad" target="_blank" rel="noopener noreferrer">website repo</a>) 
             The frontend
             website utilizes an open-source map library called Leaflet to 
             overlay a current location marker and a travel path on a map.  
