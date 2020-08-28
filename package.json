@@ -2,6 +2,9 @@
   "name": "thedavidhanks2",
   "homepage": "http://thedavidhanks.com",
   "version": "0.1.0",
+    "engines": {
+    "node": "12.x"
+  }
   "description": "A website about me",
   "private": true,
   "dependencies": {
@@ -22,7 +25,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    ""
   },
   "eslintConfig": {
     "extends": "react-app"
