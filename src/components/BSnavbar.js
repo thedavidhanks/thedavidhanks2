@@ -11,6 +11,7 @@ class BSnavbar extends Component {
                         <li className="nav-item">
                           <NavLink className="nav-link" to="/projects" activeClassName="active">Projects<span className="sr-only">(current)</span></NavLink>
                         </li>
+                        {true?null:
                         <li className="nav-item dropdown">
                           <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" rel="noreferrer" activeClassName="active">Tools</NavLink>
                           <div className="dropdown-menu" aria-labelledby="dropdown01">
@@ -18,6 +19,7 @@ class BSnavbar extends Component {
                             <NavLink className="dropdown-item" to="/tools/accumcalc" activeClassName="active">Accumulator Calculator</NavLink>
                           </div>
                         </li>
+                        }
                       </ul>
                       <div className=" my-2 my-lg-0">
                       {this.props.user ? <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={this.props.logout}>Logout</button> : <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={this.props.login}>Login</button>}

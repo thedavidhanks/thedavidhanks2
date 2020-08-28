@@ -26,21 +26,19 @@ class AboutMe extends Component {
   render(){
     return (
         <div className="resume">
-            <div className="row">
-                <div className="col block-links">
-                    <div className="row">
-                        <div className="col-8 profileDiv">
+            <div className="row block-links">
+                <div className="col-1 profileDiv text-left border">
                             <img src={profile} 
                                 className="profileImg" 
                                 alt="David Hanks"
                             />
                         </div>
-                        <div className="col-4 socialDiv">
-                            <a className="fa fa-linkedin-square" style={socialBlock} href="https://www.linkedin.com/in/thedavidhanks"></a>
+                        <div className="col-1 socialDiv">
+                            <a className="fa fa-linkedin-square" style={socialBlock} href="https://www.linkedin.com/in/thedavidhanks"></a><br />
                             <a className="fa fa-github-square" style={socialBlock} href="https://github.com/thedavidhanks/"></a>
                         </div>
-                    </div>
-                </div>
+                        <div className="col-10">
+                        </div>
             </div>    
             <hr />
             <div className="row">
@@ -73,7 +71,7 @@ class AboutMe extends Component {
                             </ul>
                         </ResumePosition>
                     </ResumeCompany>
-                    <ResumeCompany company="Oceaneering" start="Oct 2014" end="Nay 2015">
+                    <ResumeCompany company="Oceaneering" start="Oct 2014" end="May 2015">
                         <ResumePosition title="Senior Subsea Controls Engineer">
                             <ul>
                                 <li>Lead a team of engineers and designers in the development of blow out preventer hydraulic control systems</li>
