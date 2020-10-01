@@ -13,11 +13,11 @@ const CricketAntenna = (props) => {
     return(
     <Container>
         <h3>Cricket Antenna</h3>
-        <p>This is a design I created out of need for internet access while travellin 
-        in remote locations.  This antenna offers two methods of wireless connection: cellular and 
-        WiFi (802.11x).  The two connection options operate independently of each
-        other.  This allows the user to choose whichever signal is better for the
-        location.</p>
+        <p>This is a design I created out of need for internet access while 
+        travelling in remote locations.  This antenna offers two methods of 
+        wireless connection: cellular and WiFi (802.11x).  The two connection 
+        options operate independently of each other.  This allows the user to 
+        choose whichever signal is better for the location.</p>
         
         <Carousel className="carouselContainer w-50">
             <Carousel.Item>

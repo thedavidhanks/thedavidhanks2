@@ -11,6 +11,7 @@ import mimo from './mimo.png';
 //Project Pages
 import CricketAntenna from './pages/CricketAntenna';
 import GpsTracker from './pages/GpsTracker';
+import ShearCalculator from './pages/ShearCalculator';
 
 import ProjectCard from './ProjectCard';
 
@@ -85,9 +86,6 @@ class ProjectHome extends Component {
     }  
 };
 
-function ShearCalculator() {
-    return <Container><h3>Shear Calculator</h3><p>More to come...</p></Container>;
-}
 function Kaleidoscope() {
   return <Container><h3>Kaleidoscope</h3><p>More to come...</p></Container>;
 }
