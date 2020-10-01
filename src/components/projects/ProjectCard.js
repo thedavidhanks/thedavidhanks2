@@ -9,8 +9,7 @@ const ProjectCard = (props) => (
     // and hide the body text.
     // <Card.Img src="holder.js/100px270" alt="Card image" />
     // or
-    // <Card bg="info"  
-    //TODO: add tags -engineering- -software- -java- -woodwork-
+    // <Card bg="info"
     <Link to={props.endpoint} style={{ color: '#000' }}>
     {props.imgsrc? <CardWithImageOverlay {...props} />:<CardNoOverlay {...props}/>}
     </Link>

@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 //project images
 import mimo from './mimo.png';
+import bopdiagram from './shearbopdiagram.png';
 
 //Project Pages
 import CricketAntenna from './pages/CricketAntenna';
@@ -36,7 +37,8 @@ const projectlist = [
     component: ShearCalculator,
     title: "Shear Calculator",
     description: "A online PHP/mySQL tool for engineers to evaluate the capabilities of offshore cutting devices and generate reports for clients",
-    tags: ["Engineering", "PHP", "mySQL"]
+    tags: ["Engineering", "PHP", "mySQL"],
+    imgsrc: bopdiagram
   },
   {
       path: "/projects/kaleidoscope",
@@ -50,7 +52,7 @@ const projectlist = [
       component: ClimateSensor,
       title: "Temp & Humidy Sensor",
       description: "a sensor loggs environment conditions and is graphed on website.",
-      tags: ["Arduino", "HTML5", "mySQL", "PHP", "javascript"]
+      tags: ["Arduino", "HTML5", "mySQL", "PHP", "js"]
   }
   
 ];
@@ -79,7 +81,7 @@ class ProjectHome extends Component {
                             {project.description}
                         </ProjectCard>
                     ))}
-                </CardColumns>
+                  </CardColumns>
                 </Route>
             </Switch>
         );                              
