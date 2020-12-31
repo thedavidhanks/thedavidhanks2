@@ -120,7 +120,7 @@
     margin:  0px 5px;
 }
 
-/**Bootstrap Carasel**/
+/**Bootstrap Carousel**/
 .carouselContainer{
     border: groove grey;
     border-radius: 5px;
@@ -142,5 +142,7 @@ body { padding-top: 90px; }
     display:block;
 }
 
-#skillList span{
+/** Home **/
+.contentwrapper{
+    margin-bottom: 60px;
 }

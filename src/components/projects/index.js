@@ -56,7 +56,12 @@ const projectlist = [
   }
   
 ];
-
+{ //projects to add:
+    //Python report for OTC
+    //Spare oom bench
+    //Kalidescope
+    //CNC pull-up bar
+}
 class ProjectHome extends Component {
     render(){
         return (

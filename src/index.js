@@ -6,7 +6,7 @@ import { auth, provider } from './firebase.js'
 import BSnavbar from './components/BSnavbar';
 import ToolHome from './components/tool_home';
 import ProjectHome from './components/projects/';
-import AboutMe from './components/about_me';
+import AboutMe from './components/aboutme/';
 import NWmap from './components/nwmap';
 import './index.css';
 
@@ -48,7 +48,7 @@ class App extends Component {
         <BrowserRouter>
             <div className="container">
                 <BSnavbar user={this.state.user} login={this.login} logout={this.logout}/>
-                <div role="main" className="row">
+                <div role="main" className="row contentwrapper">
                     <Route exact path="/" component={AboutMe}/>
                     <Route exact path="/tools" component={ToolHome}/>
                     <Route path="/tools/nwmap" component={NWmap} />
