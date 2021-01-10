@@ -65,9 +65,10 @@ const AboutMe = () => {
                          drawings, analyizing loads, writing and conducting tests, and installing equipment on-site.</p>
                     <p>In more recent years, I've turned my attention to software and electronics.  I've always had an interest in computers, but around 2010 I really started to 
                         explore new (at least to me) technologies.  I took online courses to reintroduce myself to updated HTML/CSS/Javascript. I signed up for 
-                        a DC circuits course a the local makerspace. I explored open source boards like the Arduino which had not been around when I was in school.  Ultimately in 2019, I 
-                        enrolled in a Computer Science Master's program at Georgia Tech.  So far I've taken courses on Operting Systems, Computer Networks, & Software 
-                        Development.   I'm excited to see where this new interests takes me.  
+                        a DC circuits course at the local makerspace. I explored open source boards like the Arduino which had not been around when I was in school.  Ultimately in 2019, I 
+                        enrolled in a Computer Science Master's program at Georgia Tech.  So far I've completed courses on Operting Systems, Computer Networks, & Software 
+                        Development.   My Sprint 2021 course is titled <a href="http://omscs.gatech.edu/cs-6291-embedded-systems-optimization" target="_blank"  rel="noopner noreferrer">
+                        Embedded Systems Optimization.</a>  I'm excited to see where these new interests take me.
                     </p>
                     <h3>Computers and me</h3>
                     <p>My first experience programming was with BASIC on my Apple IIgs in the early 90s.  My father had brought home paperbound books with sample code that you would
