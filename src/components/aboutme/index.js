@@ -16,7 +16,8 @@ const AboutMe = () => {
         {value: 'language', label: 'progamming language'},
         {value: 'cad', label: 'CAD'},
         {value: 'analysis', label: 'analysis'},
-        {value: 'jslibraries', label: 'Libraries'}
+        {value: 'jslibraries', label: 'Libraries'},
+        {value: 'gameDesign', label: 'Game Design'}
     ]
 
     const [skills, setSkills] = useState(skillscategories);
@@ -24,7 +25,7 @@ const AboutMe = () => {
     useEffect( () =>{
         if(skillsDOM){
 
-            //reset all children to dimished clash
+            //reset all children to dimished class
             [...skillsDOM.children].forEach( child =>{
                 child.classList.remove("highlightSkill");
                 child.classList.add("diminishSkill");
@@ -57,24 +58,23 @@ const AboutMe = () => {
             <div className="row">
                 <div className="col-md-8 ">
                     <h2>About me.</h2>
-                    <p>I'm an engineer, developer, tinkerer, climber, ultimate freesbier, video gamer, eagle scout, traveller, native Cajun and husband.  
-                        In November of 2020, my wife and I moved to Chattanooga from Houston with the hopes of making it a permanent stay.</p>
+                    <p>I'm an engineer, developer, tinkerer, climber, ultimate freesbier, video gamer, eagle scout, traveller, native Cajun and husband.</p>
                     <p>In 2002 I graduated from the University of Louisiana with a BS in Mechanical Engineering. I've spent the
                          majority of my career developing and maintaining oil and gas product lines.  Specifically, I've worked on tongs/slips, blow-out preventers, and supporting
-                         controls.  I've been able to experince the full range of product life cycle: from developing a specification with a customer, through creating/reviewing 
+                         controls.  I've been able to experience the full range of product life cycle: from developing a specification with a customer, through creating/reviewing 
                          drawings, analyizing loads, writing and conducting tests, and installing equipment on-site.</p>
                     <p>In more recent years, I've turned my attention to software and electronics.  I've always had an interest in computers, but around 2010 I really started to 
                         explore new (at least to me) technologies.  I took online courses to reintroduce myself to updated HTML/CSS/Javascript. I signed up for 
                         a DC circuits course at the local makerspace. I explored open source boards like the Arduino which had not been around when I was in school.  Ultimately in 2019, I 
                         enrolled in a Computer Science Master's program at Georgia Tech.  So far I've completed courses on Operting Systems, Computer Networks, & Software 
-                        Development.   My Sprint 2021 course is titled <a href="http://omscs.gatech.edu/cs-6291-embedded-systems-optimization" target="_blank"  rel="noopner noreferrer">
-                        Embedded Systems Optimization.</a>  I'm excited to see where these new interests take me.
+                        Development, Embedded Systems Optimizations, and Game Design.  My Fall 2022 course is titled <a href="https://omscs.gatech.edu/cs-7632-game-ai" target="_blank"  rel="noopner noreferrer">
+                        Game AI.</a>  I'm excited to see where these new interests take me.
                     </p>
                     <h3>Computers and me</h3>
                     <p>My first experience programming was with BASIC on my Apple IIgs in the early 90s.  My father had brought home paperbound books with sample code that you would
                         copy into the terminal.  They were small programs: calculators, choose your own adventures, tic-tac-toe; but they were fun and engaging.  I remember not knowing how to 
                         save the work I had done to a 5.25" floppy, so I had to enter sometimes 20 pages of code in one sitting to see the program in action.  It was fun and tedious work.
-                        The exercise taught me programming logic and debuggings among other things.
+                        The exercise taught me programming logic and debugging among other things.
                         </p>
                     <p>After that start, I took Pascal in high school, then some Visual Basic in college.  I setup a phoneline LAN in my college fraternity house, and some
                         form of hardwired LAN in every home since. I learned how to setup my home computer to host a hacky PHP photo album
@@ -83,7 +83,7 @@ const AboutMe = () => {
                     </p>
                     <p>These days, my projects lean more towards web development in React within the AWS cloud infastructure.  I 
                         created <a href="margeeanddave.com" target="_blank" rel="noopner noreferrer">margeeanddave.com</a> to track our travels 
-                        across the US.  The next software project I'm tinkering with is a mobile app that allows neighbors to share produce with each other.</p>
+                        across the US.  The next software project I'm tinkering with is a React-Native mobile app that allows climbers geo tag their climbing photos to help find rock climbing locations.</p>
                     <h3>These are the FAQs:</h3>
                     <Accordian>
                         <Card>
@@ -92,11 +92,14 @@ const AboutMe = () => {
                             </Accordian.Toggle>
                             <Accordian.Collapse eventKey="0">
                                 <Card.Body>
-                                <p>Ok, you got me.  Athough I have developed a few pieces of software for work,  I haven't technically been part of a production development environment.  My 
+                                <p>Experinced, sure.  Professionally experienced? Kinda.  Althought my professional production development is limited to about a year and a half. I've been exploring 
+                                    computer archetecture and software for close to 2 decades.  I've built a wide range of personal applications.  I've made old-skool programs with TI-BASIC and explored newer
+                                    AWS Cloud deployment.  Some of the many technologies I've gotten my hands on over the years include things like React-Native, jQuery,
+                                    mySQL, Firebase, AWS, Python, Arduino, Unity.   I haven't technically been part of a production development environment.  My 
                                 skills may not appear as refined on paper, but I'm likely as savy as the next guy and way more cool.  You might be interested to know:
                                 </p>
                                 <ul>
-                                    <li>I've programmed in a plethora of languages (C, C++, Java, Python, NodeJS, javaScript, VB, PHP, and even: Pascal & BASIC)</li>
+                                    <li>I've programmed in a plethora of languages (APEX, C, C#, C++, Java, Python, NodeJS, javaScript, VB, PHP, and even: Pascal & BASIC)</li>
                                     <li>I have 18 yr of design and development experience.  That means I know how an ideal design process is supposed
                                         to work and when to be flexible.  So whether you're working in a traditional, Scrum, Agile, or whatever dev 
                                         cycle suits your team, know that I'm very familiar with a variety of design cycles.</li>
@@ -106,9 +109,7 @@ const AboutMe = () => {
                                         API, the effort I put into developing personal projects is a reflection of my excitement to solve the worlds problems with software.</li>
                                     <li>I primarily develop web applications applications in React/NodeJS/mySQL</li>
                                     <li>My <a href="./projects/">personal projects</a> range from CNC woodworking to Cellular Antenna design</li>
-                                    <li>I'm always learning.  Currently enrolled in Georgia Tech's Computer Science Master's program and working toward my first AWS 
-                                        practitioner certificate.
-                                    </li>
+                                    <li>I'm always learning.  Currently enrolled in Georgia Tech's Computer Science Master's program.</li>
                                     <li>For the most part, I build my own computers, servers, LANs.</li>
                                 </ul>
                                 </Card.Body>
@@ -122,7 +123,7 @@ const AboutMe = () => {
                             </Accordian.Toggle>
                             <Accordian.Collapse eventKey="0">
                                 <Card.Body>
-                                <p>Quite possibly.  At the moment, I'm looking for a company in Chattanooga, TN that peaks my interest.  Ideally I'd want to hang out with my co-workers outside of the office, the work
+                                <p>Quite possibly.  At the moment, I'm looking for a company that peaks my interest.  Ideally I'd want to hang out with my co-workers outside of the office, the work
                                     would be engaging, and I'd have opportunities to develop new products.
                                 </p>
                                 <p>If you think you've found something suitable, shoot me an <a href="mailto:davidhanks@gmail.com">email</a> with the job description or give me a call.</p>
@@ -153,6 +154,9 @@ const AboutMe = () => {
                         <li><a href="http://omscs.gatech.edu/cs-6250-computer-networks" target="_blank" rel="noopener noreferrer">Computer Networks</a></li>
                         <li><a href="http://omscs.gatech.edu/cs-6200-introduction-operating-systems" target="_blank" rel="noopener noreferrer">Intro to OS</a></li>
                         <li><a href="http://omscs.gatech.edu/cs-6300-software-development-process" target="_blank" rel="noopener noreferrer">Software Dev Process</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6291-embedded-systems-optimization" target="_blank" rel="noopener noreferrer">Embedded System Optimization</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6310-software-architecture-design" target="_blank" rel="noopener noreferrer">Software Design and Arch</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6457-video-game-design" target="_blank" rel="noopener noreferrer">Video Game Design</a></li>
                         <li><a 
                                 href="https://www.udemy.com/certificate/UC-0bda0691-7c4b-466f-a5fe-b5a171594b7a/?utm_medium=email&utm_campaign=email&utm_source=sendgrid.com" 
                                 target="_blank" 
@@ -182,6 +186,8 @@ const AboutMe = () => {
                         <span className="cad ">Inventor,  </span>
                         <span className="cad ">Pro/E, </span>
                         <span className="analysis ">Ansys, </span>
+                        <span className="gameDesign">Unity, </span>
+                        <span className="cad">Blender, </span>
                         <span className="ide developer ">Visual Studio Code, </span>
                         <span className="ide developer ">Visual Studio, </span>
                         <span className="ide developer ">NetBeans, </span>
@@ -196,8 +202,8 @@ const AboutMe = () => {
                         <span className="jslibraries developer ">ReactJS, </span>
                         <span className="jslibraries developer ">Leaflet, </span>
                         <span className="jslibraries developer ">Bootstrap, </span>
-                        <span className="">hydraulics, </span>
-                        <span className="">structural analysis</span>
+                        <span className="mechanical">hydraulics, </span>
+                        <span className="mechanical">structural analysis</span>
                     </div>
                 </div>    
             </div>

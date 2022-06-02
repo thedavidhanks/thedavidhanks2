@@ -47,7 +47,7 @@ const projectlist = [
       component: Kaleidoscope,
       title: "Kaleidoscope",
       description: "a present for my wife",
-      tags: ["CNC", "3dPrinters", "3dModeling"]
+      tags: ["CNC", "3dPrinters", "3dModeling", "Electronics"]
   },
   {
       path: "/projects/temphumiditysensor",
@@ -66,9 +66,7 @@ const projectlist = [
   
 ];
 { //projects to add:
-    //Python report for OTC
     //Spare oom bench
-    //Kalidescope
     //CNC pull-up bar
 }
 class ProjectHome extends Component {
