@@ -8,6 +8,7 @@ import ToolHome from './components/tool_home';
 import ProjectHome from './components/projects/';
 import AboutMe from './components/aboutme/';
 import NWmap from './components/nwmap';
+import WordleHelper from './components/tools/wordlehelper/';
 import './index.css';
 
 class App extends Component {
@@ -51,6 +52,7 @@ class App extends Component {
                 <div role="main" className="row contentwrapper">
                     <Route exact path="/" component={AboutMe}/>
                     <Route exact path="/tools" component={ToolHome}/>
+                    <Route exact path="/tools/wordlehelper" component={WordleHelper}/>
                     <Route path="/tools/nwmap" component={NWmap} />
                     <Route path="/projects" component={ProjectHome}/>
                     <Route path="/about" component={AboutMe}/>
