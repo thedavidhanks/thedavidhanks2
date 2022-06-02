@@ -13,8 +13,6 @@ import './index.css';
 class App extends Component {
     constructor(props){
         super(props);
-        //this.login = this.login.bind(this);
-        //this.logout = this.logout.bind(this);
         
         this.state = { 
             menuItems: [

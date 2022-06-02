@@ -92,10 +92,10 @@ const AboutMe = () => {
                             </Accordian.Toggle>
                             <Accordian.Collapse eventKey="0">
                                 <Card.Body>
-                                <p>Experinced, sure.  Professionally experienced? Kinda.  Althought my professional production development is limited to about a year and a half. I've been exploring 
+                                <p>Experinced, sure.  Professionally experienced? Kinda.  Although my professional production development is limited to about a year and a half. I've been exploring 
                                     computer archetecture and software for close to 2 decades.  I've built a wide range of personal applications.  I've made old-skool programs with TI-BASIC and explored newer
                                     AWS Cloud deployment.  Some of the many technologies I've gotten my hands on over the years include things like React-Native, jQuery,
-                                    mySQL, Firebase, AWS, Python, Arduino, Unity.   I haven't technically been part of a production development environment.  My 
+                                    mySQL, Firebase, AWS, Python, Arduino, Unity.  My 
                                 skills may not appear as refined on paper, but I'm likely as savy as the next guy and way more cool.  You might be interested to know:
                                 </p>
                                 <ul>
