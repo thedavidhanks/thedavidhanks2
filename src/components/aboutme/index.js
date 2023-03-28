@@ -67,8 +67,8 @@ const AboutMe = () => {
                         explore new (at least to me) technologies.  I took online courses to reintroduce myself to updated HTML/CSS/Javascript. I signed up for 
                         a DC circuits course at the local makerspace. I explored open source boards like the Arduino which had not been around when I was in school.  Ultimately in 2019, I 
                         enrolled in a Computer Science Master's program at Georgia Tech.  So far I've completed courses on Operting Systems, Computer Networks, & Software 
-                        Development, Embedded Systems Optimizations, and Game Design.  My Fall 2022 course is titled <a href="https://omscs.gatech.edu/cs-7632-game-ai" target="_blank"  rel="noopner noreferrer">
-                        Game AI.</a>  I'm excited to see where these new interests take me.
+                        Development, Embedded Systems Optimizations, Game Design, and Game AI.  My Spring 2023 course is titled <a href="https://omscs.gatech.edu/cs-7646-machine-learning-trading" target="_blank"  rel="noopner noreferrer">
+                        Machine Learning for Trading.</a>  I'm excited to see where these new interests take me.
                     </p>
                     <h3>Computers and me</h3>
                     <p>My first experience programming was with BASIC on my Apple IIgs in the early 90s.  My father had brought home paperbound books with sample code that you would
@@ -92,25 +92,25 @@ const AboutMe = () => {
                             </Accordian.Toggle>
                             <Accordian.Collapse eventKey="0">
                                 <Card.Body>
-                                <p>Experinced, sure.  Professionally experienced? Kinda.  Although my professional production development is limited to about a year and a half. I've been exploring 
-                                    computer archetecture and software for close to 2 decades.  I've built a wide range of personal applications.  I've made old-skool programs with TI-BASIC and explored newer
+                                <p>Experinced, sure.  Professionally experienced? Kinda.  Although my professional production development is limited to about three years. I've been exploring 
+                                    computer archetecture and software for about 2 decades.  I've built a wide range of personal applications.  I've made old-skool programs with TI-BASIC and explored newer
                                     AWS Cloud deployment.  Some of the many technologies I've gotten my hands on over the years include things like React-Native, jQuery,
-                                    mySQL, Firebase, AWS, Python, Arduino, Unity.  My 
-                                skills may not appear as refined on paper, but I'm likely as savy as the next guy and way more cool.  You might be interested to know:
+                                    mySQL, Firebase, AWS, Python, Arduino, Unity.  My skills may not appear as refined on paper, but I'm likely as savy as the next guy and way more cool.  You might be interested to know:
                                 </p>
                                 <ul>
                                     <li>I've programmed in a plethora of languages (APEX, C, C#, C++, Java, Python, NodeJS, javaScript, VB, PHP, and even: Pascal & BASIC)</li>
-                                    <li>I have 18 yr of design and development experience.  That means I know how an ideal design process is supposed
+                                    <li>I have 20 yr of design and development experience.  That means I know how an ideal design process is supposed
                                         to work and when to be flexible.  So whether you're working in a traditional, Scrum, Agile, or whatever dev 
                                         cycle suits your team, know that I'm very familiar with a variety of design cycles.</li>
                                     <li>I have 3 yrs of startup experience. I know what it means to wear many hats and create new processes from the ground up.</li>
-                                    <li>I’m passionate about software development, so I’m always open to learning new skills. Whether it’s an AWS EC2 hosted game 
-                                        server, React/Node.js website, an Arduino GPS module, or a mySQL database populated by a PHP backend utilizing Blizzard’s 
+                                    <li>I'm passionate about software development, so I'm always open to learning new skills. Whether it's an AWS EC2 hosted game 
+                                        server, React/Node.js website, an Arduino GPS module, or a mySQL database populated by a PHP backend utilizing Blizzard's 
                                         API, the effort I put into developing personal projects is a reflection of my excitement to solve the worlds problems with software.</li>
                                     <li>I primarily develop web applications applications in React/NodeJS/mySQL</li>
                                     <li>My <a href="./projects/">personal projects</a> range from CNC woodworking to Cellular Antenna design</li>
-                                    <li>I'm always learning.  Currently enrolled in Georgia Tech's Computer Science Master's program.</li>
-                                    <li>For the most part, I build my own computers, servers, LANs.</li>
+                                    <li>I'm always learning and sharing about what interests me.  So you may hear me talk about my latest proejct in school, how the Heliumn network will change communications, or my latest home automation implemenation.</li>
+                                    <li>I DIMyself. Computers, Servers, LANs.  You name it.  I mean, would you trust someone how hasn't setup their own HomeAssistant sever with Zigbee and NodeRed?  I wouldn't.</li>
+                                    <li>I RTFM.</li>
                                 </ul>
                                 </Card.Body>
                             </Accordian.Collapse>
@@ -123,8 +123,8 @@ const AboutMe = () => {
                             </Accordian.Toggle>
                             <Accordian.Collapse eventKey="0">
                                 <Card.Body>
-                                <p>Quite possibly.  At the moment, I'm looking for a company that peaks my interest.  Ideally I'd want to hang out with my co-workers outside of the office, the work
-                                    would be engaging, and I'd have opportunities to develop new products.
+                                <p>Quite possibly.  At the moment, I'm looking for a company that peaks my interest.  Ideally the work
+                                    would be engaging, co-workers would be enthuastic, and I'd have opportunities to develop new products.
                                 </p>
                                 <p>If you think you've found something suitable, shoot me an <a href="mailto:davidhanks@gmail.com">email</a> with the job description or give me a call.</p>
                                 </Card.Body>
@@ -145,18 +145,18 @@ const AboutMe = () => {
                     </ul>
                     <h5>Certificates</h5>
                     <ul>
-                        <li><a href="https://engineers.texas.gov/roster/pesearch.html##result-top" target="_blank" rel="noopener noreferrer">P.E. (104644)</a></li>
+                        <li><a href="https://pels.texas.gov/roster/pesearch.html?ver=V110722" target="_blank" rel="noopener noreferrer">P.E. (104644)</a></li>
                         <li>Eagle Scout</li>
-                        
                     </ul>
                     <h5>Coursework</h5>
                     <ul>
-                        <li><a href="http://omscs.gatech.edu/cs-6250-computer-networks" target="_blank" rel="noopener noreferrer">Computer Networks</a></li>
-                        <li><a href="http://omscs.gatech.edu/cs-6200-introduction-operating-systems" target="_blank" rel="noopener noreferrer">Intro to OS</a></li>
+                        <li><a href="http://omscs.gatech.edu/cs-6250-computer-networks" target="_blank" rel="noopener noreferrer" title="routing, SDN, BGP hijacking, and Internet measurements.">Computer Networks</a></li>
+                        <li><a href="http://omscs.gatech.edu/cs-6200-introduction-operating-systems" target="_blank" rel="noopener noreferrer" title="The practical component of the course teaches multithread programming, inter-process communication, and distributed interactions via RPC.">Intro to OS</a></li>
                         <li><a href="http://omscs.gatech.edu/cs-6300-software-development-process" target="_blank" rel="noopener noreferrer">Software Dev Process</a></li>
-                        <li><a href="https://omscs.gatech.edu/cs-6291-embedded-systems-optimization" target="_blank" rel="noopener noreferrer">Embedded System Optimization</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6291-embedded-systems-optimization" target="_blank" rel="noopener noreferrer" title="Focus on optimizing software for hardware with embedded ARM processors.">Embedded System Optimization</a></li>
                         <li><a href="https://omscs.gatech.edu/cs-6310-software-architecture-design" target="_blank" rel="noopener noreferrer">Software Design and Arch</a></li>
-                        <li><a href="https://omscs.gatech.edu/cs-6457-video-game-design" target="_blank" rel="noopener noreferrer">Video Game Design</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6457-video-game-design" target="_blank" rel="noopener noreferrer" title="Game design in Unity and C#">Video Game Design</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-7632-game-ai" target="_blank" rel="noopener noreferrer" title="Artifical Intelligence in video games.">Game AI</a></li>
                         <li><a 
                                 href="https://www.udemy.com/certificate/UC-0bda0691-7c4b-466f-a5fe-b5a171594b7a/?utm_medium=email&utm_campaign=email&utm_source=sendgrid.com" 
                                 target="_blank" 
