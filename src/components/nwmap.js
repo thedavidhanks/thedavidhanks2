@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ImageOverlay, Map, Marker, Popup } from 'react-leaflet';
+import { ImageOverlay, MapContainer, Marker, Popup } from 'react-leaflet';
 import { CRS } from 'leaflet';
 import firebase, { db } from '../firebase';
 
@@ -129,7 +129,7 @@ class NWmap extends Component {
         return (
             <div className="mapOverStyle">
                 <h4>New World</h4>
-                <Map 
+                <MapContainer 
                     center={position}
                     zoom={this.state.zoom}
                     crs={CRS.Simple}
@@ -142,7 +142,7 @@ class NWmap extends Component {
                   />
                   {this.state.newMarker ? <NewMarker position={this.state.newMarkerLatLong} handleSubmit={this.handleSubmit} handleChange={this.handleChange} newNotes={this.state.newNotes} newType={this.state.newType}/> : null}
                   {this.state.markers ? <MarkerList markers={this.state.markers} /> : null}
-                </Map>
+                </MapContainer>
             </div>
         );
   }

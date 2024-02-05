@@ -9,14 +9,14 @@ class BSnavbar extends Component {
                   <div className="collapse navbar-collapse">
                       <ul className="navbar-nav mr-auto">
                         <li className="nav-item">
-                          <NavLink className="nav-link" to="/projects" activeClassName="active">Projects<span className="sr-only">(current)</span></NavLink>
+                          <NavLink className="nav-link" to="/projects" >Projects<span className="sr-only">(current)</span></NavLink>
                         </li>
                         {true?null:
                         <li className="nav-item dropdown">
-                          <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" rel="noreferrer" activeClassName="active">Tools</NavLink>
+                          <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" rel="noreferrer" >Tools</NavLink>
                           <div className="dropdown-menu" aria-labelledby="dropdown01">
-                            <NavLink className="dropdown-item" to="/tools/nwmap" activeClassName="active">New World Map</NavLink>
-                            <NavLink className="dropdown-item" to="/tools/accumcalc" activeClassName="active">Accumulator Calculator</NavLink>
+                            <NavLink className="dropdown-item" to="/tools/nwmap" >New World Map</NavLink>
+                            <NavLink className="dropdown-item" to="/tools/accumcalc" >Accumulator Calculator</NavLink>
                           </div>
                         </li>
                         }

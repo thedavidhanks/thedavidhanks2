@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { auth, provider } from './firebase.js'
 
 import BSnavbar from './components/BSnavbar';
@@ -47,11 +47,13 @@ class App extends Component {
             <div className="container">
                 <BSnavbar user={this.state.user} login={this.login} logout={this.logout}/>
                 <div role="main" className="row contentwrapper">
-                    <Route exact path="/" component={AboutMe}/>
-                    <Route exact path="/tools" component={ToolHome}/>
-                    <Route path="/tools/nwmap" component={NWmap} />
-                    <Route path="/projects" component={ProjectHome}/>
-                    <Route path="/about" component={AboutMe}/>
+                    <Routes>
+                        <Route exact path="/" element={<AboutMe/>}/>
+                        <Route exact path="/tools" element={<ToolHome/>}/>
+                        <Route path="/tools/nwmap" element={<NWmap/>} />
+                        <Route path="/projects/*" element={<ProjectHome/>}/>
+                        <Route path="/about" element={<AboutMe/>}/>
+                    </Routes>
                 </div>
             </div>
         </BrowserRouter>
@@ -59,4 +61,5 @@ class App extends Component {
     }
 };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);

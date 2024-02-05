@@ -1,8 +1,6 @@
 import React, {useState, useEffect}  from 'react';
-import Card from 'react-bootstrap/Card';
 import Accordian from 'react-bootstrap/Accordion';
 import Select from 'react-select';
-
 
 const socialBlock = {
     fontSize: "48px", 
@@ -86,50 +84,46 @@ const AboutMe = () => {
                         across the US.  The next software project I'm tinkering with is a React-Native mobile app that allows climbers geo tag their climbing photos to help find rock climbing locations.</p>
                     <h3>These are the FAQs:</h3>
                     <Accordian>
-                        <Card>
-                            <Accordian.Toggle as={Card.Header} eventKey="0">
-                                Are you an experienced developer?
-                            </Accordian.Toggle>
-                            <Accordian.Collapse eventKey="0">
-                                <Card.Body>
-                                <p>Experinced, sure.  Professionally experienced? Kinda.  Although my professional production development is limited to about three years. I've been exploring 
-                                    computer archetecture and software for about 2 decades.  I've built a wide range of personal applications.  I've made old-skool programs with TI-BASIC and explored newer
-                                    AWS Cloud deployment.  Some of the many technologies I've gotten my hands on over the years include things like React-Native, jQuery,
-                                    mySQL, Firebase, AWS, Python, Arduino, Unity.  My skills may not appear as refined on paper, but I'm likely as savy as the next guy and way more cool.  You might be interested to know:
-                                </p>
-                                <ul>
-                                    <li>I've programmed in a plethora of languages (APEX, C, C#, C++, Java, Python, NodeJS, javaScript, VB, PHP, and even: Pascal & BASIC)</li>
-                                    <li>I have 20 yr of design and development experience.  That means I know how an ideal design process is supposed
-                                        to work and when to be flexible.  So whether you're working in a traditional, Scrum, Agile, or whatever dev 
-                                        cycle suits your team, know that I'm very familiar with a variety of design cycles.</li>
-                                    <li>I have 3 yrs of startup experience. I know what it means to wear many hats and create new processes from the ground up.</li>
-                                    <li>I'm passionate about software development, so I'm always open to learning new skills. Whether it's an AWS EC2 hosted game 
-                                        server, React/Node.js website, an Arduino GPS module, or a mySQL database populated by a PHP backend utilizing Blizzard's 
-                                        API, the effort I put into developing personal projects is a reflection of my excitement to solve the worlds problems with software.</li>
-                                    <li>I primarily develop web applications applications in React/NodeJS/mySQL</li>
-                                    <li>My <a href="./projects/">personal projects</a> range from CNC woodworking to Cellular Antenna design</li>
-                                    <li>I'm always learning and sharing about what interests me.  So you may hear me talk about my latest proejct in school, how the Heliumn network will change communications, or my latest home automation implemenation.</li>
-                                    <li>I DIMyself. Computers, Servers, LANs.  You name it.  I mean, would you trust someone how hasn't setup their own HomeAssistant sever with Zigbee and NodeRed?  I wouldn't.</li>
-                                    <li>I RTFM.</li>
-                                </ul>
-                                </Card.Body>
-                            </Accordian.Collapse>
-                        </Card>
+                            <Accordian.Item eventKey="0">
+                                <Accordian.Header>
+                                    Are you an experienced developer?
+                                </Accordian.Header>
+                                <Accordian.Body>
+                                    <p>Experinced, sure.  Professionally experienced? Kinda.  Although my professional production development is limited to about three years. I've been exploring 
+                                        computer archetecture and software for about 2 decades.  I've built a wide range of personal applications.  I've made old-skool programs with TI-BASIC and explored newer
+                                        AWS Cloud deployment.  Some of the many technologies I've gotten my hands on over the years include things like React-Native, jQuery,
+                                        mySQL, Firebase, AWS, Python, Arduino, Unity.  My skills may not appear as refined on paper, but I'm likely as savy as the next guy and way more cool.  You might be interested to know:
+                                    </p>
+                                    <ul>
+                                        <li>I've programmed in a plethora of languages (APEX, C, C#, C++, Java, Python, NodeJS, javaScript, VB, PHP, and even: Pascal & BASIC)</li>
+                                        <li>I have 20 yr of design and development experience.  That means I know how an ideal design process is supposed
+                                            to work and when to be flexible.  So whether you're working in a traditional, Scrum, Agile, or whatever dev 
+                                            cycle suits your team, know that I'm very familiar with a variety of design cycles.</li>
+                                        <li>I have 3 yrs of startup experience. I know what it means to wear many hats and create new processes from the ground up.</li>
+                                        <li>I'm passionate about software development, so I'm always open to learning new skills. Whether it's an AWS EC2 hosted game 
+                                            server, React/Node.js website, an Arduino GPS module, or a mySQL database populated by a PHP backend utilizing Blizzard's 
+                                            API, the effort I put into developing personal projects is a reflection of my excitement to solve the worlds problems with software.</li>
+                                        <li>I primarily develop web applications applications in React/NodeJS/mySQL</li>
+                                        <li>My <a href="./projects/">personal projects</a> range from CNC woodworking to Cellular Antenna design</li>
+                                        <li>I'm always learning and sharing about what interests me.  So you may hear me talk about my latest proejct in school, how the Heliumn network will change communications, or my latest home automation implemenation.</li>
+                                        <li>I DIMyself. Computers, Servers, LANs.  You name it.  I mean, would you trust someone how hasn't setup their own HomeAssistant sever with Zigbee and NodeRed?  I wouldn't.</li>
+                                        <li>I RTFM.</li>
+                                    </ul>
+                                </Accordian.Body>
+                            </Accordian.Item>
                     </Accordian>
                     <Accordian>
-                        <Card>
-                            <Accordian.Toggle as={Card.Header} eventKey="0">
-                                Are you interested in ____________?
-                            </Accordian.Toggle>
-                            <Accordian.Collapse eventKey="0">
-                                <Card.Body>
-                                <p>Quite possibly.  At the moment, I'm looking for a company that peaks my interest.  Ideally the work
-                                    would be engaging, co-workers would be enthuastic, and I'd have opportunities to develop new products.
-                                </p>
-                                <p>If you think you've found something suitable, shoot me an <a href="mailto:davidhanks@gmail.com">email</a> with the job description or give me a call.</p>
-                                </Card.Body>
-                            </Accordian.Collapse>
-                        </Card>
+                            <Accordian.Item eventKey="1">
+                                <Accordian.Header>
+                                    Are you interested in ____________?
+                                </Accordian.Header>
+                                <Accordian.Body>
+                                    <p>Quite possibly.  At the moment, I'm looking for a company that peaks my interest.  Ideally the work
+                                        would be engaging, co-workers would be enthuastic, and I'd have opportunities to develop new products.
+                                    </p>
+                                    <p>If you think you've found something suitable, shoot me an <a href="mailto:davidhanks@gmail.com">email</a> with the job description or give me a call.</p>
+                                </Accordian.Body>
+                            </Accordian.Item>
                     </Accordian>
                 </div>
                 <div className="col-md-4 certificates resumeBorder">
