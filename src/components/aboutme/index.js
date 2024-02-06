@@ -1,5 +1,4 @@
 import React, {useState, useEffect}  from 'react';
-import Accordian from 'react-bootstrap/Accordion';
 import Select from 'react-select';
 
 const socialBlock = {
@@ -11,9 +10,9 @@ const AboutMe = () => {
         {value: 'developer', label: 'developer'},
         {value: 'ide', label: 'ide'},
         {value: 'vcs', label: 'vcs'},
-        {value: 'language', label: 'progamming language'},
-        {value: 'cad', label: 'CAD'},
-        {value: 'analysis', label: 'analysis'},
+        {value: 'language', label: 'progamming languages'},
+        // {value: 'cad', label: 'CAD'},
+        // {value: 'analysis', label: 'analysis'},
         {value: 'jslibraries', label: 'Libraries'},
         {value: 'gameDesign', label: 'Game Design'}
     ]
@@ -52,79 +51,24 @@ const AboutMe = () => {
     
     return (
         <div className="resume">
-
             <div className="row">
                 <div className="col-md-8 ">
-                    <h2>About me.</h2>
-                    <p>I'm an engineer, developer, tinkerer, climber, ultimate freesbier, video gamer, eagle scout, traveller, native Cajun and husband.</p>
-                    <p>In 2002 I graduated from the University of Louisiana with a BS in Mechanical Engineering. I've spent the
-                         majority of my career developing and maintaining oil and gas product lines.  Specifically, I've worked on tongs/slips, blow-out preventers, and supporting
-                         controls.  I've been able to experience the full range of product life cycle: from developing a specification with a customer, through creating/reviewing 
-                         drawings, analyizing loads, writing and conducting tests, and installing equipment on-site.</p>
-                    <p>In more recent years, I've turned my attention to software and electronics.  I've always had an interest in computers, but around 2010 I really started to 
-                        explore new (at least to me) technologies.  I took online courses to reintroduce myself to updated HTML/CSS/Javascript. I signed up for 
-                        a DC circuits course at the local makerspace. I explored open source boards like the Arduino which had not been around when I was in school.  Ultimately in 2019, I 
-                        enrolled in a Computer Science Master's program at Georgia Tech.  So far I've completed courses on Operting Systems, Computer Networks, & Software 
-                        Development, Embedded Systems Optimizations, Game Design, and Game AI.  My Spring 2023 course is titled <a href="https://omscs.gatech.edu/cs-7646-machine-learning-trading" target="_blank"  rel="noopner noreferrer">
-                        Machine Learning for Trading.</a>  I'm excited to see where these new interests take me.
-                    </p>
-                    <h3>Computers and me</h3>
-                    <p>My first experience programming was with BASIC on my Apple IIgs in the early 90s.  My father had brought home paperbound books with sample code that you would
-                        copy into the terminal.  They were small programs: calculators, choose your own adventures, tic-tac-toe; but they were fun and engaging.  I remember not knowing how to 
-                        save the work I had done to a 5.25" floppy, so I had to enter sometimes 20 pages of code in one sitting to see the program in action.  It was fun and tedious work.
-                        The exercise taught me programming logic and debugging among other things.
-                        </p>
-                    <p>After that start, I took Pascal in high school, then some Visual Basic in college.  I setup a phoneline LAN in my college fraternity house, and some
-                        form of hardwired LAN in every home since. I learned how to setup my home computer to host a hacky PHP photo album
-                        and a phpBB forum for my family.  In 2004, when I took a year to travel, I made another PHP website to show my pictures.  Sadly, these works are lost to 
-                        the ether(net).  Version control systems were not widespread and I had no knowledge of them at the time.
-                    </p>
-                    <p>These days, my projects lean more towards web development in React within the AWS cloud infastructure.  I 
-                        created <a href="margeeanddave.com" target="_blank" rel="noopner noreferrer">margeeanddave.com</a> to track our travels 
-                        across the US.  The next software project I'm tinkering with is a React-Native mobile app that allows climbers geo tag their climbing photos to help find rock climbing locations.</p>
-                    <h3>These are the FAQs:</h3>
-                    <Accordian>
-                            <Accordian.Item eventKey="0">
-                                <Accordian.Header>
-                                    Are you an experienced developer?
-                                </Accordian.Header>
-                                <Accordian.Body>
-                                    <p>Experinced, sure.  Professionally experienced? Kinda.  Although my professional production development is limited to about three years. I've been exploring 
-                                        computer archetecture and software for about 2 decades.  I've built a wide range of personal applications.  I've made old-skool programs with TI-BASIC and explored newer
-                                        AWS Cloud deployment.  Some of the many technologies I've gotten my hands on over the years include things like React-Native, jQuery,
-                                        mySQL, Firebase, AWS, Python, Arduino, Unity.  My skills may not appear as refined on paper, but I'm likely as savy as the next guy and way more cool.  You might be interested to know:
-                                    </p>
-                                    <ul>
-                                        <li>I've programmed in a plethora of languages (APEX, C, C#, C++, Java, Python, NodeJS, javaScript, VB, PHP, and even: Pascal & BASIC)</li>
-                                        <li>I have 20 yr of design and development experience.  That means I know how an ideal design process is supposed
-                                            to work and when to be flexible.  So whether you're working in a traditional, Scrum, Agile, or whatever dev 
-                                            cycle suits your team, know that I'm very familiar with a variety of design cycles.</li>
-                                        <li>I have 3 yrs of startup experience. I know what it means to wear many hats and create new processes from the ground up.</li>
-                                        <li>I'm passionate about software development, so I'm always open to learning new skills. Whether it's an AWS EC2 hosted game 
-                                            server, React/Node.js website, an Arduino GPS module, or a mySQL database populated by a PHP backend utilizing Blizzard's 
-                                            API, the effort I put into developing personal projects is a reflection of my excitement to solve the worlds problems with software.</li>
-                                        <li>I primarily develop web applications applications in React/NodeJS/mySQL</li>
-                                        <li>My <a href="./projects/">personal projects</a> range from CNC woodworking to Cellular Antenna design</li>
-                                        <li>I'm always learning and sharing about what interests me.  So you may hear me talk about my latest proejct in school, how the Heliumn network will change communications, or my latest home automation implemenation.</li>
-                                        <li>I DIMyself. Computers, Servers, LANs.  You name it.  I mean, would you trust someone how hasn't setup their own HomeAssistant sever with Zigbee and NodeRed?  I wouldn't.</li>
-                                        <li>I RTFM.</li>
-                                    </ul>
-                                </Accordian.Body>
-                            </Accordian.Item>
-                    </Accordian>
-                    <Accordian>
-                            <Accordian.Item eventKey="1">
-                                <Accordian.Header>
-                                    Are you interested in ____________?
-                                </Accordian.Header>
-                                <Accordian.Body>
-                                    <p>Quite possibly.  At the moment, I'm looking for a company that peaks my interest.  Ideally the work
-                                        would be engaging, co-workers would be enthuastic, and I'd have opportunities to develop new products.
-                                    </p>
-                                    <p>If you think you've found something suitable, shoot me an <a href="mailto:davidhanks@gmail.com">email</a> with the job description or give me a call.</p>
-                                </Accordian.Body>
-                            </Accordian.Item>
-                    </Accordian>
+                    <h3>Greetings! I'm David Hanks.</h3>
+                    <p>I'm an engineer and developer with a passion for pushing boundaries and embracing diverse challenges. Whether scaling mountains or diving into the intricate world of software and electronics, I bring a unique blend of technical expertise and a lifelong commitment to continuous learning.</p>
+                    <p>I earned my stripes at the Georgia Institute of Technology, graduating with a Masters degree in Computer Science. My journey began in 2002 when I obtained a BS in Mechanical Engineering from the University of Louisiana. Over the years, I've honed my skills in the oil and gas industry, specializing in the development and maintenance of critical product lines such as tongs/slips, blow-out preventers, and supporting controls.</p>
+                    <p>My professional trajectory has granted me a comprehensive understanding of the product life cycle, from collaborative specification development with customers to on-site equipment installations. I thrive in dynamic environments, consistently delivering innovative solutions and leveraging my expertise in drawing creation, load analysis, test design, and execution.</p>
+                    <p>In recent years, I've expanded my horizons into the realm of software and electronics. Fueled by an innate curiosity and a desire to stay at the forefront of technology, I dived into online courses to refresh my skills in HTML, CSS, and Javascript. At the local makerspace, I delved into DC circuits, embracing hands-on learning experiences. The advent of open-source boards like Arduino captivated me, prompting a deeper exploration of this evolving landscape.</p>
+                    <p>In 2019, I embarked on a new chapter by enrolling in a Computer Science Master's program at Georgia Tech. The curriculum has exposed me to a diverse range of topics, from Operating Systems and Computer Networks to Software Development, Embedded Systems Optimizations, Game Design, and Game AI. Currently gearing up for my Spring 2023 course, "Machine Learning for Trading," I am eager to unravel the possibilities that lie ahead.</p>
+                    <p>Beyond my professional pursuits, I am an avid climber, ultimate freesbier, video gamer, and Eagle Scout. My love for exploration extends to my travels, and I take pride in being a native Cajun and devoted husband.</p>
+                    <p>As I continue to evolve professionally and personally, I am excited about the prospect of leveraging my multifaceted skills and experiences to contribute to innovative projects. I am eager to connect with like-minded professionals and explore opportunities that align with my passion for technology, problem-solving, and continuous growth. Let's build something extraordinary together!</p>
+                    <h3>My journey with computing</h3>
+                    <p>My programming journey began in the early '90s with BASIC on my Apple IIgs. My father introduced me to the world of coding through paperbound books with sample programs, from calculators to choose-your-own adventures. Despite the challenges of saving work to a 5.25" floppy disk, the process taught me programming logic and debugging - foundational skills that have stayed with me.</p>
+                    <p>Building on this foundation, I delved into Pascal in high school and later explored Visual Basic in college. I set up LANs in various environments, from my college fraternity house to every home I've lived in, fostering my interest in networking. My early ventures into web development involved creating a PHP photo album and a phpBB forum for my family.</p>
+                    <p>During a year of travel in 2004, I crafted a PHP website to showcase my experiences, demonstrating my commitment to combining technology with personal projects. Though these early works are lost to the digital ether, the lessons learned were invaluable.</p>
+                    <p>Fast forward to today, and my projects are centered around web and mobile application development in React within the AWS and Firebase infrastructure. 
+                        I've established margeeanddave.com to document our travels across the US. Currently, I'm diving into React-Native, working on a mobile app to assist 
+                        climbers in geo-tagging their photos for discovering rock climbing locations.</p>
+                    <p>This journey reflects my continuous passion for technology and showcases my evolution from early coding experiences to contemporary web and mobile development projects. I am excited about the prospect of applying these skills and experiences to contribute to innovative and challenging projects in a professional setting. Let's connect and explore the possibilities together!</p>
                 </div>
                 <div className="col-md-4 certificates resumeBorder">
                 <div className="socialDiv">
@@ -134,8 +78,8 @@ const AboutMe = () => {
                     </div>
                     <h5>Resumes</h5>
                     <ul>
-                        <li><a href="https://tdh-public-files.s3.us-east-2.amazonaws.com/resume/SeniorMechanicalEngineer.pdf" target="_blank" rel="noopener noreferrer">Sr. Mechanical Engineer</a></li>
                         <li><a href="https://tdh-public-files.s3.us-east-2.amazonaws.com/resume/SoftwareDeveloper.pdf" target="_blank" rel="noopener noreferrer">Software Developer</a></li>
+                        <li><a href="https://tdh-public-files.s3.us-east-2.amazonaws.com/resume/SeniorMechanicalEngineer.pdf" target="_blank" rel="noopener noreferrer">Sr. Mechanical Engineer</a></li>
                     </ul>
                     <h5>Certificates</h5>
                     <ul>
@@ -144,13 +88,15 @@ const AboutMe = () => {
                     </ul>
                     <h5>Coursework</h5>
                     <ul>
-                        <li><a href="http://omscs.gatech.edu/cs-6250-computer-networks" target="_blank" rel="noopener noreferrer" title="routing, SDN, BGP hijacking, and Internet measurements.">Computer Networks</a></li>
-                        <li><a href="http://omscs.gatech.edu/cs-6200-introduction-operating-systems" target="_blank" rel="noopener noreferrer" title="The practical component of the course teaches multithread programming, inter-process communication, and distributed interactions via RPC.">Intro to OS</a></li>
-                        <li><a href="http://omscs.gatech.edu/cs-6300-software-development-process" target="_blank" rel="noopener noreferrer">Software Dev Process</a></li>
+                    <li><a href="https://omscs.gatech.edu/cs-7632-game-ai" target="_blank" rel="noopener noreferrer" title="Artifical Intelligence in video games.">Game AI</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-7646-machine-learning-trading" target="_blank" rel="noopener noreferrer" title="Probabilistic machine learning approaches (linear regression, Q-Learning, KNN, and regression trees)for trading decisions.">ML for Trading</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6250-computer-networks" target="_blank" rel="noopener noreferrer" title="routing, SDN, BGP hijacking, and Internet measurements.">Computer Networks</a></li>
                         <li><a href="https://omscs.gatech.edu/cs-6291-embedded-systems-optimization" target="_blank" rel="noopener noreferrer" title="Focus on optimizing software for hardware with embedded ARM processors.">Embedded System Optimization</a></li>
                         <li><a href="https://omscs.gatech.edu/cs-6310-software-architecture-design" target="_blank" rel="noopener noreferrer">Software Design and Arch</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6200-introduction-operating-systems" target="_blank" rel="noopener noreferrer" title="The practical component of the course teaches multithread programming, inter-process communication, and distributed interactions via RPC.">Operating Systems</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6515-intro-graduate-algorithms" target="_blank" rel="noopener noreferrer" title="The main topics covered in the course include: dynamic programming; divide and conquer, including FFT; randomized algorithms, including RSA cryptosystem;  graph algorithms; max-flow algorithms; linear programming; and NP-completeness.">Graduate Algorthms</a></li>
+                        <li><a href="https://omscs.gatech.edu/cs-6300-software-development-process" target="_blank" rel="noopener noreferrer">Software Dev Process</a></li>
                         <li><a href="https://omscs.gatech.edu/cs-6457-video-game-design" target="_blank" rel="noopener noreferrer" title="Game design in Unity and C#">Video Game Design</a></li>
-                        <li><a href="https://omscs.gatech.edu/cs-7632-game-ai" target="_blank" rel="noopener noreferrer" title="Artifical Intelligence in video games.">Game AI</a></li>
                         <li><a 
                                 href="https://www.udemy.com/certificate/UC-0bda0691-7c4b-466f-a5fe-b5a171594b7a/?utm_medium=email&utm_campaign=email&utm_source=sendgrid.com" 
                                 target="_blank" 
