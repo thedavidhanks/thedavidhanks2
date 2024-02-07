@@ -3,17 +3,18 @@ import Card from 'react-bootstrap/Card';
 import { Link } from 'react-router-dom';
 
 
-const ProjectCard = (props) => (
+const ProjectCard = (props) => {
     //TODO: add background image and default
     // on hover, if an image is available show the background image 
     // and hide the body text.
     // <Card.Img src="holder.js/100px270" alt="Card image" />
     // or
     // <Card bg="info"
+    return(
     <Link to={props.endpoint} style={{ color: '#000' }}>
-    {props.imgsrc? <CardWithImageOverlay {...props} />:<CardNoOverlay {...props}/>}
+    {props.imgsrc? <CardWithImageOverlay {...props} key={props.id}/>:<CardNoOverlay {...props} key={props.id}/>}
     </Link>
-);
+)};
 export default ProjectCard;
 
 const TagBox = (props) => (
@@ -36,20 +37,20 @@ const CardWithImageOverlay = (props) => {
     };
     
     return(
-    <Card onMouseEnter={mouseEnterProjectCard} onMouseLeave={mouseLeaveProjectCard}>
-        <Card.Img src={props.imgsrc} alt="Card image" style={{opacity: imgOpacity}}/>
-        <Card.ImgOverlay>
-            <Card.Title>{props.title}</Card.Title>
-            {showText?<Card.Subtitle className="mb-2 text-muted">{props.sub}</Card.Subtitle>:null}
+    <Card onMouseEnter={mouseEnterProjectCard} onMouseLeave={mouseLeaveProjectCard} key={props.id} style={props.style}>
+        <Card.Img src={props.imgsrc} alt="Card image" style={{opacity: imgOpacity}} key={props.id}/>
+        <Card.ImgOverlay key={'cardimgover'+props.id}>
+            <Card.Title key={'cardtitle'+props.id}>{props.title}</Card.Title>
+            {showText?<Card.Subtitle className="mb-2 text-muted" key={'cardsub'+props.id}>{props.sub}</Card.Subtitle>:null}
             {showText?
-            <Card.Text>
+            <Card.Text key={'cardtext'+props.id}>
                 {props.children}
             </Card.Text>:
             null}
         </Card.ImgOverlay>
-        <Card.Footer>
-            {props.tags.map( (tag) => (
-                <TagBox tagname={tag} />
+        <Card.Footer key={'footer'+props.id}>
+            {props.tags.map( (tag, index) => (
+                <TagBox tagname={tag} key={index} />
             ))}
         </Card.Footer>
     </Card>
@@ -57,17 +58,17 @@ const CardWithImageOverlay = (props) => {
 };
 
 const CardNoOverlay = (props) => (
-    <Card bg={props.bg}>
+    <Card bg={props.bg} key={props.id} style={props.style}>
         <Card.Body>
-            <Card.Title>{props.title}</Card.Title>
-            <Card.Subtitle className="mb-2 text-muted">{props.sub}</Card.Subtitle>
-            <Card.Text>
+            <Card.Title key={props.id}>{props.title}</Card.Title>
+            <Card.Subtitle key={'cardsub'+props.id} className="mb-2 text-muted">{props.sub}</Card.Subtitle>
+            <Card.Text key={'cardtext'+props.id}>
                 {props.children}
             </Card.Text>
         </Card.Body>
-        <Card.Footer>
-            {props.tags.map( (tag) => (
-                <TagBox tagname={tag} />
+        <Card.Footer key={'footer'+props.id}>
+            {props.tags.map( (tag, index) => (
+                <TagBox tagname={tag} key={index} />
             ))}
         </Card.Footer>
     </Card>
