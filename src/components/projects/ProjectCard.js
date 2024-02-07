@@ -35,7 +35,7 @@ const CardWithImageOverlay = (props) => {
         setImgOpacity(0.4);
         setShowText(true);
     };
-    
+
     return(
     <Card onMouseEnter={mouseEnterProjectCard} onMouseLeave={mouseLeaveProjectCard} key={props.id} style={props.style}>
         <Card.Img src={props.imgsrc} alt="Card image" style={{opacity: imgOpacity}} key={props.id}/>

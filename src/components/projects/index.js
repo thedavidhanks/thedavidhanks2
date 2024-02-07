@@ -8,6 +8,7 @@ import {
 //project images
 import mimo from './mimo.png';
 import bopdiagram from './shearbopdiagram.png';
+import {styles} from './styles.js';
 
 //Project Pages
 import CricketAntenna from './pages/CricketAntenna';
@@ -109,7 +110,7 @@ const CardContainer = ({projectlist}) => {
                   key={i}
                   id={i}
                   imgsrc={project.imgsrc}
-                  style={{maxWidth: '25em', margin: '5px'}}
+                  style={styles.projectCard}
                   >
                   {project.description}
               </ProjectCard>)
