@@ -8,8 +8,6 @@ import shearweb from './slides/shearbopweb.png';
 import shearbop from './slides/shearcalcbop2.jpeg';
 import shearbopdiagram from './slides/shearbopdiagram.png';
 
-let caraselTextStyle = {'backgroundColor': "rgba(52, 52, 52, 0.4)",
-                    'borderRadius':'5px'};
 const ShearCalculator = (props) => {
 
     return(
@@ -27,10 +25,8 @@ const ShearCalculator = (props) => {
                 alt="Hydril BOP"
               />
               <Carousel.Caption>
-                <div  style={caraselTextStyle}>
                 <h3>Blow Out Preventer</h3>
                 <p>A single BOP manufactured by Hydril</p>
-                </div>
               </Carousel.Caption>
             </Carousel.Item>
             <Carousel.Item>
@@ -41,11 +37,8 @@ const ShearCalculator = (props) => {
               />
 
               <Carousel.Caption>
-                <div  style={caraselTextStyle}>
                 <h3>Shear Calculator</h3>
-                <p>The front end displays a form with content from
-                mySQL.</p>
-                </div>
+                <p>The front end displays a form with content from mySQL.</p>                
               </Carousel.Caption>
             </Carousel.Item>
             <Carousel.Item>
@@ -56,10 +49,8 @@ const ShearCalculator = (props) => {
               />
 
               <Carousel.Caption>
-                <div  style={caraselTextStyle}>
                 <h3>Force Diagram</h3>
                 <p>The calculator computes forces on the BOP piston.</p>
-                </div>
               </Carousel.Caption>
             </Carousel.Item>
           </Carousel>

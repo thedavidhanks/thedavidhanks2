@@ -7,8 +7,7 @@ import assemblyrender from './slides/kaleidoscope/FinalRender.jpg';
 
 let pic_realAssembly='https://tdh-public-files.s3.us-east-2.amazonaws.com/images/FinalKscope.jpeg'; 
 let pic_realAssembly2='https://tdh-public-files.s3.us-east-2.amazonaws.com/images/FinalKscope2.jpeg'; 
-let caraselTextStyle = {'backgroundColor': "rgba(52, 52, 52, 0.4)",
-                    'borderRadius':'5px'};
+
 const Kaleidoscope = (props) => {
 
     return(
@@ -32,10 +31,8 @@ const Kaleidoscope = (props) => {
                 alt="assembly drawing"
               />
               <Carousel.Caption>
-                <div  style={caraselTextStyle}>
                 <h3>Assembly drawing</h3>
                 <p>A drawing of the kaleidoscope generated with Fusion 360.</p>
-                </div>
               </Carousel.Caption>
             </Carousel.Item>
             <Carousel.Item>
@@ -45,10 +42,8 @@ const Kaleidoscope = (props) => {
                 alt="3d render of assembly"
               />
               <Carousel.Caption>
-                <div  style={caraselTextStyle}>
                 <h3>Rendering</h3>
                 <p>A 3d rendering of the final product created in Fusion 360.</p>
-                </div>
               </Carousel.Caption>
             </Carousel.Item>
             <Carousel.Item>
@@ -58,10 +53,8 @@ const Kaleidoscope = (props) => {
                 alt="final assembled product"
               />
               <Carousel.Caption>
-                <div  style={caraselTextStyle}>
                 <h3>Final</h3>
                 <p>The result</p>
-                </div>
               </Carousel.Caption>
             </Carousel.Item>
             <Carousel.Item>
@@ -71,10 +64,8 @@ const Kaleidoscope = (props) => {
                 alt="inside final assembled product"
               />
               <Carousel.Caption>
-                <div  style={caraselTextStyle}>
                 <h3>Guts</h3>
                 <p>A view of inside the final product</p>
-                </div>
               </Carousel.Caption>
             </Carousel.Item>
           </Carousel>
