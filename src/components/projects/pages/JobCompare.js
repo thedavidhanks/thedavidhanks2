@@ -23,20 +23,6 @@ const JobCompare = (props) => {
             <Carousel activeIndex={index} onSelect={handleSelect}>
                 <Carousel.Item>
                     <div className="d-flex justify-content-center">
-                        <iframe
-                            width="560"
-                            height="315"
-                            src="https://www.youtube.com/embed/tMfKI3OSh8Q?si=HHWrRo35mwdxZvfP"
-                            title="YouTube video player"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            referrerPolicy="strict-origin-when-cross-origin"
-                            allowFullScreen
-                        ></iframe>
-                    </div>
-                </Carousel.Item>
-                <Carousel.Item>
-                    <div className="d-flex justify-content-center">
                         <img className="d-block w-50" src={classdiagram} alt="Class diagram" />
                     </div>
                     <Carousel.Caption>
@@ -55,6 +41,19 @@ const JobCompare = (props) => {
                 </Carousel.Item>
             </Carousel>
             </Container>
+            <p>The video below demonstrates the application.</p>
+            <div className="d-flex justify-content-center">
+                <iframe
+                    width="560"
+                    height="315"
+                    src="https://www.youtube.com/embed/tMfKI3OSh8Q?si=HHWrRo35mwdxZvfP"
+                    title="Job compare app video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                ></iframe>
+            </div>
         </Container>
     );
 };
