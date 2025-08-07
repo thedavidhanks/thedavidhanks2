@@ -105,6 +105,13 @@ const AboutMe = () => {
                             AWS CCP training
                             </a>
                         </li>
+                        <li><a  href="https://www.credly.com/badges/6daffe4b-72ee-4e4d-ba31-3a0e8acbffdf/public_url" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                >
+                                AWS Cloud Quest: Cloud Practitioner
+                            </a>
+                        </li>
                         <li><a href="https://www.udemy.com/certificate/UC-U878XCQQ/" target="_blank" rel="noopener noreferrer">React/Redux</a></li>
                         <li><a href="https://www.udacity.com/course/java-programming-basics--ud282?utm_campaign=android_pathway&utm_medium=referral&utm_source=aws_s3_pdf" target="_blank" rel="noopener noreferrer">Java</a></li>
                         <li><a href="https://courses.edx.org/certificates/5906b12c3b864b4a9301b1b02d2f867f" target="_blank" rel="noopener noreferrer">jQuery</a></li>
