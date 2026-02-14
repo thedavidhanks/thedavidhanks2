@@ -1,0 +1,169 @@
+.banner{
+    background-color: #000;
+    padding-top: 10px;
+    color: #fff;
+}
+.block-links>div div{
+    padding: 0px;
+}
+.ck-button {
+    margin: 0px 10px;
+    background-color: #EFEFEF;
+    border-radius: 4px;
+    border: 1px solid #D0D0D0;
+    overflow: hidden;
+    padding: 0px;
+    text-align: center;
+}
+.ck-button label {
+    margin: 0px;
+    padding: 0px;
+}
+.ck-button label span {
+    text-align:center;
+    padding:3px 0px;
+    display:block;
+}
+.ck-button input:checked + span{
+    background-color:#911;
+    color:#fff;
+}
+
+.highlight{
+    font-weight: bold;
+}
+.leaflet-container {
+  height: 800px;
+  width: 100%;
+}
+.mapOverStyle {
+    border: 1px solid;
+    width: 100%;
+}
+.navbar{
+    padding-top: 10px;
+    margin: 0px;
+}
+.navbardiv{
+    border: 1px dashed orange;
+}
+.navbar-wrapper{
+    padding: 0px;
+    margin: 0px;
+}
+.nav-menu{
+    
+}
+.profileDiv{
+    padding: 0px;
+    margin: 0px;
+    text-align: right;
+}
+.socialDiv{
+    padding: 5px;
+    margin: 0px;
+    text-align: left;
+}
+.resume{
+    padding: 10px;
+    /*border: solid 1px #42c5f4;*/
+    border-radius: 12px;
+    width: 100%;
+    font-size: medium;
+    /*background: url("images/graph-transparent-paper-13-original.gif");*/
+}
+.resume .header{
+    font-variant: small-caps;
+    font-size: 2.5em;
+    text-align: center;
+}
+.resume .header2{
+    font-variant: small-caps;
+    font-size: 1.5em;
+    text-align: left;
+}
+
+.resume .profileImg {
+    width: 100px;
+    border-radius: 10px;
+}
+.resumeCo{
+    padding-top: 10px;
+}
+.resumeCoName{
+    font-family: Merriweather, serif;
+    font-size: 1.1em;
+}
+.resumeDates{
+    font-size: 0.75em;
+    font-variant: small-caps;
+}
+.resumeHeader{
+    font-size: 1.2em;
+}
+.resumePosition{
+    font-style: italic;
+    font-size: 1em;
+}
+.border-test{
+    border: 1px solid;
+}
+.workExperience ul{
+    list-style-type: circle outside;
+    font-size: 0.85em;
+}
+/** Tags **/
+.tagbox{
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 0px 5px;
+    margin:  0px 5px;
+}
+
+/**Bootstrap Carousel**/
+.carouselContainer{
+    border: groove grey;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.carousel-control-prev-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000' viewBox='0 0 8 8'%3E%3Cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2.5-1.5-1.5z'/%3E%3C/svg%3E") !important;
+}
+
+.carousel-control-next-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000' viewBox='0 0 8 8'%3E%3Cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 4-4-4-4z'/%3E%3C/svg%3E") !important;
+}
+
+.carousel-item {
+    min-height: 31.25em;
+    justify-content: center;
+}
+
+.carousel-caption{
+    background-color: rgba(52, 52, 52, 0.4);
+    border-radius: 5px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+body { padding-top: 90px; }
+
+/** About page **/
+.highlightSkill{
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.diminishSkill{
+    font-size: 0.65em;
+}
+
+#skillList{
+    display:block;
+}
+
+/** Home **/
+.contentwrapper{
+    margin-bottom: 60px;
+}
