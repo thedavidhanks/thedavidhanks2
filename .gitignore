@@ -1,25 +1,52 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/build
-
-# misc
-.DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-/nbproject/private/
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+build/asset-manifest.json
+build/favicon.ico
+build/index.html
+build/manifest.json
+build/static/css/main.c6396f6c.css
+build/static/css/main.c6396f6c.css.map
+build/static/js/main.6165f8e7.js
+build/static/js/main.6165f8e7.js.LICENSE.txt
+build/static/js/main.6165f8e7.js.map
+build/static/media/AssemblyDrawing.d0e02b0e7e8a4735765e.png
+build/static/media/cell-deploy1.90abffd49eb559486b7f.JPG
+build/static/media/cell-diagram.335de6560763e51b3f40.png
+build/static/media/cell-enclosure1.4ecebe8070634b70baad.jpg
+build/static/media/cell-enclosure2.8d74b8ef3a4e246af0e8.jpg
+build/static/media/cmd.ee7051c977a64829ea63.png
+build/static/media/CombinedNW.6b2343998c718732188e.png
+build/static/media/FinalRender.6a550640e861a2a75722.jpg
+build/static/media/gps1.dbadbf469dbbf99833dd.png
+build/static/media/gps2.55f1f05aef24cb5b16af.png
+build/static/media/mimo.3f9464acbf825b10dc2a.png
+build/static/media/report.f8f14eff3b836700da3f.png
+build/static/media/shearbopdiagram.779d15ddffb4b34901a0.png
+build/static/media/shearbopdiagram.f4f146022b98b17e3ce1.png
+build/static/media/shearbopweb.34db1348d2d51fe834a9.png
+build/static/media/shearcalcbop2.1aa0294884d2ea80f49a.jpeg
+build/static/media/TeamDesign.b7fee239dabdabd5959d.png
+build/static/media/UseCase.f79f86ebf3d494395ea8.png
+.env
