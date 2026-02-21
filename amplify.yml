@@ -10,7 +10,7 @@ frontend:
         # - nvm use $VERSION_NODE_22
         - npm run build
   artifacts:
-    baseDirectory: build
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
