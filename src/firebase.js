@@ -3,6 +3,11 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 
 const apikey = import.meta.env.VITE_FIREBASE_API_KEY;
+
+// if the api key is not set, throw an error
+if (!apikey) {
+    throw new Error('Firebase API key is not set. Please set the VITE_FIREBASE_API_KEY environment variable.');
+}
 const config = {
     apiKey: apikey,
     authDomain: "thedavidhanks-559b0.firebaseapp.com",
