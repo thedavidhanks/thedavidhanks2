@@ -8,6 +8,7 @@ import BSnavbar from './components/BSnavbar.jsx';
 import ToolHome from './components/tool_home.jsx';
 import ProjectHome from './components/projects/index.jsx';
 import AboutMe from './components/aboutme/index.jsx';
+import AskMe from './components/askme/index.jsx';
 import NWmap from './components/nwmap.jsx';
 import './index.css';
 
@@ -60,6 +61,7 @@ class App extends Component {
                         <Route path="/tools/nwmap" element={<NWmap/>} />
                         <Route path="/projects/*" element={<ProjectHome/>}/>
                         <Route path="/about" element={<AboutMe/>}/>
+                        <Route path="/askme" element={<AskMe/>}/>
                     </Routes>
                 </div>
             </div>

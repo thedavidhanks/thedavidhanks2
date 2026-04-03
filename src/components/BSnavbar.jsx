@@ -11,6 +11,9 @@ class BSnavbar extends Component {
                         <li className="nav-item">
                           <NavLink className="nav-link" to="/projects" >Projects<span className="sr-only">(current)</span></NavLink>
                         </li>
+                        <li className="nav-item">
+                          <NavLink className="nav-link" to="/askme">Ask Me</NavLink>
+                        </li>
                         {true?null:
                         <li className="nav-item dropdown">
                           <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" rel="noreferrer" >Tools</NavLink>
