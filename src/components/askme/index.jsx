@@ -4,31 +4,6 @@ import './askme.css';
 const API_URL = 'https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/ask';
 const API_KEY = import.meta.env.VITE_AWS_SKILLS_API_KEY;
 
-const bubbleBase = {
-    borderRadius: 12,
-    padding: '10px 16px',
-    marginBottom: 12,
-    maxWidth: '80%',
-    lineHeight: 1.6,
-    whiteSpace: 'pre-wrap',
-};
-
-const userBubbleStyle = {
-    ...bubbleBase,
-    background: '#0b93f6',
-    color: '#fff',
-    marginLeft: 'auto',
-    borderBottomRightRadius: 4,
-};
-
-const answerBubbleStyle = {
-    ...bubbleBase,
-    background: '#e5e5ea',
-    color: '#000',
-    marginRight: 'auto',
-    borderBottomLeftRadius: 4,
-};
-
 const AskMe = () => {
     const [question, setQuestion] = useState('');
     const [sessionId, setSessionId] = useState(null);
@@ -125,20 +100,20 @@ const AskMe = () => {
                     {messages.map((msg, i) => (
                         <div
                             key={i}
-                            style={msg.role === 'user' ? userBubbleStyle : answerBubbleStyle}
+                            className={`chat-bubble ${msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-answer'}`}
                         >
                             {msg.text}
                         </div>
                     ))}
 
                     {loading && !typingText && (
-                        <div style={answerBubbleStyle}>
+                        <div className="chat-bubble chat-bubble-answer">
                             <span style={{ color: '#999' }}>Thinking...</span>
                         </div>
                     )}
 
                     {typingText && (
-                        <div style={answerBubbleStyle}>
+                        <div className="chat-bubble chat-bubble-answer">
                             {typingText}
                         </div>
                     )}
