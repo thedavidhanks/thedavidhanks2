@@ -12,6 +12,7 @@ const AskMe = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const intervalRef = useRef(null);
+    const fullAnswerRef = useRef(null);
     const chatEndRef = useRef(null);
     const inputRef = useRef(null);
 
@@ -27,6 +28,7 @@ const AskMe = () => {
 
     const typeAnswer = (fullText) => {
         let i = 0;
+        fullAnswerRef.current = fullText;
         setTypingText('');
         intervalRef.current = setInterval(() => {
             i++;
@@ -34,6 +36,7 @@ const AskMe = () => {
             if (i >= fullText.length) {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
+                fullAnswerRef.current = null;
                 setTypingText('');
                 setMessages((prev) => [...prev, { role: 'answer', text: fullText }]);
             }
@@ -45,17 +48,23 @@ const AskMe = () => {
         const q = question.trim();
         if (!q) return;
 
-        setMessages((prev) => [...prev, { role: 'user', text: q }]);
-        setQuestion('');
-        setLoading(true);
-        inputRef.current?.focus();
-        setTypingText('');
-        setError('');
 
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
+            const completedAnswer = fullAnswerRef.current;
+            fullAnswerRef.current = null;
+            setTypingText('');
+            setMessages((prev) => [...prev, { role: 'answer', text: completedAnswer }, { role: 'user', text: q }]);
         }
+        else {
+            setMessages((prev) => [...prev, { role: 'user', text: q }]);
+        }
+        setQuestion('');
+        setError('');
+        setLoading(true);
+        inputRef.current?.focus();
+        setTypingText('');
 
         try {
             const response = await fetch(API_URL, {
