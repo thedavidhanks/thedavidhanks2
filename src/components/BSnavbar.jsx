@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { toollist } from './tools/toollist.jsx';
 
 function BSnavbar({ user, login, logout }) {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -24,12 +25,13 @@ function BSnavbar({ user, login, logout }) {
                       <li className="nav-item">
                         <NavLink className="nav-link" to="/askme">Ask Me</NavLink>
                       </li>
-                      {true?null:
+                      {user &&
                       <li className="nav-item dropdown">
-                        <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" rel="noreferrer" >Tools</NavLink>
+                        <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" rel="noreferrer" >Tools</NavLink>
                         <div className="dropdown-menu" aria-labelledby="dropdown01">
-                          <NavLink className="dropdown-item" to="/tools/nwmap" >New World Map</NavLink>
-                          <NavLink className="dropdown-item" to="/tools/accumcalc" >Accumulator Calculator</NavLink>
+                          {toollist.map((tool) => (
+                            <NavLink key={tool.path} className="dropdown-item" to={`/${tool.endpoint}`}>{tool.title}</NavLink>
+                          ))}
                         </div>
                       </li>
                       }
