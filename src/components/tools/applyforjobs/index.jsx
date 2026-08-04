@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import './applyforjobs.css';
 
 // TODO: update API_URL once the Bedrock backend is deployed.
 // See docs/applyforjobs-bedrock-deploy.md
 const API_URL = 'https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/apply';
 const API_KEY = import.meta.env.VITE_AWS_APPLY_API_KEY;
-
-const downloadMd = (filename, content) => {
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-};
 
 // Print stylesheet for the generated PDF (the equivalent of the Python
 // pipeline's css_path). Styles headings, tables, italics, bold, and lists.
@@ -132,7 +121,11 @@ const PDF_STYLESHEET = `
 const downloadPdf = (title, markdown) => {
     // GitHub-flavored markdown so pipe tables are parsed. marked is the
     // JS counterpart to Python's markdown.markdown(..., extensions=['extra']).
-    const html = marked.parse(markdown, { gfm: true, breaks: false });
+    // The markdown is user-editable, so sanitize the resulting HTML with
+    // DOMPurify to strip any injected scripts/event handlers before it is
+    // written into the print window.
+    const dirtyHtml = marked.parse(markdown, { gfm: true, breaks: false });
+    const html = DOMPurify.sanitize(dirtyHtml);
 
     const printWindow = window.open('', '_blank', 'width=816,height=1056');
     if (!printWindow) {
@@ -155,6 +148,22 @@ const downloadPdf = (title, markdown) => {
         printWindow.onafterprint = () => printWindow.close();
     };
 };
+
+// Inline print icon so no icon-font dependency is needed.
+const PrintIcon = () => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 16 16"
+        fill="currentColor"
+        aria-hidden="true"
+        style={{ verticalAlign: '-2px', marginRight: '4px' }}
+    >
+        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
+        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a1 1 0 0 0-1 1v3h8v-3a1 1 0 0 0-1-1H5zm7 2h2a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2V9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1z" />
+    </svg>
+);
 
 const ApplyForJobs = () => {
     const [jobPosting, setJobPosting] = useState('');
@@ -280,19 +289,20 @@ const ApplyForJobs = () => {
                             <div className="d-flex gap-2">
                                 <button
                                     className="btn btn-sm btn-outline-primary"
-                                    onClick={() => downloadMd('cover-letter.md', result.coverLetter)}
-                                >
-                                    Download .md
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-outline-primary"
                                     onClick={() => downloadPdf('Cover Letter', result.coverLetter)}
                                 >
-                                    Download PDF
+                                    <PrintIcon />
                                 </button>
                             </div>
                         </div>
-                        <pre>{result.coverLetter}</pre>
+                        <textarea
+                            className="applyforjobs-editor form-control"
+                            aria-label="Cover letter markdown (editable)"
+                            value={result.coverLetter}
+                            onChange={(e) =>
+                                setResult((r) => ({ ...r, coverLetter: e.target.value }))
+                            }
+                        />
                     </div>
 
                     <div className="applyforjobs-result">
@@ -301,19 +311,20 @@ const ApplyForJobs = () => {
                             <div className="d-flex gap-2">
                                 <button
                                     className="btn btn-sm btn-outline-primary"
-                                    onClick={() => downloadMd('resume.md', result.resume)}
-                                >
-                                    Download .md
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-outline-primary"
                                     onClick={() => downloadPdf('Resume', result.resume)}
                                 >
-                                    Download PDF
+                                    <PrintIcon />
                                 </button>
                             </div>
                         </div>
-                        <pre>{result.resume}</pre>
+                        <textarea
+                            className="applyforjobs-editor form-control"
+                            aria-label="Resume markdown (editable)"
+                            value={result.resume}
+                            onChange={(e) =>
+                                setResult((r) => ({ ...r, resume: e.target.value }))
+                            }
+                        />
                     </div>
 
                     <button className="btn btn-outline-secondary" onClick={startOver}>
