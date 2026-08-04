@@ -1,0 +1,40 @@
+.applyforjobs-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+@media (min-width: 1200px) {
+    .applyforjobs-container {
+        max-width: 75%;
+    }
+}
+
+.applyforjobs-result {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.applyforjobs-result pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: 0.95rem;
+    margin: 0 0 12px 0;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #fff;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #e5e5ea;
+}
+
+.applyforjobs-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}

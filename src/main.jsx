@@ -5,11 +5,10 @@ import { auth, provider } from './firebase.js'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import BSnavbar from './components/BSnavbar.jsx';
-import ToolHome from './components/tool_home.jsx';
+import ToolHome from './components/tools/index.jsx';
 import ProjectHome from './components/projects/index.jsx';
 import AboutMe from './components/aboutme/index.jsx';
 import AskMe from './components/askme/index.jsx';
-import NWmap from './components/nwmap.jsx';
 import './index.css';
 
 // export default function App() {
@@ -57,8 +56,7 @@ class App extends Component {
                 <div role="main" className="row contentwrapper">
                     <Routes>
                         <Route path="/" element={<AboutMe/>}/>
-                        <Route path="/tools" element={<ToolHome/>}/>
-                        <Route path="/tools/nwmap" element={<NWmap/>} />
+                        <Route path="/tools/*" element={<ToolHome user={this.state.user} login={this.login}/>}/>
                         <Route path="/projects/*" element={<ProjectHome/>}/>
                         <Route path="/about" element={<AboutMe/>}/>
                         <Route path="/askme" element={<AskMe/>}/>
