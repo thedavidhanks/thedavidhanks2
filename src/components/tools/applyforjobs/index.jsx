@@ -238,7 +238,7 @@ const ApplyForJobs = () => {
                         <textarea
                             id="jobPosting"
                             className="form-control"
-                            rows={10}
+                            rows={20}
                             placeholder="Paste the job description here..."
                             value={jobPosting}
                             onChange={(e) => setJobPosting(e.target.value)}

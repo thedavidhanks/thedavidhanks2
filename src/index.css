@@ -167,3 +167,20 @@ body { padding-top: 90px; }
 .contentwrapper{
     margin-bottom: 60px;
 }
+
+/** App shell — responsive page width **/
+.app-shell{
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+@media (min-width: 1024px) {
+    .app-shell{
+        width: 90%;
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}

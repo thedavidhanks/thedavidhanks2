@@ -1,12 +1,14 @@
 .applyforjobs-container {
+    flex: 1 1 auto; /* fill the flex .row instead of shrinking to content */
+    min-width: 0;   /* allow the flex item to shrink below content's intrinsic width */
     max-width: 800px;
     margin: 0 auto;
     padding: 20px 0;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
     .applyforjobs-container {
-        max-width: 75%;
+        max-width: 100%;
     }
 }
 
@@ -33,14 +35,17 @@
 }
 
 .applyforjobs-editor {
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
     white-space: pre-wrap;
     word-wrap: break-word;
     font-family: inherit;
     font-size: 0.95rem;
     margin: 0 0 12px 0;
-    min-height: 240px;
-    max-height: 400px;
-    overflow-y: auto;
+    min-height: 34em; /* ~20 rows at 1.6 line-height */
+    max-height: 40em;
+    overflow: auto;
     resize: vertical;
     background: #fff;
     padding: 12px;

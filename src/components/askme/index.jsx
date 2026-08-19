@@ -94,7 +94,7 @@ const AskMe = () => {
     const hasMessages = messages.length > 0 || typingText || loading;
 
     return (
-        <div className="resume askme-container" style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', height: '80vh' }}>
+        <div className="resume askme-container" style={{ margin: '0 auto', display: 'flex', flexDirection: 'column', height: '80vh' }}>
             {!hasMessages && (
                 <div style={{ textAlign: 'center', marginBottom: 30, marginTop: 60 }}>
                     <h3>Ask Me Anything</h3>

@@ -1,6 +1,10 @@
-@media (min-width: 1200px) {
+.askme-container {
+  max-width: 700px;
+}
+
+@media (min-width: 1024px) {
   .askme-container {
-    max-width: 75% !important;
+    max-width: 100% !important;
   }
 }
 

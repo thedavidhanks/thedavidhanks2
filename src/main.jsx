@@ -51,7 +51,7 @@ class App extends Component {
 
         return (
         <BrowserRouter>
-            <div className="container">
+            <div className="app-shell">
                 <BSnavbar user={this.state.user} login={this.login} logout={this.logout}/>
                 <div role="main" className="row contentwrapper">
                     <Routes>
