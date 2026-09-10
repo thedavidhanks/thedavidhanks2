@@ -1,0 +1,85 @@
+{
+  "name": "thedavidhanks (Vite + React 19, Node 22)",
+
+  // Matches Amplify's build environment: Debian + Node 22 (see .nvmrc / engines.node).
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22-bookworm",
+
+  "features": {
+    // Installs the Claude Code CLI and the anthropic.claude-code VS Code extension.
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/dhoeric/features/google-cloud-cli:1": {}
+  },
+
+  // node_modules lives in a container-only volume so the Windows host's
+  // (win32) install and the container's (linux) install never overwrite each
+  // other -- esbuild/rollup ship platform-specific native binaries.
+  "mounts": [
+    {
+      "source": "thedavidhanks-node_modules",
+      "target": "${containerWorkspaceFolder}/node_modules",
+      "type": "volume"
+    },
+    {
+      "source": "thedavidhanks-claude",
+      "target": "/home/node/.claude",
+      "type": "volume"
+    },
+    {
+      "source": "gcloud-config",
+      "target": "/home/node/.config/gcloud",
+      "type": "volume"
+    },
+    // Host ~/.claude, exposed read-only alongside (not on top of) the
+    // container's own config. setup.sh links the portable parts across.
+    // Mounting it directly at /home/node/.claude would be wrong: plugins/
+    // records absolute Windows installPaths, and the container would rewrite
+    // them with Linux paths, breaking the host setup.
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/node/.claude-host,type=bind,readonly"
+  ],
+
+  // Volumes are created root-owned; hand them to the non-root user first.
+  "onCreateCommand": "bash ${containerWorkspaceFolder}/.devcontainer/setup.sh ${containerWorkspaceFolder}",
+  "postCreateCommand": "npm ci",
+
+  "forwardPorts": [5173, 4173],
+  "portsAttributes": {
+    "5173": { "label": "vite dev", "onAutoForward": "openPreview" },
+    "4173": { "label": "vite preview", "onAutoForward": "silent" }
+  },
+
+
+  "remoteUser": "node",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Claude
+        "anthropic.claude-code",
+
+        // Lint / language support for this stack
+        "dbaeumer.vscode-eslint",
+        "dsznajder.es7-react-js-snippets",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+
+        // Deploy target + config files
+        "amazonwebservices.aws-toolkit-vscode",
+        "redhat.vscode-yaml",
+        "mikestead.dotenv"
+      ],
+      "settings": {
+        "editor.formatOnSave": false,
+        "eslint.useFlatConfig": true,
+        "eslint.validate": ["javascript", "javascriptreact"],
+        "files.eol": "\n",
+        "javascript.preferences.importModuleSpecifierEnding": "js",
+        "search.exclude": {
+          "**/node_modules": true,
+          "**/dist": true,
+          "**/nbproject": true
+        }
+      }
+    }
+  }
+}
