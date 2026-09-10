@@ -8,7 +8,7 @@ class MenuItem extends Component {
     render(){
         return <li className="nav-item" onClick={this.onClicked}><a className="nav-link" href={this.state.linkPath}>{this.state.linkName}</a></li>;
     }  
-    onClicked(event){
+    onClicked(){
         //Do this when clicked
     }
 };

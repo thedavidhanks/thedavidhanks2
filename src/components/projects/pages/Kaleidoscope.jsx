@@ -8,7 +8,7 @@ import assemblyrender from './slides/kaleidoscope/FinalRender.jpg';
 let pic_realAssembly='https://tdh-public-files.s3.us-east-2.amazonaws.com/images/FinalKscope.jpeg'; 
 let pic_realAssembly2='https://tdh-public-files.s3.us-east-2.amazonaws.com/images/FinalKscope2.jpeg'; 
 
-const Kaleidoscope = (props) => {
+const Kaleidoscope = () => {
 
     return(
     <Container>

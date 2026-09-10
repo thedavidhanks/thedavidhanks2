@@ -33,9 +33,15 @@ const ToolHome = ({ user, login }) => {
         return <Route key={i} path={tool.path} element={element} />;
     });
 
+    // The card grid only advertises tools the visitor can actually use, so
+    // auth-gated tools stay hidden until someone logs in. Routes are still
+    // built from the full toollist above, so a direct link to a gated tool
+    // renders the RequireAuth login prompt rather than a 404.
+    const visibleTools = toollist.filter((tool) => user || !tool.requireAuth);
+
     return (
         <Routes>
-            <Route path="/" element={<CardContainer tools={toollist} />} />
+            <Route path="/" element={<CardContainer tools={visibleTools} />} />
             {toolRoutes}
         </Routes>
     );

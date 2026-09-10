@@ -7,7 +7,7 @@ import deployed1 from './slides/cell-deploy1.JPG';
 import enclosure1 from './slides/cell-enclosure1.jpg';
 import enclosure2 from './slides/cell-enclosure2.jpg';
 
-const CricketAntenna = (props) => {
+const CricketAntenna = () => {
     
     
     return (

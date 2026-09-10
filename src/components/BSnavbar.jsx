@@ -5,6 +5,11 @@ import { toollist } from './tools/toollist.jsx';
 function BSnavbar({ user, login, logout }) {
     const [menuOpen, setMenuOpen] = useState(false);
 
+    // Mirrors the card grid in tools/index.jsx: only advertise tools the
+    // visitor can actually use, so auth-gated tools stay out of the dropdown
+    // until someone logs in.
+    const visibleTools = toollist.filter((tool) => user || !tool.requireAuth);
+
     return (
             <div className="navbar navbar-expand-md navbar-dark bg-dark fixed-top row">
                 <a className="navbar-brand" href="/">TheDavidHanks</a>
@@ -25,16 +30,14 @@ function BSnavbar({ user, login, logout }) {
                       <li className="nav-item">
                         <NavLink className="nav-link" to="/askme">Ask Me</NavLink>
                       </li>
-                      {user &&
                       <li className="nav-item dropdown">
                         <NavLink className="nav-link dropdown-toggle" to="/tools" id="dropdown01" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" rel="noreferrer" >Tools</NavLink>
                         <div className="dropdown-menu" aria-labelledby="dropdown01">
-                          {toollist.map((tool) => (
+                          {visibleTools.map((tool) => (
                             <NavLink key={tool.path} className="dropdown-item" to={`/${tool.endpoint}`}>{tool.title}</NavLink>
                           ))}
                         </div>
                       </li>
-                      }
                     </ul>
                     <div className=" my-2 my-lg-0">
                     {user ? <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={logout}>Logout</button> : <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={login}>Login</button>}

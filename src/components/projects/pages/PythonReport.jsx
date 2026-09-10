@@ -5,7 +5,7 @@ import Carousel from 'react-bootstrap/Carousel';
 import pythonreportcmd from './slides/pythonreport/cmd.png';
 import report from './slides/pythonreport/report.png';
 
-const PythonReport = (props) => {
+const PythonReport = () => {
 
     return(
     <Container>

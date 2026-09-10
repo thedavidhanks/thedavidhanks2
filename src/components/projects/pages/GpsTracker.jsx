@@ -6,7 +6,7 @@ import gpsbox from './slides/gps1.png';
 import gpsmap from './slides/gps2.png';
 
 
-const GpsTracker = (props) => {
+const GpsTracker = () => {
     return(
     <Container>
         <h3>GPS Tracker</h3>

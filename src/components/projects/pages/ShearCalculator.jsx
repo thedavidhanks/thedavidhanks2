@@ -8,7 +8,7 @@ import shearweb from './slides/shearbopweb.png';
 import shearbop from './slides/shearcalcbop2.jpeg';
 import shearbopdiagram from './slides/shearbopdiagram.png';
 
-const ShearCalculator = (props) => {
+const ShearCalculator = () => {
 
     return(
     <Container>

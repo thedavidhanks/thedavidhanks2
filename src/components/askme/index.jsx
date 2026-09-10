@@ -85,7 +85,7 @@ const AskMe = () => {
             const answer = data.answer || data.body || JSON.stringify(data);
             setLoading(false);
             typeAnswer(answer);
-        } catch (err) {
+        } catch {
             setLoading(false);
             setError('Something went wrong. Please try again.');
         }

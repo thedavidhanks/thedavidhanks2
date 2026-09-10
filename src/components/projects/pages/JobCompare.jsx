@@ -5,7 +5,7 @@ import Carousel from 'react-bootstrap/Carousel';
 import classdiagram from './slides/jobApp/TeamDesign.png';
 import usecasediagram from './slides/jobApp/UseCase.png';
 
-const JobCompare = (props) => {
+const JobCompare = () => {
     const [index, setIndex] = useState(0);
 
     const handleSelect = (selectedIndex) => {
