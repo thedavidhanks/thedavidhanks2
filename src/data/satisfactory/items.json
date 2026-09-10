@@ -1,0 +1,1505 @@
+{
+  "gameVersion": "1.1",
+  "source": "CommunityResources/Docs/en-US.json (shipped with the game)",
+  "generator": "scripts/build-satisfactory-data.ts",
+  "note": "sinkPoints: null means the item cannot be fed to the AWESOME Sink. Fluids and gases are null because the Sink has a conveyor input and no pipe input (their packaged forms are sinkable); everything else that is null carries mResourceSinkPoints = 0 in the game data -- alien remains and protein, consumable mushrooms/nuts/berries, Power Slugs and Shards, Mercer Spheres, Somersloops, and Uranium/Plutonium Waste and their derivatives. Ammo, equipment and plain Uranium ARE sinkable.",
+  "items": [
+    {
+      "id": "adaptive-control-unit",
+      "name": "Adaptive Control Unit",
+      "className": "Desc_SpaceElevatorPart_5_C",
+      "sinkPoints": 76368,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ai-expansion-server",
+      "name": "AI Expansion Server",
+      "className": "Desc_SpaceElevatorPart_12_C",
+      "sinkPoints": 597652,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ai-limiter",
+      "name": "AI Limiter",
+      "className": "Desc_CircuitBoardHighSpeed_C",
+      "sinkPoints": 920,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "alclad-aluminum-sheet",
+      "name": "Alclad Aluminum Sheet",
+      "className": "Desc_AluminumPlate_C",
+      "sinkPoints": 266,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "alien-dna-capsule",
+      "name": "Alien DNA Capsule",
+      "className": "Desc_AlienDNACapsule_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "alien-power-matrix",
+      "name": "Alien Power Matrix",
+      "className": "Desc_AlienPowerFuel_C",
+      "sinkPoints": 210,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "alien-protein",
+      "name": "Alien Protein",
+      "className": "Desc_AlienProtein_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "alumina-solution",
+      "name": "Alumina Solution",
+      "className": "Desc_AluminaSolution_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "aluminum-casing",
+      "name": "Aluminum Casing",
+      "className": "Desc_AluminumCasing_C",
+      "sinkPoints": 393,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "aluminum-ingot",
+      "name": "Aluminum Ingot",
+      "className": "Desc_AluminumIngot_C",
+      "sinkPoints": 131,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "aluminum-scrap",
+      "name": "Aluminum Scrap",
+      "className": "Desc_AluminumScrap_C",
+      "sinkPoints": 27,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "assembly-director-system",
+      "name": "Assembly Director System",
+      "className": "Desc_SpaceElevatorPart_7_C",
+      "sinkPoints": 500176,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "automated-wiring",
+      "name": "Automated Wiring",
+      "className": "Desc_SpaceElevatorPart_3_C",
+      "sinkPoints": 1440,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ballistic-warp-drive",
+      "name": "Ballistic Warp Drive",
+      "className": "Desc_SpaceElevatorPart_11_C",
+      "sinkPoints": 2895334,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "battery",
+      "name": "Battery",
+      "className": "Desc_Battery_C",
+      "sinkPoints": 465,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "bauxite",
+      "name": "Bauxite",
+      "className": "Desc_OreBauxite_C",
+      "sinkPoints": 8,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "biochemical-sculptor",
+      "name": "Biochemical Sculptor",
+      "className": "Desc_SpaceElevatorPart_10_C",
+      "sinkPoints": 301778,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "className": "Desc_GenericBiomass_C",
+      "sinkPoints": 12,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "black-powder",
+      "name": "Black Powder",
+      "className": "Desc_Gunpowder_C",
+      "sinkPoints": 14,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "blade-runners",
+      "name": "Blade Runners",
+      "className": "BP_EquipmentDescriptorJumpingStilts_C",
+      "sinkPoints": 4088,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "blue-ficsmas-ornament",
+      "name": "Blue FICSMAS Ornament",
+      "className": "Desc_XmasBall2_C",
+      "sinkPoints": 1,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "blue-power-slug",
+      "name": "Blue Power Slug",
+      "className": "Desc_Crystal_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "cable",
+      "name": "Cable",
+      "className": "Desc_Cable_C",
+      "sinkPoints": 24,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "candy-cane",
+      "name": "Candy Cane",
+      "className": "Desc_CandyCane_C",
+      "sinkPoints": 6,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "candy-cane-basher",
+      "name": "Candy Cane Basher",
+      "className": "BP_EquipmentDescriptorCandyCane_C",
+      "sinkPoints": 7850,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "caterium-ingot",
+      "name": "Caterium Ingot",
+      "className": "Desc_GoldIngot_C",
+      "sinkPoints": 42,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "caterium-ore",
+      "name": "Caterium Ore",
+      "className": "Desc_OreGold_C",
+      "sinkPoints": 7,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "chainsaw",
+      "name": "Chainsaw",
+      "className": "Desc_Chainsaw_C",
+      "sinkPoints": 2760,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "circuit-board",
+      "name": "Circuit Board",
+      "className": "Desc_CircuitBoard_C",
+      "sinkPoints": 696,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "cluster-nobelisk",
+      "name": "Cluster Nobelisk",
+      "className": "Desc_NobeliskCluster_C",
+      "sinkPoints": 1376,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "coal",
+      "name": "Coal",
+      "className": "Desc_Coal_C",
+      "sinkPoints": 3,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "compacted-coal",
+      "name": "Compacted Coal",
+      "className": "Desc_CompactedCoal_C",
+      "sinkPoints": 28,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "computer",
+      "name": "Computer",
+      "className": "Desc_Computer_C",
+      "sinkPoints": 8352,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "concrete",
+      "name": "Concrete",
+      "className": "Desc_Cement_C",
+      "sinkPoints": 12,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "cooling-system",
+      "name": "Cooling System",
+      "className": "Desc_CoolingSystem_C",
+      "sinkPoints": 12006,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "copper-ficsmas-ornament",
+      "name": "Copper FICSMAS Ornament",
+      "className": "Desc_XmasBall3_C",
+      "sinkPoints": 32,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "copper-ingot",
+      "name": "Copper Ingot",
+      "className": "Desc_CopperIngot_C",
+      "sinkPoints": 6,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "copper-ore",
+      "name": "Copper Ore",
+      "className": "Desc_OreCopper_C",
+      "sinkPoints": 3,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "copper-powder",
+      "name": "Copper Powder",
+      "className": "Desc_CopperDust_C",
+      "sinkPoints": 72,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "copper-sheet",
+      "name": "Copper Sheet",
+      "className": "Desc_CopperSheet_C",
+      "sinkPoints": 24,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "crude-oil",
+      "name": "Crude Oil",
+      "className": "Desc_LiquidOil_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "crystal-oscillator",
+      "name": "Crystal Oscillator",
+      "className": "Desc_CrystalOscillator_C",
+      "sinkPoints": 3072,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "dark-matter-crystal",
+      "name": "Dark Matter Crystal",
+      "className": "Desc_DarkMatter_C",
+      "sinkPoints": 1780,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "dark-matter-residue",
+      "name": "Dark Matter Residue",
+      "className": "Desc_DarkEnergy_C",
+      "sinkPoints": null,
+      "form": "RF_GAS",
+      "category": "gas"
+    },
+    {
+      "id": "diamonds",
+      "name": "Diamonds",
+      "className": "Desc_Diamond_C",
+      "sinkPoints": 240,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "dissolved-silica",
+      "name": "Dissolved Silica",
+      "className": "Desc_DissolvedSilica_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "electromagnetic-control-rod",
+      "name": "Electromagnetic Control Rod",
+      "className": "Desc_ElectromagneticControlRod_C",
+      "sinkPoints": 2560,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "empty-canister",
+      "name": "Empty Canister",
+      "className": "Desc_FluidCanister_C",
+      "sinkPoints": 60,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "empty-fluid-tank",
+      "name": "Empty Fluid Tank",
+      "className": "Desc_GasTank_C",
+      "sinkPoints": 170,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "encased-industrial-beam",
+      "name": "Encased Industrial Beam",
+      "className": "Desc_SteelPlateReinforced_C",
+      "sinkPoints": 528,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "encased-plutonium-cell",
+      "name": "Encased Plutonium Cell",
+      "className": "Desc_PlutoniumCell_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "encased-uranium-cell",
+      "name": "Encased Uranium Cell",
+      "className": "Desc_UraniumCell_C",
+      "sinkPoints": 147,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "excited-photonic-matter",
+      "name": "Excited Photonic Matter",
+      "className": "Desc_QuantumEnergy_C",
+      "sinkPoints": null,
+      "form": "RF_GAS",
+      "category": "gas"
+    },
+    {
+      "id": "explosive-rebar",
+      "name": "Explosive Rebar",
+      "className": "Desc_Rebar_Explosive_C",
+      "sinkPoints": 360,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "fabric",
+      "name": "Fabric",
+      "className": "Desc_Fabric_C",
+      "sinkPoints": 140,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "factory-carttm",
+      "name": "Factory Cart™",
+      "className": "Desc_GolfCart_C",
+      "sinkPoints": 1552,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "fancy-fireworks",
+      "name": "Fancy Fireworks",
+      "className": "Desc_Fireworks_Projectile_02_C",
+      "sinkPoints": 40,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "ficsite-ingot",
+      "name": "Ficsite Ingot",
+      "className": "Desc_FicsiteIngot_C",
+      "sinkPoints": 1936,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsite-trigon",
+      "name": "Ficsite Trigon",
+      "className": "Desc_FicsiteMesh_C",
+      "sinkPoints": 1291,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsmas-actual-snow",
+      "name": "FICSMAS Actual Snow",
+      "className": "Desc_Snow_C",
+      "sinkPoints": 5,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsmas-bow",
+      "name": "FICSMAS Bow",
+      "className": "Desc_XmasBow_C",
+      "sinkPoints": 4,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsmas-gift",
+      "name": "FICSMAS Gift",
+      "className": "Desc_Gift_C",
+      "sinkPoints": 1,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsmas-ornament-bundle",
+      "name": "FICSMAS Ornament Bundle",
+      "className": "Desc_XmasBallCluster_C",
+      "sinkPoints": 100,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsmas-tree-branch",
+      "name": "FICSMAS Tree Branch",
+      "className": "Desc_XmasBranch_C",
+      "sinkPoints": 2,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsmas-wonder-star",
+      "name": "FICSMAS Wonder Star",
+      "className": "Desc_XmasStar_C",
+      "sinkPoints": 6540,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsmas-wreath",
+      "name": "FICSMAS Wreath",
+      "className": "Desc_XmasWreath_C",
+      "sinkPoints": 630,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsonium",
+      "name": "Ficsonium",
+      "className": "Desc_Ficsonium_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ficsonium-fuel-rod",
+      "name": "Ficsonium Fuel Rod",
+      "className": "Desc_FicsoniumFuelRod_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "fuel",
+      "name": "Fuel",
+      "className": "Desc_LiquidFuel_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "fused-modular-frame",
+      "name": "Fused Modular Frame",
+      "className": "Desc_ModularFrameFused_C",
+      "sinkPoints": 62840,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "gas-filter",
+      "name": "Gas Filter",
+      "className": "Desc_Filter_C",
+      "sinkPoints": 608,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "gas-mask",
+      "name": "Gas Mask",
+      "className": "BP_EquipmentDescriptorGasmask_C",
+      "sinkPoints": 14960,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "gas-nobelisk",
+      "name": "Gas Nobelisk",
+      "className": "Desc_NobeliskGas_C",
+      "sinkPoints": 544,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "golden-factory-carttm",
+      "name": "Golden Factory Cart™",
+      "className": "Desc_GolfCartGold_C",
+      "sinkPoints": 1852,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "hatcher-remains",
+      "name": "Hatcher Remains",
+      "className": "Desc_HatcherParts_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "hazmat-suit",
+      "name": "Hazmat Suit",
+      "className": "BP_EquipmentDescriptorHazmatSuit_C",
+      "sinkPoints": 54100,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "heat-sink",
+      "name": "Heat Sink",
+      "className": "Desc_AluminumPlateReinforced_C",
+      "sinkPoints": 2804,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "heavy-modular-frame",
+      "name": "Heavy Modular Frame",
+      "className": "Desc_ModularFrameHeavy_C",
+      "sinkPoints": 10800,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "heavy-oil-residue",
+      "name": "Heavy Oil Residue",
+      "className": "Desc_HeavyOilResidue_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "high-speed-connector",
+      "name": "High-Speed Connector",
+      "className": "Desc_HighSpeedConnector_C",
+      "sinkPoints": 3776,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "hog-remains",
+      "name": "Hog Remains",
+      "className": "Desc_HogParts_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "homing-rifle-ammo",
+      "name": "Homing Rifle Ammo",
+      "className": "Desc_CartridgeSmartProjectile_C",
+      "sinkPoints": 855,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "hoverpack",
+      "name": "Hoverpack",
+      "className": "BP_EquipmentDescriptorHoverPack_C",
+      "sinkPoints": 265632,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "iodine-infused-filter",
+      "name": "Iodine-Infused Filter",
+      "className": "Desc_HazmatFilter_C",
+      "sinkPoints": 2274,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "ionized-fuel",
+      "name": "Ionized Fuel",
+      "className": "Desc_IonizedFuel_C",
+      "sinkPoints": null,
+      "form": "RF_GAS",
+      "category": "gas"
+    },
+    {
+      "id": "iron-ficsmas-ornament",
+      "name": "Iron FICSMAS Ornament",
+      "className": "Desc_XmasBall4_C",
+      "sinkPoints": 18,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "iron-ingot",
+      "name": "Iron Ingot",
+      "className": "Desc_IronIngot_C",
+      "sinkPoints": 2,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "iron-ore",
+      "name": "Iron Ore",
+      "className": "Desc_OreIron_C",
+      "sinkPoints": 1,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "iron-plate",
+      "name": "Iron Plate",
+      "className": "Desc_IronPlate_C",
+      "sinkPoints": 6,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "iron-rebar",
+      "name": "Iron Rebar",
+      "className": "Desc_SpikedRebar_C",
+      "sinkPoints": 8,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "iron-rod",
+      "name": "Iron Rod",
+      "className": "Desc_IronRod_C",
+      "sinkPoints": 4,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "jetpack",
+      "name": "Jetpack",
+      "className": "BP_EquipmentDescriptorJetPack_C",
+      "sinkPoints": 16580,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "leaves",
+      "name": "Leaves",
+      "className": "Desc_Leaves_C",
+      "sinkPoints": 3,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "limestone",
+      "name": "Limestone",
+      "className": "Desc_Stone_C",
+      "sinkPoints": 2,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "liquid-biofuel",
+      "name": "Liquid Biofuel",
+      "className": "Desc_LiquidBiofuel_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "magnetic-field-generator",
+      "name": "Magnetic Field Generator",
+      "className": "Desc_SpaceElevatorPart_6_C",
+      "sinkPoints": 11000,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "medicinal-inhaler",
+      "name": "Medicinal Inhaler",
+      "className": "Desc_Medkit_C",
+      "sinkPoints": 125,
+      "form": "RF_SOLID",
+      "category": "consumable"
+    },
+    {
+      "id": "modular-engine",
+      "name": "Modular Engine",
+      "className": "Desc_SpaceElevatorPart_4_C",
+      "sinkPoints": 9960,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "modular-frame",
+      "name": "Modular Frame",
+      "className": "Desc_ModularFrame_C",
+      "sinkPoints": 408,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "motor",
+      "name": "Motor",
+      "className": "Desc_Motor_C",
+      "sinkPoints": 1520,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "mycelia",
+      "name": "Mycelia",
+      "className": "Desc_Mycelia_C",
+      "sinkPoints": 10,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "neural-quantum-processor",
+      "name": "Neural-Quantum Processor",
+      "className": "Desc_TemporalProcessor_C",
+      "sinkPoints": 248034,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "nitric-acid",
+      "name": "Nitric Acid",
+      "className": "Desc_NitricAcid_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "nitrogen-gas",
+      "name": "Nitrogen Gas",
+      "className": "Desc_NitrogenGas_C",
+      "sinkPoints": null,
+      "form": "RF_GAS",
+      "category": "gas"
+    },
+    {
+      "id": "nobelisk",
+      "name": "Nobelisk",
+      "className": "Desc_NobeliskExplosive_C",
+      "sinkPoints": 152,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "nobelisk-detonator",
+      "name": "Nobelisk Detonator",
+      "className": "BP_EquipmentDescriptorNobeliskDetonator_C",
+      "sinkPoints": 6480,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "non-fissile-uranium",
+      "name": "Non-Fissile Uranium",
+      "className": "Desc_NonFissibleUranium_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "nuclear-pasta",
+      "name": "Nuclear Pasta",
+      "className": "Desc_SpaceElevatorPart_9_C",
+      "sinkPoints": 538976,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "nuke-nobelisk",
+      "name": "Nuke Nobelisk",
+      "className": "Desc_NobeliskNuke_C",
+      "sinkPoints": 19600,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "object-scanner",
+      "name": "Object Scanner",
+      "className": "BP_EquipmentDescriptorObjectScanner_C",
+      "sinkPoints": 1400,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "packaged-alumina-solution",
+      "name": "Packaged Alumina Solution",
+      "className": "Desc_PackagedAlumina_C",
+      "sinkPoints": 160,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "packaged-fuel",
+      "name": "Packaged Fuel",
+      "className": "Desc_Fuel_C",
+      "sinkPoints": 270,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "packaged-heavy-oil-residue",
+      "name": "Packaged Heavy Oil Residue",
+      "className": "Desc_PackagedOilResidue_C",
+      "sinkPoints": 180,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "packaged-ionized-fuel",
+      "name": "Packaged Ionized Fuel",
+      "className": "Desc_PackagedIonizedFuel_C",
+      "sinkPoints": 5246,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "packaged-liquid-biofuel",
+      "name": "Packaged Liquid Biofuel",
+      "className": "Desc_PackagedBiofuel_C",
+      "sinkPoints": 370,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "packaged-nitric-acid",
+      "name": "Packaged Nitric Acid",
+      "className": "Desc_PackagedNitricAcid_C",
+      "sinkPoints": 412,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "packaged-nitrogen-gas",
+      "name": "Packaged Nitrogen Gas",
+      "className": "Desc_PackagedNitrogenGas_C",
+      "sinkPoints": 312,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "packaged-oil",
+      "name": "Packaged Oil",
+      "className": "Desc_PackagedOil_C",
+      "sinkPoints": 180,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "packaged-rocket-fuel",
+      "name": "Packaged Rocket Fuel",
+      "className": "Desc_PackagedRocketFuel_C",
+      "sinkPoints": 1028,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "packaged-sulfuric-acid",
+      "name": "Packaged Sulfuric Acid",
+      "className": "Desc_PackagedSulfuricAcid_C",
+      "sinkPoints": 152,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "packaged-turbofuel",
+      "name": "Packaged Turbofuel",
+      "className": "Desc_TurboFuel_C",
+      "sinkPoints": 570,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "packaged-water",
+      "name": "Packaged Water",
+      "className": "Desc_PackagedWater_C",
+      "sinkPoints": 130,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "parachute",
+      "name": "Parachute",
+      "className": "Desc_Parachute_C",
+      "sinkPoints": 6080,
+      "form": "RF_SOLID",
+      "category": "consumable"
+    },
+    {
+      "id": "petroleum-coke",
+      "name": "Petroleum Coke",
+      "className": "Desc_PetroleumCoke_C",
+      "sinkPoints": 20,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "plastic",
+      "name": "Plastic",
+      "className": "Desc_Plastic_C",
+      "sinkPoints": 75,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "plutonium-fuel-rod",
+      "name": "Plutonium Fuel Rod",
+      "className": "Desc_PlutoniumFuelRod_C",
+      "sinkPoints": 153184,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "plutonium-pellet",
+      "name": "Plutonium Pellet",
+      "className": "Desc_PlutoniumPellet_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "plutonium-waste",
+      "name": "Plutonium Waste",
+      "className": "Desc_PlutoniumWaste_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "polymer-resin",
+      "name": "Polymer Resin",
+      "className": "Desc_PolymerResin_C",
+      "sinkPoints": 12,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "portable-miner",
+      "name": "Portable Miner",
+      "className": "BP_ItemDescriptorPortableMiner_C",
+      "sinkPoints": 56,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "power-shard",
+      "name": "Power Shard",
+      "className": "Desc_CrystalShard_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "pressure-conversion-cube",
+      "name": "Pressure Conversion Cube",
+      "className": "Desc_PressureConversionCube_C",
+      "sinkPoints": 255088,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "pulse-nobelisk",
+      "name": "Pulse Nobelisk",
+      "className": "Desc_NobeliskShockwave_C",
+      "sinkPoints": 1533,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "purple-power-slug",
+      "name": "Purple Power Slug",
+      "className": "Desc_Crystal_mk3_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "quartz-crystal",
+      "name": "Quartz Crystal",
+      "className": "Desc_QuartzCrystal_C",
+      "sinkPoints": 50,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "quickwire",
+      "name": "Quickwire",
+      "className": "Desc_HighSpeedWire_C",
+      "sinkPoints": 17,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "radio-control-unit",
+      "name": "Radio Control Unit",
+      "className": "Desc_ModularFrameLightweight_C",
+      "sinkPoints": 32352,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "raw-quartz",
+      "name": "Raw Quartz",
+      "className": "Desc_RawQuartz_C",
+      "sinkPoints": 15,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "reanimated-sam",
+      "name": "Reanimated SAM",
+      "className": "Desc_SAMIngot_C",
+      "sinkPoints": 160,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "rebar-gun",
+      "name": "Rebar Gun",
+      "className": "Desc_RebarGunProjectile_C",
+      "sinkPoints": 1968,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "red-ficsmas-ornament",
+      "name": "Red FICSMAS Ornament",
+      "className": "Desc_XmasBall1_C",
+      "sinkPoints": 2,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "reinforced-iron-plate",
+      "name": "Reinforced Iron Plate",
+      "className": "Desc_IronPlateReinforced_C",
+      "sinkPoints": 120,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "rifle",
+      "name": "Rifle",
+      "className": "BP_EquipmentDescriptorRifle_C",
+      "sinkPoints": 9480,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "rifle-ammo",
+      "name": "Rifle Ammo",
+      "className": "Desc_CartridgeStandard_C",
+      "sinkPoints": 25,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "rocket-fuel",
+      "name": "Rocket Fuel",
+      "className": "Desc_RocketFuel_C",
+      "sinkPoints": null,
+      "form": "RF_GAS",
+      "category": "gas"
+    },
+    {
+      "id": "rotor",
+      "name": "Rotor",
+      "className": "Desc_Rotor_C",
+      "sinkPoints": 140,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "rubber",
+      "name": "Rubber",
+      "className": "Desc_Rubber_C",
+      "sinkPoints": 60,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "sam",
+      "name": "SAM",
+      "className": "Desc_SAM_C",
+      "sinkPoints": 20,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "sam-fluctuator",
+      "name": "SAM Fluctuator",
+      "className": "Desc_SAMFluctuator_C",
+      "sinkPoints": 1968,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "screws",
+      "name": "Screws",
+      "className": "Desc_IronScrew_C",
+      "sinkPoints": 2,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "shatter-rebar",
+      "name": "Shatter Rebar",
+      "className": "Desc_Rebar_Spreadshot_C",
+      "sinkPoints": 332,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "silica",
+      "name": "Silica",
+      "className": "Desc_Silica_C",
+      "sinkPoints": 20,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "singularity-cell",
+      "name": "Singularity Cell",
+      "className": "Desc_SingularityCell_C",
+      "sinkPoints": 114675,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "smart-plating",
+      "name": "Smart Plating",
+      "className": "Desc_SpaceElevatorPart_1_C",
+      "sinkPoints": 520,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "smokeless-powder",
+      "name": "Smokeless Powder",
+      "className": "Desc_GunpowderMK2_C",
+      "sinkPoints": 58,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "snowball",
+      "name": "Snowball",
+      "className": "Desc_SnowballProjectile_C",
+      "sinkPoints": 30,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "solid-biofuel",
+      "name": "Solid Biofuel",
+      "className": "Desc_Biofuel_C",
+      "sinkPoints": 48,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "sparkly-fireworks",
+      "name": "Sparkly Fireworks",
+      "className": "Desc_Fireworks_Projectile_03_C",
+      "sinkPoints": 32,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "spitter-remains",
+      "name": "Spitter Remains",
+      "className": "Desc_SpitterParts_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "stator",
+      "name": "Stator",
+      "className": "Desc_Stator_C",
+      "sinkPoints": 240,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "steel-beam",
+      "name": "Steel Beam",
+      "className": "Desc_SteelPlate_C",
+      "sinkPoints": 64,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "steel-ingot",
+      "name": "Steel Ingot",
+      "className": "Desc_SteelIngot_C",
+      "sinkPoints": 8,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "steel-pipe",
+      "name": "Steel Pipe",
+      "className": "Desc_SteelPipe_C",
+      "sinkPoints": 24,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "stinger-remains",
+      "name": "Stinger Remains",
+      "className": "Desc_StingerParts_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "stun-rebar",
+      "name": "Stun Rebar",
+      "className": "Desc_Rebar_Stunshot_C",
+      "sinkPoints": 186,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "sulfur",
+      "name": "Sulfur",
+      "className": "Desc_Sulfur_C",
+      "sinkPoints": 11,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "sulfuric-acid",
+      "name": "Sulfuric Acid",
+      "className": "Desc_SulfuricAcid_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "supercomputer",
+      "name": "Supercomputer",
+      "className": "Desc_ComputerSuper_C",
+      "sinkPoints": 97352,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "superposition-oscillator",
+      "name": "Superposition Oscillator",
+      "className": "Desc_QuantumOscillator_C",
+      "sinkPoints": 37292,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "sweet-fireworks",
+      "name": "Sweet Fireworks",
+      "className": "Desc_Fireworks_Projectile_01_C",
+      "sinkPoints": 60,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "thermal-propulsion-rocket",
+      "name": "Thermal Propulsion Rocket",
+      "className": "Desc_SpaceElevatorPart_8_C",
+      "sinkPoints": 728508,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "time-crystal",
+      "name": "Time Crystal",
+      "className": "Desc_TimeCrystal_C",
+      "sinkPoints": 960,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "turbo-motor",
+      "name": "Turbo Motor",
+      "className": "Desc_MotorLightweight_C",
+      "sinkPoints": 240496,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "turbo-rifle-ammo",
+      "name": "Turbo Rifle Ammo",
+      "className": "Desc_CartridgeChaos_C",
+      "sinkPoints": 120,
+      "form": "RF_SOLID",
+      "category": "ammo"
+    },
+    {
+      "id": "turbofuel",
+      "name": "Turbofuel",
+      "className": "Desc_LiquidTurboFuel_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "uranium",
+      "name": "Uranium",
+      "className": "Desc_OreUranium_C",
+      "sinkPoints": 35,
+      "form": "RF_SOLID",
+      "category": "ore"
+    },
+    {
+      "id": "uranium-fuel-rod",
+      "name": "Uranium Fuel Rod",
+      "className": "Desc_NuclearFuelRod_C",
+      "sinkPoints": 43468,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "uranium-waste",
+      "name": "Uranium Waste",
+      "className": "Desc_NuclearWaste_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "versatile-framework",
+      "name": "Versatile Framework",
+      "className": "Desc_SpaceElevatorPart_2_C",
+      "sinkPoints": 1176,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "water",
+      "name": "Water",
+      "className": "Desc_Water_C",
+      "sinkPoints": null,
+      "form": "RF_LIQUID",
+      "category": "fluid"
+    },
+    {
+      "id": "wire",
+      "name": "Wire",
+      "className": "Desc_Wire_C",
+      "sinkPoints": 6,
+      "form": "RF_SOLID",
+      "category": "part"
+    },
+    {
+      "id": "wood",
+      "name": "Wood",
+      "className": "Desc_Wood_C",
+      "sinkPoints": 30,
+      "form": "RF_SOLID",
+      "category": "biomass"
+    },
+    {
+      "id": "xeno-basher",
+      "name": "Xeno-Basher",
+      "className": "BP_EquipmentDescriptorStunSpear_C",
+      "sinkPoints": 17800,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "xeno-zapper",
+      "name": "Xeno-Zapper",
+      "className": "BP_EquipmentDescriptorShockShank_C",
+      "sinkPoints": 1880,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    },
+    {
+      "id": "yellow-power-slug",
+      "name": "Yellow Power Slug",
+      "className": "Desc_Crystal_mk2_C",
+      "sinkPoints": null,
+      "form": "RF_SOLID",
+      "category": "part",
+      "disposable": false
+    },
+    {
+      "id": "zipline",
+      "name": "Zipline",
+      "className": "BP_EqDescZipLine_C",
+      "sinkPoints": 5284,
+      "form": "RF_SOLID",
+      "category": "equipment"
+    }
+  ]
+}

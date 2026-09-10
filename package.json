@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sink": "node src/lib/satisfactory-sink/cli.ts",
+    "test:sink": "node --test \"src/lib/satisfactory-sink/*.test.ts\"",
+    "data:satisfactory": "node scripts/build-satisfactory-data.ts",
+    "data:satisfactory:check": "node scripts/build-satisfactory-data.ts --check"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",

@@ -7,9 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev` — start Vite dev server.
 - `npm run build` — production build (output to `dist/`).
 - `npm run preview` — serve the production build locally.
-- `npm run lint` — ESLint (flat config in `eslint.config.js`). No test runner is configured.
+- `npm run lint` — ESLint (flat config in `eslint.config.js`). Globs `**/*.{js,jsx}` only, so the `.ts` files under `src/lib/` and `scripts/` are not linted.
+- `npm run sink -- "Iron Ore"` — AWESOME Sink optimizer CLI (`--help` for options).
+- `npm run test:sink` — `node --test` over `src/lib/satisfactory-sink/*.test.ts`. This is the only test suite in the repo; the React app has none.
+- `npm run data:satisfactory` — regenerate `src/data/satisfactory/*.json` from the game's docs export. `:check` variant exits non-zero if the committed files have drifted.
 
-Node 22+ is required (`.nvmrc` and `engines.node` in `package.json`).
+Node 22+ is required (`.nvmrc` and `engines.node` in `package.json`); the `.ts` files rely on Node's native type-stripping, so they run with no build step and no TypeScript dependency.
 
 ## Required environment variables
 
