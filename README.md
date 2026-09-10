@@ -23,6 +23,8 @@ AWESOME Sink pays as much as possible. Explained in full in
 ```
 npm run sink -- "Iron Ore"          # best use of one product
 npm run sink -- "Coal:600" "Sulfur:100"   # best use of fixed amounts
+npm run sink -- "Motor" "Coal"      # several products, one of each
+npm run sink -- --alternates-file=my-save.txt "Iron Ore"  # only your unlocks
 npm run sink -- --help              # all options
 npm run test:sink                   # run its tests
 ```

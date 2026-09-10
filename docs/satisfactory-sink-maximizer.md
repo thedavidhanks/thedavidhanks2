@@ -143,9 +143,36 @@ fractional objective `(Σ p·s) / (Σ w·u)` becomes a plain linear objective on
 you fix the denominator to 1, which is legal here because the whole system is
 scale-invariant. The optimal `u` is then the **best mix** to feed in — and the
 solver will happily set `u[i] = 0` for a product that does not earn its place.
+Those products are reported in `plan.declined`, by name, rather than quietly
+missing from the output.
 
 `w[i]` lets you say a unit of one product costs more than a unit of another
 (by rarity, node count, or logistics pain). Default is 1 across the board.
+
+### Which one you get by default
+
+**`ratio` is the default for exactly one shape of input: a single product with
+no quantity.** Everything else defaults to `fixed`, and a product named without
+a quantity counts as 1.
+
+The rule reads oddly until you notice what a bare list of products means. A
+single product has no mix to choose, so `ratio` and "one unit of it" ask the
+same question and `ratio` is the more useful phrasing — it is a rate, and
+`--scale` can size it. Name *several* products with no quantities, though, and
+you mean "here is what I have, plan for all of it". A ratio answers something
+else entirely: the one-unit budget is a **budget**, so it goes to whichever
+product scores highest and the rest are set to zero. Ask for `"motor" "coal"`
+and you would be told to sink the motor and never hear about the coal again.
+
+The same rule fixes a quieter footgun. `"Iron Ore:600" "Coal"` used to be a
+ratio too — every source needed a quantity to earn `fixed` mode — which meant
+the `600` was accepted, ignored, and never mentioned. It is now `fixed` with
+one coal.
+
+Ratio over several products is still a real question, and `--mode=ratio` still
+asks it: *if I could feed anything, in any proportion, what should I build?*
+It is the right question when you are choosing what to mine, and the wrong one
+when you are standing on a pile of things you already have.
 
 ## 5. The algorithm, end to end
 
@@ -200,7 +227,9 @@ The solver reports three outcomes:
 All numbers below come from the shipped dataset, which is generated from the
 game's own documentation export (see §10) and holds **186 items and 291
 recipes**. 110 of those recipes are alternates that need Hard Drive unlocks;
-`--no-alternates` restricts the solver to the recipes every save has.
+`--no-alternates` restricts the solver to the recipes every save has, and
+`--alternates=` / `--alternates-file=` restrict it to the ones *your* save has
+(§7).
 
 ### One product: Iron Ore
 
@@ -321,8 +350,13 @@ precisely why it should be solved rather than reasoned about by hand.
 $ npm run sink -- --mode=ratio "Mycelia" "Leaves"
 
 Points per source : 288
+
 Source products consumed:
            1 x Mycelia  (100.0% of budget)
+
+Not worth feeding (they lower points per source unit):
+          Leaves
+  Give quantities (e.g. "coal:300") to plan for them anyway.
 ```
 
 Both products feed Biomass, so combining them looks natural. But 1 Mycelia
@@ -330,6 +364,45 @@ makes 10 Biomass while 10 Leaves make only 5. Since the denominator counts every
 source unit equally, any leaf in the mix drags the average down. The solver sets
 `u[leaves] = 0` and says so — the "you don't have to use all the products
 provided" case, decided rather than guessed.
+
+Note the `--mode=ratio`. It is doing real work here: without it this is a
+two-product invocation and you get `fixed` mode, which uses the leaves (§4).
+Note also that the declined product is *named*. A zero-quantity source used to
+be filtered out of the plan, so the only evidence that you had asked about
+leaves at all was their absence.
+
+### Products that never touch
+
+```
+$ npm run sink -- "motor" "coal"
+
+Total sink points : 1544
+Points per source : 772
+
+Source products consumed:
+           1 x Motor  (50.0% of budget)
+           1 x Coal  (50.0% of budget)
+
+Recipes to run (crafts):
+        0.05 x Diamonds
+       0.025 x Time Crystal
+
+Feed to the AWESOME Sink:
+           1 x Motor  @ 1520 = 1520 pts
+       0.025 x Time Crystal  @ 960 = 24 pts
+```
+
+A Motor is worth more raw (1520) than anything you can build out of one, and
+coal cannot be built into a motor, so the two chains never meet. There is
+nothing to decide — just do both. This is what makes it the sharpest case for
+§4's default: as a *ratio* the question is degenerate, because a one-unit
+budget split between two independent products is maximized by spending all of
+it on the better one. `--mode=ratio "motor" "coal"` still reports exactly that,
+declining the coal, and it is still the correct answer to that question.
+
+The coal is worth **24, not 2**. Sinking it raw pays 2, but 40 coal makes 2
+Diamonds makes 1 Time Crystal at 960, and `0.025` of a Time Crystal is a legal
+answer here — it is a machine at 2.5% clock, not a rounding error (§9).
 
 ## 7. Running it
 
@@ -346,22 +419,61 @@ npm run sink -- --scale=48 "Iron Ore"
 # Fixed amounts (or rates in items/min) — maximize the total
 npm run sink -- "Iron Ore:600" "Coal:300"
 
+# Several products, no quantities — one of each, and all of them get used
+npm run sink -- "Motor" "Coal"
+
 # Say that sulfur costs 5x what coal costs
 npm run sink -- --mode=ratio "Coal" "Sulfur@5"
 
 # Only recipes available without Hard Drive unlocks
 npm run sink -- --no-alternates "Iron Ore"
 
+# Only the alternates this save has unlocked
+npm run sink -- --alternates="Iron Wire,Solid Steel Ingot" "Iron Ore:600" "Coal:300"
+npm run sink -- --alternates-file=my-save.txt "Iron Ore:600" "Coal:300"
+
 # Machine-readable, and what's in the dataset
 npm run sink -- --json "Iron Ore"
 npm run sink -- --list
+npm run sink -- --list-alternates
 
 npm run test:sink
 ```
 
 Product syntax is `"Name[:quantity][@weight]"`. Names are matched loosely, so
-`"iron ore"`, `"Iron Ore"` and `iron-ore` all work. Omit every quantity and you
-get `ratio` mode; give them all and you get `fixed` mode.
+`"iron ore"`, `"Iron Ore"` and `iron-ore` all work. A **single** product with no
+quantity gets `ratio` mode; anything else gets `fixed` mode, counting a missing
+quantity as 1 (§4). `--mode=` overrides both, and `--scale` is a ratio-mode flag
+— pass it in fixed mode and the CLI says it is ignoring it rather than pretending
+to apply it.
+
+### Choosing which alternates the solver may use
+
+The default is "every alternate is unlocked", which is true of no real save.
+`--alternates` narrows it to the list you give: **only those alternates are
+available to the algorithm**, every other one is dropped before the LP is built,
+and standard recipes are always available regardless.
+
+- Names are matched the same loose way products are, and the `Alternate:`
+  prefix is optional — `"Iron Wire"`, `"Alternate: Iron Wire"` and
+  `alternate-iron-wire` are the same recipe. `--list-alternates` prints all 110.
+- The flag is repeatable and comma-separated; `--alternates-file=F` reads the
+  same names from a file, one per line, with `#` comments and blank lines
+  ignored. A save's unlock list is long enough that the file is the ergonomic
+  form — keep one per save and pass it every time.
+- Naming a recipe that is not an alternate is an error, as is naming one that
+  does not exist, and `--alternates` with `--no-alternates` is rejected rather
+  than silently resolved. `--alternates=` with an empty list is the same as
+  `--no-alternates`.
+
+The three settings bracket the answer. For `"Iron Ore:600" "Coal:300"`:
+
+| Alternates available          | Points per source unit |
+| ----------------------------- | ---------------------- |
+| `--no-alternates`             | 22.91                  |
+| `--alternates="Solid Steel Ingot"` | 26.36             |
+| `--alternates="Iron Wire,Solid Steel Ingot,Cast Screws"` | 38.74 |
+| all 110 (default)             | 53.65                  |
 
 ### Refreshing the dataset after a game patch
 
@@ -455,10 +567,11 @@ use case — the continuous answer is the correct one.
   practical way to vent — most notably water.
 - **No sink-point decay.** Some Satisfactory items' point values shift with
   progression; the model treats `p[i]` as constant.
-- **Alternate recipes are assumed unlocked** unless you pass `--no-alternates`.
-  110 of the 291 shipped recipes need Hard Drives, and they change the answer a
-  lot (Iron Ore: 22.37 → 37.24 points). There is no per-save unlock list, so the
-  flag is all-or-nothing.
+- **Alternate recipes are assumed unlocked** unless you say otherwise. 110 of
+  the 291 shipped recipes need Hard Drives, and they change the answer a lot
+  (Iron Ore: 22.37 → 37.24 points). `--no-alternates` drops all of them and
+  `--alternates`/`--alternates-file` keep only the ones you name (§7), but the
+  list is yours to maintain — nothing reads your save file.
 - **One recipe produces from nothing.** Excited Photonic Matter comes out of a
   Converter using only power, so the model treats it as a free input. It cannot
   be sunk, so it creates no free points — but a future recipe that turns it into
@@ -619,7 +732,8 @@ can:
 That is the main feature this design is set up for: *your* optimal plan depends
 on *your* unlocked alternates, and it is worth 22.37 vs 37.24 points per iron
 ore. Filtering is a one-line change with this layout — the CLI's
-`--no-alternates` already does the all-or-nothing version of it:
+`--alternates` already does exactly this, with the unlock list coming from a
+flag or a file instead of Firestore:
 
 ```ts
 const dataset = { ...satisfactoryDataset, recipes: satisfactoryDataset.recipes.filter(r => unlocked.has(r.id)) }
@@ -646,7 +760,7 @@ next person does not have to rediscover it.
 
 ```ts
 import { maximizeSinkPoints, formatPlan } from './src/lib/satisfactory-sink/maximize.ts'
-import { satisfactoryDataset, findItem } from './src/lib/satisfactory-sink/dataset.ts'
+import { satisfactoryDataset, findItem, findRecipe } from './src/lib/satisfactory-sink/dataset.ts'
 
 const plan: Plan = maximizeSinkPoints({ dataset, sources, mode?, scaleTo? })
 ```
@@ -656,14 +770,21 @@ One pure function, no global state, no I/O, no async. Full shapes are in
 prints exactly the `Plan` object, so the CLI doubles as a fixture generator for
 UI tests.
 
-### Five things that will bite a UI
+### Six things that will bite a UI
 
-1. **Handle all three statuses.** `optimal | infeasible | unbounded`. Non-optimal
+1. **Render `plan.declined`, or products will vanish.** In `ratio` mode the
+   solver may spend none of the budget on a product, which is a real answer
+   (§6) — but a picker that shows only `plan.sources` renders it as the product
+   silently disappearing from a plan the user asked for. `declined` carries
+   `{ item, name }` for each one; `formatPlan` prints them under "Not worth
+   feeding". It is always empty in `fixed` mode, so there is exactly one place
+   this can happen.
+2. **Handle all three statuses.** `optimal | infeasible | unbounded`. Non-optimal
    plans carry a human-readable `reason` and have empty `recipes`/`sinks` arrays
    — render the reason, do not render an empty plan as "0 points". Infeasible is
    reachable from ordinary user input: picking Power Shard as your only source
    produces it (see §5).
-2. **`loadDataset()` drops fields the JSON has.** Items keep
+3. **`loadDataset()` drops fields the JSON has.** Items keep
    `id, name, sinkPoints, disposable, category` but lose `className` and `form`;
    recipes keep `id, name, inputs, outputs, alternate, machine` but lose
    `className` and `duration`. A UI wanting item icons (keyed by `className`) or
@@ -671,13 +792,13 @@ UI tests.
    and `Recipe` in [types.ts](../src/lib/satisfactory-sink/types.ts) and pass
    them through [dataset.ts](../src/lib/satisfactory-sink/dataset.ts). The data
    is already in the JSON; only the loader is narrow.
-3. **Optima are unique in value, not in plan.** `totalPoints` is determinate,
+4. **Optima are unique in value, not in plan.** `totalPoints` is determinate,
    but when two routes tie exactly the LP may return either. Do not write UI
    tests that assert on a specific recipe list; assert on `totalPoints`.
-4. **Everything is a rate, and fractional.** `2.0645 x Smart Plating` means
+5. **Everything is a rate, and fractional.** `2.0645 x Smart Plating` means
    machines at partial clock, not "round to 2". Present per-minute figures or
    machine counts, and never silently round — §9 covers why.
-5. **It is fast enough to run on every keystroke.** A solve is 0.27 ms typical,
+6. **It is fast enough to run on every keystroke.** A solve is 0.27 ms typical,
    1.3 ms worst observed. No debounce, no web worker, no loading state needed.
 
 ### The obvious first feature
@@ -690,6 +811,8 @@ large enough to be the point of the app (22.37 vs 37.24 points per iron ore):
 const dataset = { ...satisfactoryDataset, recipes: satisfactoryDataset.recipes.filter(r => unlocked.has(r.id)) }
 ```
 
-`--no-alternates` is the all-or-nothing version of exactly this. Storing
-`unlocked` per user is the Firestore case described in §10 — user state, not
-source data.
+`--alternates` is the CLI version of exactly this, and `findRecipe()` in
+[dataset.ts](../src/lib/satisfactory-sink/dataset.ts) resolves user-typed recipe
+names for it (loose match, optional `Alternate:` prefix) — a picker UI wants the
+same function. All that is left is storing `unlocked` per user, which is the
+Firestore case described in §10 — user state, not source data.

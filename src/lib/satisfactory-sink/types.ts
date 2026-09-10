@@ -47,7 +47,7 @@ export interface SourceProduct {
   item: ItemId
   /**
    * How much of this product you have (or, more usefully, its rate in
-   * items/min). Required in `fixed` mode, ignored in `ratio` mode.
+   * items/min). Defaults to 1 in `fixed` mode; ignored in `ratio` mode.
    */
   quantity?: number
   /**
@@ -68,7 +68,11 @@ export interface Problem {
    * `fixed`  - you have the given quantities; maximize total points.
    * `ratio`  - unlimited supply in any mix; maximize points per source unit
    *            and report the best mix.
-   * Defaults to `fixed` when every source has a quantity, otherwise `ratio`.
+   * Defaults to `ratio` for a single product with no quantity - the one case
+   * where "best mix" is not a choice - and to `fixed` otherwise, filling in a
+   * quantity of 1 for any product that was given without one. Several products
+   * named without quantities means "plan for all of these", which a ratio
+   * would answer by spending its whole budget on the highest-scoring one.
    */
   mode?: SolveMode
   /** In `ratio` mode, scale the reported plan to this many source units. */
@@ -106,6 +110,12 @@ export interface Plan {
   /** `totalPoints` divided by the weighted source units consumed. */
   pointsPerSourceUnit: number
   sources: SourceUse[]
+  /**
+   * Products that were offered but left out of the plan. Only `ratio` mode can
+   * decline a product: any share of the budget spent on it would lower the
+   * points-per-source-unit average.
+   */
+  declined: Array<{ item: ItemId; name: string }>
   recipes: RecipeRun[]
   sinks: SinkEntry[]
   /** Surplus that had to be thrown away (unsinkable byproducts). */

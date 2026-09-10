@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { maximizeSinkPoints, formatPlan } from './maximize.ts'
+import { maximizeSinkPoints, formatPlan, resolveMode } from './maximize.ts'
 import { satisfactoryDataset } from './dataset.ts'
 import type { Dataset, Plan } from './types.ts'
 
@@ -95,6 +95,29 @@ const powderFixture: Dataset = {
 }
 
 /**
+ * Two products whose chains never touch: a Motor is best sunk raw, and coal is
+ * worth 24/unit only as crystals. Because they are independent, "the best mix"
+ * is a degenerate question - any coal in a one-unit budget only drags the
+ * average below the Motor's 1520 - while "I have one of each" plainly wants
+ * both used. The shipped-dataset "motor coal" case in miniature.
+ */
+const independentFixture: Dataset = {
+  items: [
+    { id: 'motor', name: 'Motor', sinkPoints: 1520 },
+    { id: 'coal', name: 'Coal', sinkPoints: 2 },
+    { id: 'crystal', name: 'Time Crystal', sinkPoints: 960 },
+  ],
+  recipes: [
+    {
+      id: 'r-crystal',
+      name: 'Time Crystal',
+      inputs: [{ item: 'coal', quantity: 40 }],
+      outputs: [{ item: 'crystal', quantity: 1 }],
+    },
+  ],
+}
+
+/**
  * Two recipes competing for the same scarce input. Recipe B has the better
  * points-per-source-unit ratio in isolation (33.3 vs 25), so a greedy
  * "pick the best chain" algorithm commits to it and scores 424. The optimum
@@ -131,7 +154,91 @@ const competingFixture: Dataset = {
 
 // --- Tests ------------------------------------------------------------------
 
+describe('resolveMode', () => {
+  test('a single product with no quantity is the only ratio default', () => {
+    assert.equal(resolveMode([{ item: 'ore' }]), 'ratio')
+    // Naming the same product twice is still one product, so still a ratio.
+    assert.equal(resolveMode([{ item: 'ore' }, { item: 'ore' }]), 'ratio')
+  })
+
+  test('several products with no quantities mean "plan for all of these"', () => {
+    assert.equal(resolveMode([{ item: 'motor' }, { item: 'coal' }]), 'fixed')
+    assert.equal(
+      resolveMode([{ item: 'iron-ore' }, { item: 'coal' }, { item: 'limestone' }]),
+      'fixed',
+    )
+  })
+
+  test('a partly quantified list is fixed, not a ratio that ignores the numbers', () => {
+    assert.equal(resolveMode([{ item: 'iron-ore', quantity: 600 }, { item: 'coal' }]), 'fixed')
+    assert.equal(resolveMode([{ item: 'ore', quantity: 1 }]), 'fixed')
+  })
+
+  test('an explicit mode always wins', () => {
+    assert.equal(resolveMode([{ item: 'motor' }, { item: 'coal' }], 'ratio'), 'ratio')
+    assert.equal(resolveMode([{ item: 'ore' }], 'fixed'), 'fixed')
+  })
+})
+
 describe('maximizeSinkPoints', () => {
+  test('independent products named without quantities are all used', () => {
+    // Regression: this used to default to ratio mode, spend the whole one-unit
+    // budget on the Motor and drop the coal entirely, reporting 1520.
+    const plan = maximizeSinkPoints({
+      dataset: independentFixture,
+      sources: [{ item: 'motor' }, { item: 'coal' }],
+    })
+
+    assert.equal(plan.status, 'optimal')
+    assert.deepEqual(
+      plan.sources.map((source) => source.item).sort(),
+      ['coal', 'motor'],
+      'both products must appear in the plan',
+    )
+    assert.deepEqual(plan.declined, [])
+    near(plan.totalPoints, 1544) // 1520 raw Motor + 1/40th of a 960-point crystal
+    near(sunkOf(plan, 'motor'), 1)
+    near(runsOf(plan, 'r-crystal'), 0.025)
+    assertConsistent(plan, independentFixture)
+  })
+
+  test('a quantity given alongside a bare product is honored, not ignored', () => {
+    const plan = maximizeSinkPoints({
+      dataset: independentFixture,
+      sources: [{ item: 'motor' }, { item: 'coal', quantity: 40 }],
+    })
+
+    near(plan.sources.find((source) => source.item === 'coal')?.quantity ?? 0, 40)
+    near(plan.totalPoints, 1520 + 960)
+    assertConsistent(plan, independentFixture)
+  })
+
+  test('ratio mode still declines a product, and now says which', () => {
+    const plan = maximizeSinkPoints({
+      dataset: independentFixture,
+      sources: [{ item: 'motor' }, { item: 'coal' }],
+      mode: 'ratio',
+    })
+
+    near(plan.pointsPerSourceUnit, 1520)
+    assert.equal(plan.sources.length, 1)
+    assert.equal(plan.sources[0].item, 'motor')
+    assert.deepEqual(plan.declined, [{ item: 'coal', name: 'Coal' }])
+    assertConsistent(plan, independentFixture)
+  })
+
+  test('fixed mode never declines a product', () => {
+    const plan = maximizeSinkPoints({
+      dataset: independentFixture,
+      sources: [
+        { item: 'motor', quantity: 1 },
+        { item: 'coal', quantity: 1 },
+      ],
+    })
+    assert.deepEqual(plan.declined, [])
+  })
+
+
   test('sinks the raw product when no recipe can improve on it', () => {
     const dataset: Dataset = { items: [{ id: 'ore', name: 'Ore', sinkPoints: 7 }], recipes: [] }
     const plan = maximizeSinkPoints({ dataset, sources: [{ item: 'ore', quantity: 10 }] })
@@ -487,6 +594,18 @@ describe('formatPlan', () => {
 
     assert.match(text, /Total sink points : 120/)
     assert.match(text, /Reinforced Iron Plate/)
+  })
+
+  test('names the products a ratio declined instead of hiding them', () => {
+    const plan = maximizeSinkPoints({
+      dataset: independentFixture,
+      sources: [{ item: 'motor' }, { item: 'coal' }],
+      mode: 'ratio',
+    })
+    const text = formatPlan(plan)
+
+    assert.match(text, /Not worth feeding/)
+    assert.match(text, /Coal/)
   })
 
   test('renders a failure', () => {

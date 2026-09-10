@@ -116,6 +116,24 @@ function reachable(dataset: Dataset, sourceIds: ItemId[]) {
 }
 
 /**
+ * Which question the caller meant when they left quantities off.
+ *
+ * `ratio` is the default only for a single product, where "unlimited supply,
+ * best mix" and "one unit" ask the same thing. Naming several products without
+ * quantities means "here is what I have, plan for all of it", and a ratio
+ * answers something else: the 1-unit budget goes entirely to whichever product
+ * scores highest and the rest are dropped, so `"motor" "coal"` would sink the
+ * motor and ignore the coal. Ask for a mix explicitly with `mode: 'ratio'`.
+ */
+export function resolveMode(sources: SourceProduct[], mode?: SolveMode): SolveMode {
+  if (mode) return mode
+  const distinct = new Set(sources.map((source) => source.item))
+  return distinct.size === 1 && sources.every((source) => source.quantity == null)
+    ? 'ratio'
+    : 'fixed'
+}
+
+/**
  * Explain an infeasible LP in the caller's terms. Infeasibility here always
  * traces back to an item that can be neither sunk nor discarded nor consumed,
  * so name those items rather than making the caller guess.
@@ -147,8 +165,7 @@ export function maximizeSinkPoints(problem: Problem): Plan {
   indexBy(dataset.recipes, 'recipe')
   validate(dataset, items)
 
-  const mode: SolveMode =
-    problem.mode ?? (problem.sources.every((source) => source.quantity != null) ? 'fixed' : 'ratio')
+  const mode = resolveMode(problem.sources, problem.mode)
   const sources = normalizeSources(problem.sources, items, mode)
   const scaleTo = mode === 'ratio' ? (problem.scaleTo ?? 1) : 1
   if (!(scaleTo > 0)) throw new Error('scaleTo must be positive')
@@ -217,6 +234,7 @@ export function maximizeSinkPoints(problem: Problem): Plan {
       totalPoints: 0,
       pointsPerSourceUnit: 0,
       sources: [],
+      declined: [],
       recipes: [],
       sinks: [],
       wasted: [],
@@ -252,6 +270,12 @@ export function maximizeSinkPoints(problem: Problem): Plan {
     totalPoints,
     pointsPerSourceUnit: weightedTotal > 0 ? clean(totalPoints / weightedTotal) : 0,
     sources: usedSources.filter((source) => source.quantity > 0),
+    // Only reachable in ratio mode, where the solver is free to spend none of
+    // the budget on a product. Report it rather than dropping it silently:
+    // "your coal is not in the plan" is the answer, not a rendering accident.
+    declined: usedSources
+      .filter((source) => source.quantity <= 0)
+      .map((source) => ({ item: source.item, name: source.name })),
     recipes: usable
       .map((recipe, index) => ({
         recipe: recipe.id,
@@ -299,6 +323,12 @@ export function formatPlan(plan: Plan): string {
   for (const source of plan.sources) {
     const share = (source.share * 100).toFixed(1)
     lines.push(`  ${round(source.quantity).padStart(10)} x ${source.name}  (${share}% of budget)`)
+  }
+  if (plan.declined.length > 0) {
+    lines.push('')
+    lines.push('Not worth feeding (they lower points per source unit):')
+    for (const source of plan.declined) lines.push(`  ${source.name.padStart(14)}`)
+    lines.push('  Give quantities (e.g. "coal:300") to plan for them anyway.')
   }
   lines.push('')
   lines.push(plan.recipes.length > 0 ? 'Recipes to run (crafts):' : 'Recipes to run: none - sink the raw products')

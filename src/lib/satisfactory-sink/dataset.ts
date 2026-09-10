@@ -80,12 +80,30 @@ export const satisfactoryDataset: Dataset = loadDataset(
   (itemsFile as { gameVersion?: string }).gameVersion,
 )
 
+const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '')
+
 /** Look an item up by id, exact name, or a loose case/space-insensitive match. */
 export function findItem(dataset: Dataset, query: string): Item | undefined {
-  const slug = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '')
   const target = slug(query)
   return (
     dataset.items.find((item) => item.id === query || item.name === query) ??
     dataset.items.find((item) => slug(item.id) === target || slug(item.name) === target)
+  )
+}
+
+/**
+ * Look a recipe up by id, exact name, or a loose case/space-insensitive match.
+ * The loose match also tolerates a missing `Alternate:` prefix, so "Iron Wire"
+ * finds "Alternate: Iron Wire" — nobody types the prefix from memory.
+ */
+export function findRecipe(dataset: Dataset, query: string): Recipe | undefined {
+  const target = slug(query)
+  const prefixed = `alternate${target}`
+  return (
+    dataset.recipes.find((recipe) => recipe.id === query || recipe.name === query) ??
+    dataset.recipes.find((recipe) => slug(recipe.id) === target || slug(recipe.name) === target) ??
+    dataset.recipes.find(
+      (recipe) => slug(recipe.id) === prefixed || slug(recipe.name) === prefixed,
+    )
   )
 }
