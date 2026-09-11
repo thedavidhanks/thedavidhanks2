@@ -108,7 +108,7 @@ function describeNodes(graph, dataset) {
  * title ids have to stay unique across the two. Sharing an id would point every
  * arrowhead in both copies at whichever <marker> the browser saw last.
  */
-const FlowCanvas = ({ layout, labels, hasSink }) => {
+const FlowCanvas = ({ layout, labels, hasSink, onActivate }) => {
     const markerId = useId();
     const arrow = `${markerId}-arrow`;
     const pooledArrow = `${markerId}-arrow-pooled`;
@@ -116,6 +116,18 @@ const FlowCanvas = ({ layout, labels, hasSink }) => {
     return (
         <svg
             role="img"
+            // Clicking the drawing expands it. The handler sits on the <svg>
+            // and not on the scroll box around it so that dragging the
+            // scrollbar, or clicking the strip of container beside a narrow
+            // diagram, does not count as clicking the diagram.
+            //
+            // Mouse-only, deliberately: the container is already a tab stop
+            // that scrolls with the arrow keys, and hanging Enter off it would
+            // mean a keyboard user could no longer scroll it without being
+            // thrown into the modal. The button by the heading is the
+            // keyboard route to the same thing, so no function is
+            // keyboard-inaccessible (WCAG 2.1.1).
+            onClick={onActivate}
             // Not both ids in aria-labelledby: that concatenates title
             // and desc into one ~60-word accessible *name* and leaves
             // the description empty, so there is no short name to hear
@@ -131,7 +143,11 @@ const FlowCanvas = ({ layout, labels, hasSink }) => {
             // every engine, whereas auto margins on a too-wide block simply
             // resolve to zero. So a small plan sits in the middle of the
             // expanded view and a large one still scrolls from its left edge.
-            style={{ display: 'block', margin: '0 auto' }}
+            style={{
+                display: 'block',
+                margin: '0 auto',
+                cursor: onActivate ? 'zoom-in' : undefined,
+            }}
         >
             {/* One template string, not a mix of text and expressions:
                 React only accepts a single child in <title>. */}
@@ -293,7 +309,7 @@ const FlowCanvas = ({ layout, labels, hasSink }) => {
  * inline it is capped at a height that leaves the rest of the plan on screen,
  * expanded it takes whatever the modal has left over.
  */
-const FlowViewport = ({ layout, labels, hasSink, style }) => (
+const FlowViewport = ({ layout, labels, hasSink, style, onActivate }) => (
     // The diagram is a fixed-size drawing, so it scrolls inside this box
     // instead of pushing the page into horizontal scroll at 320px
     // (WCAG 1.4.10 Reflow). A scroll container with no focusable
@@ -313,7 +329,12 @@ const FlowViewport = ({ layout, labels, hasSink, style }) => (
         role="group"
         aria-label="Flow diagram of the plan, scrollable"
     >
-        <FlowCanvas layout={layout} labels={labels} hasSink={hasSink} />
+        <FlowCanvas
+            layout={layout}
+            labels={labels}
+            hasSink={hasSink}
+            onActivate={onActivate}
+        />
     </div>
 );
 
@@ -420,12 +441,15 @@ const FlowDiagram = ({ plan, dataset }) => {
             </p>
 
             {/* Capped so a tall plan does not bury the tables under it; the
-                expand button is the way out of the cap. */}
+                expand button, or a click on the drawing, is the way out of the
+                cap. Only this copy is clickable — inside the modal there is
+                nothing left to expand to. */}
             <FlowViewport
                 layout={layout}
                 labels={labels}
                 hasSink={hasSink}
                 style={{ maxHeight: '34rem' }}
+                onActivate={() => setExpanded(true)}
             />
 
             {/* The text alternative, and it has to exist: the tables above carry
