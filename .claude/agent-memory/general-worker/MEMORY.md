@@ -1,0 +1,1 @@
+- [Concurrent agents and git](feedback_concurrent_agents_git.md) — never stash/revert the shared worktree to get a baseline; copy to /tmp or use `git show HEAD:<path>`.

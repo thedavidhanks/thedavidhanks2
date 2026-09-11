@@ -137,7 +137,7 @@ const SatisfactorySink = () => {
                     <h2 className="h5">3. The plan</h2>
                     {error
                         ? <Alert variant="danger"><strong>That input can&rsquo;t be solved:</strong> {error}</Alert>
-                        : <PlanResults plan={plan} mode={mode} />}
+                        : <PlanResults plan={plan} mode={mode} dataset={dataset} />}
                 </Col>
             </Row>
         </Container>

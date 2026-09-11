@@ -807,6 +807,25 @@ UI tests. `plan.flow` is the graph described below.
 them. `plan.flow` is the same plan with the edges filled in: a path from every
 source product to the AWESOME Sink, through every recipe the plan runs.
 
+The tool page draws it. [layout.ts](../src/lib/satisfactory-sink/layout.ts) turns
+a `FlowGraph` into boxes and bezier paths — pure geometry, no React, no DOM, so
+it is tested like the rest of the library
+([layout.test.ts](../src/lib/satisfactory-sink/layout.test.ts)) — and
+[FlowDiagram.jsx](../src/components/tools/satisfactorysink/FlowDiagram.jsx)
+paints the result as hand-rolled SVG, top to bottom, sources on the first row
+and the Sink on the last. One box per *item*, not per recipe: a recipe node is
+labelled with its primary output and carries the recipe name underneath only
+when that adds something. The four caveats below are all load-bearing there —
+pooled edges are dashed and counted in the legend, off-sink-path nodes are faded
+rather than dropped, the cyclic case draws its back-edge pointing back up the
+diagram instead of assuming a DAG, and an empty graph renders nothing at all.
+
+The edge quantities are the one thing on that page the tables do not carry —
+`recipes` reports craft counts, not belt rates — so the diagram also emits every
+edge as a visually-hidden list. Keep that in step with the drawing: without it
+the SVG is the sole carrier of those numbers, which is a WCAG 1.1.1 failure and,
+more to the point, unreadable to anyone who is not looking at the picture.
+
 ```ts
 plan.flow.nodes  // { id, kind, name, item?, recipe?, quantity?, runs?, machine?, depth, onSinkPath }
 plan.flow.edges  // { from, to, item, itemName, quantity, pooled }

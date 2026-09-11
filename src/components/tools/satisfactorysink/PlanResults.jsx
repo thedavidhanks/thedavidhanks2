@@ -1,16 +1,8 @@
 import React, { useMemo } from 'react';
 import { Alert, Badge, Card, Table } from 'react-bootstrap';
 
-// Mirrors the `round` helper inside formatPlan() in
-// src/lib/satisfactory-sink/maximize.ts: fix to 4 decimals, then let Number()
-// drop the trailing zeros so whole numbers read as `48` and not `48.0000`.
-// Everything the solver returns is a rate and may be fractional —
-// `2.0645 x Smart Plating` is a machine at a partial clock rate, not "2" —
-// so nothing here is ever rounded to an integer. See docs §11.5.
-const fmt = (value) => {
-    if (typeof value !== 'number' || !Number.isFinite(value)) return '—';
-    return Number(value.toFixed(4)).toString();
-};
+import FlowDiagram from './FlowDiagram.jsx';
+import { fmt } from './format.js';
 
 // The CLI prints the budget share as one decimal place, e.g. `100.0% of budget`.
 const fmtShare = (share) => {
@@ -63,7 +55,10 @@ const StatCard = ({ title, value, note, primary }) => (
     </Card>
 );
 
-const PlanResults = ({ plan, mode }) => {
+// `dataset` must be the same filtered dataset the plan was solved against —
+// the diagram resolves recipe ids through it, and the full recipe book would
+// name alternates the plan was never allowed to use.
+const PlanResults = ({ plan, mode, dataset }) => {
     const modeCopy = MODE_COPY[mode] ?? MODE_COPY.fixed;
 
     // Weight is 1 for every product unless the user said otherwise, so the
@@ -268,6 +263,12 @@ const PlanResults = ({ plan, mode }) => {
                     </Table>
                 </section>
             )}
+
+            {/* Same position the CLI prints its Material flow table in: after the
+                totals the plan is judged on, before the leftovers. It reads as the
+                answer to "so how do I actually wire that up?", which is the question
+                the sink table leaves you with. */}
+            <FlowDiagram plan={plan} dataset={dataset} />
 
             {wasted.length > 0 && (
                 <section className="mb-4">
