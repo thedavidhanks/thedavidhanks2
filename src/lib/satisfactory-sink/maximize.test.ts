@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 
 import { maximizeSinkPoints, formatPlan, resolveMode } from './maximize.ts'
 import { satisfactoryDataset } from './dataset.ts'
+import { assertFlowBalances } from './flow-assertions.ts'
 import type { Dataset, Plan } from './types.ts'
 
 const near = (actual: number, expected: number, tolerance = 1e-6) =>
@@ -43,6 +44,8 @@ function assertConsistent(plan: Plan, dataset: Dataset): void {
   const pointsFromSinks = plan.sinks.reduce((sum, entry) => sum + entry.points, 0)
   near(pointsFromSinks, plan.totalPoints, 1e-6)
   for (const run of plan.recipes) assert.ok(run.runs >= 0, 'recipe runs must be non-negative')
+
+  assertFlowBalances(plan, dataset)
 }
 
 // --- Fixtures ---------------------------------------------------------------

@@ -9,13 +9,8 @@ import type {
   SourceProduct,
 } from './types.ts'
 import { solveLp } from './simplex.ts'
-
-const ZERO = 1e-7
-
-function clean(value: number): number {
-  if (Math.abs(value) < ZERO) return 0
-  return Math.round(value * 1e9) / 1e9
-}
+import { buildFlowGraph } from './flow.ts'
+import { clean } from './numeric.ts'
 
 function indexBy<T extends { id: string }>(rows: T[], label: string): Map<string, T> {
   const map = new Map<string, T>()
@@ -238,6 +233,7 @@ export function maximizeSinkPoints(problem: Problem): Plan {
       recipes: [],
       sinks: [],
       wasted: [],
+      flow: { nodes: [], edges: [] },
       reason:
         solution.status === 'unbounded'
           ? 'The recipe set contains a loop that produces sinkable items out of nothing, so points are unlimited. Check for a cycle whose outputs exceed its inputs.'
@@ -265,7 +261,7 @@ export function maximizeSinkPoints(problem: Problem): Plan {
 
   const totalPoints = clean(solution.objective * scale)
 
-  return {
+  const plan: Plan = {
     status: 'optimal',
     totalPoints,
     pointsPerSourceUnit: weightedTotal > 0 ? clean(totalPoints / weightedTotal) : 0,
@@ -304,7 +300,13 @@ export function maximizeSinkPoints(problem: Problem): Plan {
         quantity: clean(x[wasteBase + index] * scale),
       }))
       .filter((entry) => entry.quantity > 0),
+    flow: { nodes: [], edges: [] },
   }
+
+  // Built from the finished plan rather than from the tableau, so the graph is
+  // a decomposition of exactly the scaled, cleaned numbers printed above it.
+  plan.flow = buildFlowGraph(plan, dataset)
+  return plan
 }
 
 /** Render a plan as human-readable text for the CLI. */
@@ -342,6 +344,35 @@ export function formatPlan(plan: Plan): string {
       `  ${round(entry.quantity).padStart(10)} x ${entry.name}  @ ${entry.pointsEach} = ${round(entry.points)} pts`,
     )
   }
+  if (plan.flow.edges.length > 0) {
+    const nodeById = new Map(plan.flow.nodes.map((node) => [node.id, node]))
+    const labelOf = (id: string) => nodeById.get(id)?.name ?? id
+    const width = (pick: (edge: (typeof plan.flow.edges)[number]) => string) =>
+      plan.flow.edges.reduce((max, edge) => Math.max(max, pick(edge).length), 0)
+    const fromWidth = width((edge) => labelOf(edge.from))
+    const itemWidth = width((edge) => edge.itemName)
+
+    lines.push('')
+    lines.push('Material flow (source -> sink):')
+    for (const edge of plan.flow.edges) {
+      const marker = edge.pooled ? ' *' : ''
+      lines.push(
+        `  ${labelOf(edge.from).padEnd(fromWidth)}  ${round(edge.quantity).padStart(10)} x ` +
+          `${edge.itemName.padEnd(itemWidth)}  -> ${labelOf(edge.to)}${marker}`,
+      )
+    }
+    if (plan.flow.edges.some((edge) => edge.pooled)) {
+      lines.push('  * shares a pool with other producers; the split shown is one valid one.')
+    }
+    const offPath = plan.flow.nodes.filter(
+      (node) => node.kind === 'recipe' && !node.onSinkPath,
+    )
+    if (offPath.length > 0) {
+      const names = offPath.map((node) => node.name).join(', ')
+      lines.push(`  Not on a path to the Sink (run only to get rid of a byproduct): ${names}`)
+    }
+  }
+
   if (plan.wasted.length > 0) {
     lines.push('')
     lines.push('Byproducts with nowhere to go (must be vented/dumped):')

@@ -85,11 +85,6 @@ const AlternatePicker = ({ alternates, unlocked, onChange }) => {
     return (
         <fieldset className="mb-3">
             <legend className="h6">Unlocked alternate recipes</legend>
-            <p className="text-muted small mb-2">
-                Alternates come from Hard Drives, so every save has a different set. The
-                planner may only use the ones checked here; standard recipes are always
-                available.
-            </p>
 
             {/* `sr-only` as well as `visually-hidden`: index.html still serves
                 Bootstrap 4 CSS, which has no `.visually-hidden`, so on its own

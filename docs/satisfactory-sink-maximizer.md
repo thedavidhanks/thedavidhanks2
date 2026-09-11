@@ -200,8 +200,12 @@ maximizeSinkPoints(dataset, sources, mode)
  │                         on the degenerate vertices production graphs are
  │                         full of.
  │
- └─ 5. Read back the plan  recipe run counts, what to sink, what to dump,
-                           the source mix, and points per source unit
+ ├─ 5. Read back the plan  recipe run counts, what to sink, what to dump,
+ │                        the source mix, and points per source unit
+ │
+ └─ 6. Decompose the flow  split each item's production across its consumers in
+       (O(items x P x C)) proportion, giving a graph you can draw: source ->
+                          recipes -> Sink. See §11 for the one caveat.
 ```
 
 Step 2 is a worklist over a bipartite item/recipe graph with a
@@ -253,7 +257,24 @@ Recipes to run (crafts):
 
 Feed to the AWESOME Sink:
       2.0645 x Smart Plating  @ 520 = 1073.5484 pts
+
+Material flow (source -> sink):
+  Iron Ore                       48 x Iron Ore               -> Iron Ingot
+  Iron Ingot                29.4194 x Iron Ingot             -> Iron Rod
+  Iron Ingot                18.5806 x Iron Ingot             -> Iron Plate
+  Iron Rod                  19.0968 x Iron Rod               -> Screws
+  Iron Plate                12.3871 x Iron Plate             -> Reinforced Iron Plate
+  Iron Rod                  10.3226 x Iron Rod               -> Rotor
+  Screws                    51.6129 x Screws                 -> Rotor
+  Screws                    24.7742 x Screws                 -> Reinforced Iron Plate
+  Reinforced Iron Plate      2.0645 x Reinforced Iron Plate  -> Smart Plating
+  Rotor                      2.0645 x Rotor                  -> Smart Plating
+  Smart Plating              2.0645 x Smart Plating          -> AWESOME Sink
 ```
+
+The last block is the plan as a graph — the same numbers as the recipe list, but
+with the edges filled in, so you can draw it. §11 covers the machine-readable
+form (`plan.flow`) and the one caveat that comes with it.
 
 Compare against the hand-worked chains in the brief: raw ore 1, ingots 2, plates
 4, rods 4, screws 8, Reinforced Iron Plate 10 — against the solver's **22.37
@@ -288,7 +309,16 @@ Recipes to run (crafts):
 Feed to the AWESOME Sink:
           15 x Time Crystal  @ 960 = 14400 pts
          100 x Sulfur  @ 11 = 1100 pts
+
+Material flow (source -> sink):
+  Coal                 600 x Coal          -> Diamonds
+  Sulfur               100 x Sulfur        -> AWESOME Sink
+  Diamonds              30 x Diamonds      -> Time Crystal
+  Time Crystal          15 x Time Crystal  -> AWESOME Sink
 ```
+
+The flow table makes the shape of this answer obvious: two chains that never
+meet, one of them a single hop straight to the Sink.
 
 This is the brief's "sink the rest without modification" case, and the solver
 reaches it by arithmetic rather than by a special rule. Black Powder
@@ -506,6 +536,7 @@ const plan = maximizeSinkPoints({
 
 console.log(plan.totalPoints)          // 48287.53...
 console.log(plan.pointsPerSourceUnit)  // 53.65...
+console.log(plan.flow.nodes.length)    // 13 nodes, source -> recipes -> Sink
 console.log(formatPlan(plan))
 ```
 
@@ -768,7 +799,52 @@ const plan: Plan = maximizeSinkPoints({ dataset, sources, mode?, scaleTo? })
 One pure function, no global state, no I/O, no async. Full shapes are in
 [types.ts](../src/lib/satisfactory-sink/types.ts); `npm run sink -- --json`
 prints exactly the `Plan` object, so the CLI doubles as a fixture generator for
-UI tests.
+UI tests. `plan.flow` is the graph described below.
+
+### `plan.flow` — the plan as a drawable graph
+
+`recipes`, `sinks` and `sources` are three flat lists with no edges between
+them. `plan.flow` is the same plan with the edges filled in: a path from every
+source product to the AWESOME Sink, through every recipe the plan runs.
+
+```ts
+plan.flow.nodes  // { id, kind, name, item?, recipe?, quantity?, runs?, machine?, depth, onSinkPath }
+plan.flow.edges  // { from, to, item, itemName, quantity, pooled }
+```
+
+`kind` is `source | recipe | sink | waste`. Node ids are `source:<itemId>`,
+`recipe:<recipeId>`, `sink` and `waste`; edge `from`/`to` are those ids. There
+is exactly one `sink` node — it is one building, and the edges carry the item —
+and a `waste` node only when the plan has to vent something. Built by
+[flow.ts](../src/lib/satisfactory-sink/flow.ts) from the finished `Plan`, so its
+numbers are the same scaled, rounded ones every other field shows.
+
+Four things to know before rendering it:
+
+1. **`pooled: true` means the split is a choice, not a fact.** The LP fixes how
+   many times to run each recipe, but never which producer's output feeds which
+   consumer — that does not change the objective. When an item has more than one
+   producer *and* more than one consumer, the edges are a proportional split of
+   a shared pool: correct in aggregate, arbitrary pair by pair. Only the pooled
+   totals are determinate, so render those edges as a pool (or at least
+   differently) rather than as observed routing. Single-product plans never
+   trigger it; a 12-ore plan has 54 pooled edges out of 181.
+2. **The graph can contain cycles.** Alternate: Recycled Plastic and Alternate:
+   Recycled Rubber consume each other's output, and a plan using both produces a
+   genuine loop. Do not reach for a DAG layout that assumes otherwise. `depth`
+   is a longest-path rank from the sources, capped so a cycle cannot spin — a
+   layout *hint*, not a guarantee of edge direction between layers.
+3. **`onSinkPath: false` marks a dead end.** Every recipe node on the shipped
+   dataset is on a source→sink path (there is a test over all 186 items), but it
+   is not a theorem: a recipe run purely to get rid of a non-discardable
+   byproduct terminates at `waste`. Such nodes stay in the graph — they are part
+   of the plan — and carry the flag so you can grey them out. A `source` node
+   gets `false` when the whole plan for it is "vent it", which is the honest
+   answer for the 15 fluids that score nothing.
+4. **It is empty for a non-optimal plan**, matching `recipes` and `sinks`.
+   `flow` is always present, never `undefined`, so there is nothing to
+   null-check — but `{ nodes: [], edges: [] }` still means "render the reason,
+   not a diagram" (see point 2 below).
 
 ### Six things that will bite a UI
 

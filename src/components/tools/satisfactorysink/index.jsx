@@ -102,11 +102,20 @@ const SatisfactorySink = () => {
                                     <option value="fixed">Most points &mdash; from these amounts</option>
                                 </select>
                                 <div className="form-text">
-                                    Left on &ldquo;decide for me&rdquo;, one product with no quantity
-                                    asks for the best mix and anything else plans for the amounts
-                                    you gave. Forcing &ldquo;best mix&rdquo; over several products
-                                    asks what you should be mining, and lets the solver turn a
-                                    product down.
+                                    <div>
+                                        <strong>Decide for me</strong> &mdash; one product with no
+                                        quantity asks for the best mix; anything else plans for the
+                                        amounts you gave.
+                                    </div>
+                                    <div>
+                                        <strong>Best mix</strong> &mdash; over several products, asks
+                                        what you should be mining, and lets the solver turn a product
+                                        down.
+                                    </div>
+                                    <div>
+                                        <strong>Most points</strong> &mdash; plans around exactly the
+                                        amounts you entered, using nothing you don&rsquo;t have.
+                                    </div>
                                 </div>
                             </div>
                         </Card.Body>
@@ -114,12 +123,7 @@ const SatisfactorySink = () => {
 
                     <Card>
                         <Card.Body>
-                            <Card.Title as="h2" className="h5">2. Which alternates have you unlocked?</Card.Title>
-                            <Card.Subtitle className="mb-3 text-muted" style={{ fontWeight: 400 }}>
-                                {ALL_ALTERNATES.length} of the {satisfactoryDataset.recipes.length} recipes
-                                need a Hard Drive. Nothing is unlocked by default, and your choices
-                                are remembered in this browser.
-                            </Card.Subtitle>
+                            <Card.Title as="h2" className="h5 mb-3">2. Which alternates have you unlocked?</Card.Title>
                             <AlternatePicker
                                 alternates={ALL_ALTERNATES}
                                 unlocked={unlocked}

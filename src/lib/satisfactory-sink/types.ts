@@ -103,6 +103,62 @@ export interface SourceUse {
   share: number
 }
 
+export type FlowNodeKind = 'source' | 'recipe' | 'sink' | 'waste'
+
+export interface FlowNode {
+  /** `source:iron-ore`, `recipe:iron-ingot`, `sink`, or `waste`. */
+  id: string
+  kind: FlowNodeKind
+  /** Display label: the product name, the recipe name, or the terminal's name. */
+  name: string
+  /** Source nodes only. */
+  item?: ItemId
+  /** Recipe nodes only. */
+  recipe?: RecipeId
+  /** Source nodes: units supplied. */
+  quantity?: number
+  /** Recipe nodes: crafts, the same figure as the matching `RecipeRun`. */
+  runs?: number
+  /** Recipe nodes, when the dataset carries it. */
+  machine?: string
+  /**
+   * Longest-path rank from the sources, 0 for a source node. A layout hint for
+   * a layered diagram, nothing the graph's meaning depends on.
+   */
+  depth: number
+  /**
+   * Reachable from a source *and* able to reach the sink. False marks a branch
+   * that only ever terminates at `waste` — a recipe run solely to consume a
+   * byproduct the game will not let you discard.
+   */
+  onSinkPath: boolean
+}
+
+export interface FlowEdge {
+  /** `FlowNode` id. */
+  from: string
+  /** `FlowNode` id. */
+  to: string
+  item: ItemId
+  itemName: string
+  quantity: number
+  /**
+   * The item had more than one producer *and* more than one consumer, so this
+   * edge is one valid split of a shared pool rather than an observed pairing.
+   * Only the pooled totals are determinate; see the note in flow.ts.
+   */
+  pooled: boolean
+}
+
+/**
+ * The plan as a graph: sources on the left, the AWESOME Sink on the right, and
+ * every recipe the plan runs on a path between them. May contain cycles.
+ */
+export interface FlowGraph {
+  nodes: FlowNode[]
+  edges: FlowEdge[]
+}
+
 export interface Plan {
   status: 'optimal' | 'infeasible' | 'unbounded'
   /** Total sink points produced by the plan. */
@@ -120,6 +176,11 @@ export interface Plan {
   sinks: SinkEntry[]
   /** Surplus that had to be thrown away (unsinkable byproducts). */
   wasted: Array<{ item: ItemId; name: string; quantity: number }>
+  /**
+   * The same plan as a graph, for drawing it. Empty for a non-optimal plan —
+   * always present, so a caller cannot forget to null-check it.
+   */
+  flow: FlowGraph
   /** Set when `status` is not `optimal`. */
   reason?: string
 }
