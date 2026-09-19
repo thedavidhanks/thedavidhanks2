@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 
+import { readStoredIds as parseStoredIds } from '../../../lib/satisfactory-sink/stored-alternates.ts';
+
 // Which "Alternate: ..." (Hard Drive) recipes the visitor has unlocked, kept in
 // localStorage.
 //
@@ -15,21 +17,15 @@ import { useCallback, useState } from 'react';
 // set — nothing unlocked — and checks off what their save actually has.
 const STORAGE_KEY = 'satisfactory-sink:unlocked-alternates';
 
-// localStorage throws in Safari private mode and when the quota is full, and
-// the stored value can be anything a previous version (or the user's devtools)
-// left behind. Every failure mode degrades to "nothing unlocked" rather than
-// taking the page down.
+// localStorage.getItem throws in Safari private mode and when the quota is
+// full. The parse/validate step for whatever it returns lives in
+// stored-alternates.ts; every failure mode there also degrades to "nothing
+// unlocked" rather than taking the page down.
 const readStoredIds = () => {
     try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (!raw) return new Set();
-
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return new Set();
-
-        return new Set(parsed.filter((id) => typeof id === 'string'));
+        return parseStoredIds(window.localStorage.getItem(STORAGE_KEY));
     } catch {
-        // Unavailable, blocked, or corrupt — start empty and stay in memory.
+        // Unavailable or blocked — start empty and stay in memory.
         return new Set();
     }
 };

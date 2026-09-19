@@ -1,0 +1,60 @@
+name: CI
+
+# Gate for anything landing on dev or master. Amplify deploys master without
+# running any of this, so these checks are the only thing standing between a
+# broken commit and production.
+on:
+  pull_request:
+    branches: [dev, master]
+  push:
+    branches: [dev, master]
+
+# A new push to the same branch makes the in-flight run obsolete.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Derived from the source, so a newly added VITE_* var is covered
+      # automatically. See scripts/check-env.ts for why the build alone
+      # cannot catch a missing key.
+      - name: Check required environment variables
+        run: npm run check:env
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_AWS_SKILLS_API_KEY: ${{ secrets.VITE_AWS_SKILLS_API_KEY }}
+          VITE_AWS_APPLY_API_KEY: ${{ secrets.VITE_AWS_APPLY_API_KEY }}
+
+      - name: Unit tests
+        run: npm test
+
+      # Fails if src/data/satisfactory/*.json drifted from what the generator
+      # produces out of resources/en-US.json. That export is the game's own
+      # 10 MB file and is gitignored, so on a runner this step reports "skipped"
+      # and passes -- the real drift check happens locally via npm run verify.
+      - name: Check generated Satisfactory data is current
+        run: npm run data:satisfactory:check
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_AWS_SKILLS_API_KEY: ${{ secrets.VITE_AWS_SKILLS_API_KEY }}
+          VITE_AWS_APPLY_API_KEY: ${{ secrets.VITE_AWS_APPLY_API_KEY }}

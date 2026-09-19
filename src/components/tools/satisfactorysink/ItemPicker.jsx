@@ -1,6 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import Select from 'react-select';
 import { Row, Col } from 'react-bootstrap';
+import {
+    parsePositive,
+    buildSource,
+    resolveQuantityPatch,
+    resolveWeightPatch,
+} from '../../../lib/satisfactory-sink/source-input.ts';
 
 // react-select is already a dependency and is already used in
 // src/components/aboutme/index.jsx, so it is the house choice for a
@@ -49,27 +55,6 @@ const formatPoints = (sinkPoints) =>
     sinkPoints == null
         ? 'cannot be sunk'
         : `${sinkPoints.toLocaleString()} pts/unit`;
-
-// Blank is always allowed (it means "no quantity" / "default weight"); a value
-// the solver would reject (zero, negative, NaN) is reported as invalid rather
-// than silently dropped.
-const parsePositive = (text) => {
-    const trimmed = String(text).trim();
-    if (trimmed === '') return { empty: true, value: undefined, valid: true };
-    const parsed = Number(trimmed);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-        return { empty: false, value: undefined, valid: false };
-    }
-    return { empty: false, value: parsed, valid: true };
-};
-
-// A SourceProduct must never carry a non-positive quantity — the solver
-// validates it — so the key is omitted entirely when there is no quantity.
-const buildSource = (item, quantity, weight) => ({
-    item,
-    ...(Number.isFinite(quantity) && quantity > 0 ? { quantity } : {}),
-    weight: Number.isFinite(weight) && weight > 0 ? weight : 1,
-});
 
 // Keep the Select menu above the rows rendered beneath it.
 const selectStyles = {
@@ -175,18 +160,16 @@ const ItemPicker = ({ items = [], value = [], onChange }) => {
 
     const handleQuantityChange = (itemId, text) => {
         setDraft(itemId, 'quantity', text);
-        const { empty, value: parsed, valid } = parsePositive(text);
         // Invalid input is held in the draft only, so the parent never sees a
         // quantity the solver would reject.
-        if (empty) patchSource(itemId, { quantity: undefined });
-        else if (valid) patchSource(itemId, { quantity: parsed });
+        const patch = resolveQuantityPatch(text);
+        if (patch) patchSource(itemId, patch);
     };
 
     const handleWeightChange = (itemId, text) => {
         setDraft(itemId, 'weight', text);
-        const { empty, value: parsed, valid } = parsePositive(text);
-        if (empty) patchSource(itemId, { weight: 1 });
-        else if (valid) patchSource(itemId, { weight: parsed });
+        const patch = resolveWeightPatch(text);
+        if (patch) patchSource(itemId, patch);
     };
 
     // Once the field reads as valid (or blank) the draft is dropped and the
