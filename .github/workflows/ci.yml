@@ -16,6 +16,10 @@ concurrency:
 
 jobs:
   verify:
+    # Pinned explicitly: this string is the status-check name enforced by the
+    # branch protection rule on `dev` and gating Dependabot auto-merge, so it
+    # must not drift if the job id is ever renamed.
+    name: verify
     runs-on: ubuntu-latest
 
     steps:
