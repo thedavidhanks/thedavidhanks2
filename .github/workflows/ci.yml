@@ -46,7 +46,9 @@ jobs:
         run: npm test
 
       # Fails if src/data/satisfactory/*.json drifted from what the generator
-      # produces out of resources/en-US.json.
+      # produces out of resources/en-US.json. That export is the game's own
+      # 10 MB file and is gitignored, so on a runner this step reports "skipped"
+      # and passes -- the real drift check happens locally via npm run verify.
       - name: Check generated Satisfactory data is current
         run: npm run data:satisfactory:check
 

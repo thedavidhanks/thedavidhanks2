@@ -300,6 +300,14 @@ let raw: Buffer
 try {
   raw = readFileSync(inputPath)
 } catch {
+  // The docs export is the game's own file: 10 MB and gitignored, so it is
+  // never present on a fresh clone or a CI runner. There is nothing to compare
+  // against there, so --check skips instead of failing; the drift gate only
+  // has teeth on a machine that has the game installed.
+  if (checkOnly) {
+    console.log(`skipped: no ${inputPath} to check against`)
+    process.exit(0)
+  }
   console.error(`Cannot read ${inputPath}
 
 Copy the game's documentation export into resources/:
