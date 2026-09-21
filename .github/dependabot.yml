@@ -1,0 +1,75 @@
+version: 2
+
+# Every ecosystem targets `dev`, not the default branch. Amplify deploys
+# `master` on push, so a dependency bump must land on `dev` and go through the
+# CI workflow (.github/workflows/ci.yml) before it can reach production.
+updates:
+  # Application dependencies (package.json / package-lock.json).
+  - package-ecosystem: npm
+    directory: "/"
+    target-branch: "dev"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - javascript
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: scope
+    # Batch the low-risk bumps so they arrive as two PRs instead of a dozen.
+    # Majors are deliberately left ungrouped -- they get their own PR so a
+    # breaking change is reviewed on its own.
+    groups:
+      production-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      development-minor-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+  # Action versions pinned in .github/workflows/*.yml.
+  - package-ecosystem: github-actions
+    directory: "/"
+    target-branch: "dev"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "ci(deps)"
+      include: scope
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Base image and features in .devcontainer/devcontainer.json.
+  - package-ecosystem: devcontainers
+    directory: "/"
+    target-branch: "dev"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - devcontainer
+    commit-message:
+      prefix: "chore(devcontainer)"
+      include: scope

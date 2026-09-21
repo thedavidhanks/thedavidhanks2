@@ -1,0 +1,85 @@
+name: Dependabot to dev
+
+# Dependabot security updates always target the default branch (master) --
+# target-branch in dependabot.yml only redirects version updates -- but master
+# is the production branch that Amplify deploys. This workflow redirects that
+# work onto dev: rebase the bump onto dev, run the full verify gate, raise it as
+# an auto-merging PR into dev, and close the original master PR.
+#
+# It is deliberately NOT triggered by the Dependabot pull_request event. Two
+# reasons: that event would verify the bump sitting on top of master, which is
+# not the tree being merged, and the pull_request_target workaround executes the
+# freshly bumped dependency's install scripts in a job holding a write token. A
+# scheduled run is a trusted context, which lets dependabot-one.yml isolate the
+# untrusted half into a read-only job. See docs/dependabot-automation.md.
+on:
+  schedule:
+    # Daily, off the hour: GitHub drops scheduled runs queued on the hour.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+# Default deny. Each job below grants only what it needs.
+permissions: {}
+
+# Two overlapping runs would race each other pushing to dev.
+concurrency:
+  group: dependabot-to-dev
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      pull-requests: ${{ steps.find.outputs.pull-requests }}
+      count: ${{ steps.find.outputs.count }}
+
+    steps:
+      - name: Find open Dependabot PRs against master
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # app/dependabot is how gh addresses the bot as an author.
+          numbers=$(gh pr list \
+            --base master \
+            --state open \
+            --author 'app/dependabot' \
+            --limit 50 \
+            --json number \
+            --jq '[.[].number]')
+
+          count=$(echo "$numbers" | jq 'length')
+
+          echo "pull-requests=$(echo "$numbers" | jq -c '.')" >> "$GITHUB_OUTPUT"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+          echo "Found $count open Dependabot PR(s) against master: $numbers"
+
+  process:
+    needs: discover
+    if: needs.discover.outputs.count != '0'
+
+    # One PR at a time. Each leg fast-forwards dev, so running them in parallel
+    # would guarantee that all but the first hit a stale-base failure.
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        pull-request: ${{ fromJSON(needs.discover.outputs.pull-requests) }}
+
+    uses: ./.github/workflows/dependabot-one.yml
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    with:
+      pull-request: ${{ matrix.pull-request }}
+    secrets:
+      # Optional. Empty unless the secret exists, in which case the called
+      # workflow falls back to GITHUB_TOKEN.
+      automation-token: ${{ secrets.AUTOMATION_TOKEN }}

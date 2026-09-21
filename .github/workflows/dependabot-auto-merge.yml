@@ -1,0 +1,50 @@
+name: Dependabot auto-merge
+
+# Turns on GitHub's native auto-merge for Dependabot PRs aimed at `dev`.
+# Nothing here merges anything directly -- `gh pr merge --auto` just arms the
+# PR, and GitHub does the squash only once every required status check (the
+# `verify` job in ci.yml) has passed.
+#
+# `pull_request_target` is used because a PR from Dependabot's fork-style ref
+# gets a read-only GITHUB_TOKEN under plain `pull_request`, which cannot enable
+# auto-merge. That means this job runs with write permissions in the context of
+# the base branch, so it must never check out or execute code from the PR head.
+on:
+  pull_request_target:
+    branches: [dev]
+    types: [opened, reopened, synchronize]
+
+# One arming attempt per PR is enough; a rapid re-push makes the earlier run
+# redundant.
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # Belt and braces: the actor and the PR author must both be Dependabot.
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        # To stop major bumps from auto-merging, add to this condition:
+        #   if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPENDENCY_NAMES: ${{ steps.metadata.outputs.dependency-names }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}

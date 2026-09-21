@@ -1,0 +1,79 @@
+name: Monthly dev to master PR
+
+# Dependabot work lands on dev, which means master -- the branch Amplify
+# deploys -- stays unpatched until someone promotes it. This opens that
+# promotion PR once a month and puts it in front of a human. It deliberately
+# does not merge: master is production.
+on:
+  schedule:
+    # 13:00 UTC on the 1st, off the hour so the run is not dropped.
+    - cron: '0 13 1 * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: dev-to-master-monthly
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Skip unless dev is ahead of master
+        id: diverged
+        run: |
+          set -euo pipefail
+
+          ahead=$(gh api "repos/${GH_REPO}/compare/master...dev" --jq '.ahead_by')
+          echo "dev is $ahead commit(s) ahead of master"
+          echo "ahead=$ahead" >> "$GITHUB_OUTPUT"
+
+      - name: Reuse the existing promotion PR if one is already open
+        id: existing
+        if: steps.diverged.outputs.ahead != '0'
+        run: |
+          set -euo pipefail
+
+          number=$(gh pr list --base master --head dev --state open --json number --jq '.[0].number // empty')
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Nudge the open PR
+        if: steps.diverged.outputs.ahead != '0' && steps.existing.outputs.number != ''
+        env:
+          NUMBER: ${{ steps.existing.outputs.number }}
+          AHEAD: ${{ steps.diverged.outputs.ahead }}
+        run: |
+          set -euo pipefail
+          gh pr comment "$NUMBER" --body \
+            "Monthly check-in: \`dev\` is still ${AHEAD} commit(s) ahead of \`master\` and this promotion PR is still open."
+
+      - name: Open the promotion PR
+        if: steps.diverged.outputs.ahead != '0' && steps.existing.outputs.number == ''
+        env:
+          AHEAD: ${{ steps.diverged.outputs.ahead }}
+        run: |
+          set -euo pipefail
+
+          gh pr create \
+            --base master \
+            --head dev \
+            --assignee thedavidhanks \
+            --reviewer thedavidhanks \
+            --title "Promote dev to master ($(date -u '+%B %Y'))" \
+            --body "$(cat <<EOF
+          \`dev\` is ${AHEAD} commit(s) ahead of \`master\`. Opened automatically by the monthly promotion job.
+
+          Merging this deploys to production -- Amplify builds on every push to \`master\`.
+
+          Review the commit list below before merging; this PR carries **everything** sitting on \`dev\`, not only the Dependabot updates.
+          EOF
+          )"

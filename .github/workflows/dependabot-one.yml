@@ -1,0 +1,268 @@
+name: Dependabot to dev (single PR)
+
+# Handles exactly one Dependabot PR. Called per-PR by dependabot-to-dev.yml.
+#
+# Split into three jobs on purpose. The middle job is the only one that runs
+# `npm ci`, which executes the bumped package's install scripts -- untrusted
+# code, since the whole point of the PR is that the dependency changed. That job
+# gets a read-only token, no credentials written to disk, and placeholder values
+# instead of the real VITE_* secrets. Anything a hostile postinstall does to the
+# runner (including appending to $GITHUB_PATH to hijack later steps) dies with
+# the job, because prepare and finalize run on separate runners.
+on:
+  workflow_call:
+    inputs:
+      pull-request:
+        description: Number of the Dependabot PR targeting master.
+        required: true
+        type: number
+    secrets:
+      automation-token:
+        description: >-
+          Optional PAT or GitHub App token used to raise the PR into dev. A PR
+          opened with the default GITHUB_TOKEN starts its checks in an
+          approval-required state, which stalls auto-merge until a human clicks
+          through. Supplying a token here lets ci.yml run unattended.
+        required: false
+
+jobs:
+  # ------------------------------------------------------------------ #
+  # 1. Replay the bump onto dev. No npm, so nothing untrusted executes.
+  # ------------------------------------------------------------------ #
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    outputs:
+      status: ${{ steps.rebase.outputs.status }}
+      branch: ${{ steps.rebase.outputs.branch }}
+      sha: ${{ steps.rebase.outputs.sha }}
+      title: ${{ steps.pr.outputs.title }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read PR metadata
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ inputs.pull-request }}
+        run: |
+          set -euo pipefail
+          title=$(gh pr view "$PR" --json title --jq '.title')
+          echo "title=$title" >> "$GITHUB_OUTPUT"
+          echo "PR #$PR: $title"
+
+      - name: Rebase the bump onto dev
+        id: rebase
+        env:
+          PR: ${{ inputs.pull-request }}
+        run: |
+          set -euo pipefail
+
+          branch="automation/dependabot/pr-${PR}"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git fetch --no-tags origin \
+            +refs/heads/dev:refs/remotes/origin/dev \
+            +refs/heads/master:refs/remotes/origin/master \
+            "+refs/pull/${PR}/head:refs/remotes/pr/${PR}"
+
+          # Replay only the commits the PR itself added. Using the merge-base
+          # rather than origin/master keeps unrelated master commits out of it.
+          base=$(git merge-base origin/master "refs/remotes/pr/${PR}")
+
+          git checkout -B "$branch" "refs/remotes/pr/${PR}"
+
+          if ! git rebase --onto origin/dev "$base"; then
+            git rebase --abort || true
+            echo "status=conflict" >> "$GITHUB_OUTPUT"
+            echo "Rebase onto dev conflicted; leaving PR #$PR alone."
+            exit 0
+          fi
+
+          # The alert on master stays open until master itself is fixed, so the
+          # same bump can show up again while dev already has it. That is not a
+          # failure -- there is just nothing left to merge.
+          if git diff --quiet origin/dev "$branch"; then
+            echo "status=already-applied" >> "$GITHUB_OUTPUT"
+            echo "dev already contains this change."
+            exit 0
+          fi
+
+          git push --force origin "$branch"
+
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "status=ready" >> "$GITHUB_OUTPUT"
+
+  # ------------------------------------------------------------------ #
+  # 2. The untrusted half. Read-only token, placeholder secrets.
+  # ------------------------------------------------------------------ #
+  verify:
+    needs: prepare
+    if: needs.prepare.outputs.status == 'ready'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    # scripts/check-env.ts only asserts that each VITE_* name is present and
+    # non-blank -- it never validates the value -- and `vite build` just inlines
+    # whatever it is given. So the gate is fully exercised without handing the
+    # real keys to a dependency that changed five minutes ago.
+    env:
+      VITE_FIREBASE_API_KEY: placeholder-not-a-real-key
+      VITE_AWS_SKILLS_API_KEY: placeholder-not-a-real-key
+      VITE_AWS_APPLY_API_KEY: placeholder-not-a-real-key
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          # Keep the token out of .git/config, where an install script could read it.
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Mirrors `npm run verify`, run as separate steps so a failure names
+      # itself in the Actions UI instead of collapsing into one red block.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check required environment variables
+        run: npm run check:env
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Check generated Satisfactory data is current
+        run: npm run data:satisfactory:check
+
+      - name: Build
+        run: npm run build
+
+  # ------------------------------------------------------------------ #
+  # 3. Raise the PR into dev, or file an issue. No npm, so nothing
+  #    untrusted executes.
+  # ------------------------------------------------------------------ #
+  finalize:
+    needs: [prepare, verify]
+    if: always() && needs.prepare.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ inputs.pull-request }}
+      TITLE: ${{ needs.prepare.outputs.title }}
+      BRANCH: ${{ needs.prepare.outputs.branch }}
+      SHA: ${{ needs.prepare.outputs.sha }}
+      STATUS: ${{ needs.prepare.outputs.status }}
+      VERIFIED: ${{ needs.verify.result }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Close PRs whose change dev already has
+        if: needs.prepare.outputs.status == 'already-applied'
+        run: |
+          set -euo pipefail
+          gh pr close "$PR" --comment \
+            "Superseded automatically: dev already contains this change, so there is nothing to merge. Closing here; the fix reaches master with the next scheduled dev -> master PR."
+
+      # dev is branch-protected and requires the `verify` check, so the bump has
+      # to arrive as a PR rather than a direct push. Auto-merge is armed so it
+      # lands by itself once ci.yml goes green, which is the same mechanism
+      # dependabot-auto-merge.yml uses for version updates.
+      - name: Raise the rebased bump as a PR into dev
+        if: needs.prepare.outputs.status == 'ready' && needs.verify.result == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.automation-token || github.token }}
+        run: |
+          set -euo pipefail
+
+          url=$(gh pr create \
+            --base dev \
+            --head "$BRANCH" \
+            --title "${TITLE}" \
+            --body "$(cat <<EOF
+          Rebased onto \`dev\` from #${PR}, which Dependabot raised against \`master\`.
+
+          Already verified green on this exact tree by [this run](${RUN_URL}) -- lint, env check, unit tests, data drift, build. Auto-merge is armed, so it lands once \`verify\` reports back.
+
+          Closes #${PR}.
+          EOF
+          )")
+
+          echo "Opened $url"
+          gh pr merge --auto --squash "$url"
+          echo "DEV_PR_URL=$url" >> "$GITHUB_ENV"
+
+      - name: Close the master PR
+        if: needs.prepare.outputs.status == 'ready' && needs.verify.result == 'success'
+        run: |
+          set -euo pipefail
+          gh pr close "$PR" --comment \
+            "Redirected to \`dev\` as ${DEV_PR_URL}, rebased and verified by [this run](${RUN_URL}). Closing here -- the change reaches \`master\` with the next dev -> master promotion PR."
+
+      - name: Open an issue when the bump cannot be landed
+        if: failure() || needs.verify.result == 'failure' || needs.prepare.outputs.status == 'conflict'
+        run: |
+          set -euo pipefail
+
+          marker="dependabot-automation:pr-${PR}"
+
+          # One open issue per PR, however many times the daily poll retries it.
+          existing=$(gh issue list --state open --search "\"$marker\" in:body" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            echo "Issue #$existing already tracks PR #$PR."
+            exit 0
+          fi
+
+          if [ "$STATUS" = 'conflict' ]; then
+            reason="The bump could not be rebased onto \`dev\` -- it conflicts, most likely in \`package-lock.json\`."
+          elif [ "$VERIFIED" = 'failure' ]; then
+            reason="The bump rebased onto \`dev\` cleanly but failed the verify gate."
+          else
+            reason="The bump rebased cleanly and passed verification, but the PR into \`dev\` could not be opened. Check that Actions is allowed to create pull requests."
+          fi
+
+          gh issue create \
+            --title "Dependabot PR #${PR} needs manual handling" \
+            --assignee thedavidhanks \
+            --body "$(cat <<EOF
+          ${reason}
+
+          - Dependabot PR: #${PR} (${TITLE})
+          - Workflow run: ${RUN_URL}
+
+          The PR against \`master\` has been left open and nothing was merged into \`dev\`.
+
+          <!-- ${marker} -->
+          EOF
+          )"
+
+      # Only when no PR was opened -- otherwise this would delete the branch the
+      # PR is built from.
+      - name: Remove the working branch
+        if: always() && needs.prepare.outputs.status == 'ready' && env.DEV_PR_URL == ''
+        run: git push origin --delete "$BRANCH" || true
