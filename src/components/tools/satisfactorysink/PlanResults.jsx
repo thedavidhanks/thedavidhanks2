@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Alert, Badge, Card, Table } from 'react-bootstrap';
 
 import FlowDiagram from './FlowDiagram.jsx';
-import { fmt } from './format.js';
+import { fmt } from '../../../lib/satisfactory-sink/format.ts';
 
 // The CLI prints the budget share as one decimal place, e.g. `100.0% of budget`.
 const fmtShare = (share) => {

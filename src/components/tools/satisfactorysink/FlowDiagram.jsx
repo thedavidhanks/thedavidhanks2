@@ -2,7 +2,8 @@ import React, { useId, useMemo, useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 
 import { layoutFlowGraph } from '../../../lib/satisfactory-sink/layout.ts';
-import { fmt } from './format.js';
+import { BOLD_CHAR_RATIO, describeNodes, truncate } from '../../../lib/satisfactory-sink/diagram-labels.ts';
+import { fmt } from '../../../lib/satisfactory-sink/format.ts';
 import './flowdiagram.css';
 
 // Every box is an ITEM, not a recipe: "Iron Plate", not "the Iron Plate recipe
@@ -11,23 +12,6 @@ import './flowdiagram.css';
 const ICON_SLOT = 24;   // reserved square at the left of every box; a later
 const ICON_GAP = 8;     // iteration drops item images in without re-laying out
 const PAD_X = 10;
-
-// Rough advance width per character as a fraction of the font size. SVG cannot
-// wrap text and measuring in JS would mean a layout pass per render, so labels
-// are clipped to an estimate. Nothing is lost to the clip: every box carries a
-// <title> tooltip and the text list below the diagram spells all of it out.
-//
-// Bold is wider. The box label is 600 weight and the system UI stack the page
-// inherits runs ~0.58-0.60 there, so it gets its own ratio — sharing 0.56 let
-// the longest labels overrun the box by ~11px into the gutter.
-const CHAR_RATIO = 0.56;
-const BOLD_CHAR_RATIO = 0.6;
-
-const truncate = (text, fontSize, available, ratio = CHAR_RATIO) => {
-    const max = Math.floor(available / (fontSize * ratio));
-    if (text.length <= max) return text;
-    return `${text.slice(0, Math.max(1, max - 1))}…`;
-};
 
 // All chosen against a white card: the text colours clear 4.5:1 (WCAG 1.4.3)
 // and the strokes clear 3:1 (1.4.11, non-text contrast). Fills stay pale so the
@@ -47,58 +31,6 @@ const OFF_PATH = { fill: '#f8f9fa', stroke: '#7b8288', label: '#495057' };
 const EDGE_COLOR = '#495057';        // 8.2:1 on white
 const POOLED_COLOR = '#6f42c1';      // 6.5:1 on white, and dashed as well as
 const POOLED_DASH = '6 4';           // coloured — colour is never the only cue
-
-const ALTERNATE_PREFIX = 'Alternate: ';
-
-/**
- * The product a recipe is *for*, as opposed to what falls out of it as well.
- *
- * `outputs[0]` is not it. The dataset comes out of the game's own docs export
- * in whatever order the recipe was authored, and eight multi-output recipes
- * list the byproduct first — Rubber and Plastic both lead with Heavy Oil
- * Residue, the Dark Matter Residue recipes all do. Taking the first output
- * would put two boxes labelled "Heavy Oil Residue" side by side in any crude
- * oil plan, one of which is really the Rubber machine.
- *
- * So: the output the recipe is named after, if there is one, and the first
- * output otherwise. The name match is exact (bar the "Alternate: " prefix), so
- * it either fires on the right product or does not fire at all — the fallback
- * covers "Residual Fuel" making Fuel, where nothing matches.
- */
-function primaryOutput(recipe, items) {
-    const outputs = recipe?.outputs ?? [];
-    if (outputs.length === 0) return undefined;
-    const bare = recipe.name.startsWith(ALTERNATE_PREFIX)
-        ? recipe.name.slice(ALTERNATE_PREFIX.length)
-        : recipe.name;
-    const named = outputs.find((output) => items.get(output.item) === bare);
-    return (named ?? outputs[0]).item;
-}
-
-/**
- * What each box is called, and what to print under it.
- *
- * A recipe node is labelled with its primary output item, so the box says
- * "Iron Ingot" whether the plan smelted it the normal way or used Alternate:
- * Pure Iron Ingot. The recipe name goes underneath unless it would just repeat
- * the line above it, which is the ordinary case for the standard recipes —
- * "Iron Ingot" made by the "Iron Ingot" recipe needs saying once.
- */
-function describeNodes(graph, dataset) {
-    const items = new Map(dataset.items.map((item) => [item.id, item.name]));
-    const recipes = new Map(dataset.recipes.map((recipe) => [recipe.id, recipe]));
-
-    return new Map(graph.nodes.map((node) => {
-        if (node.kind !== 'recipe') return [node.id, { label: node.name, sub: '' }];
-
-        const recipe = recipes.get(node.recipe);
-        const output = primaryOutput(recipe, items);
-        // Falling back to the recipe name keeps the box labelled if a caller
-        // ever passes a dataset the plan was not solved against.
-        const label = (output && items.get(output)) || node.name;
-        return [node.id, { label, sub: node.name === label ? '' : node.name }];
-    }));
-}
 
 /**
  * The drawing itself, and nothing else.

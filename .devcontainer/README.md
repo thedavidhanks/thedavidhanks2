@@ -13,6 +13,7 @@ Reproduces the Amplify build environment (Debian, Node 22) locally so
 2. **Dev Containers: Reopen in Container.** `npm ci` runs automatically on
    create.
 3. `npm run dev` — port 5173 is auto-forwarded.
+4. If Github integration is desired, `gh auth login` will be needed once.
 
 ## Why `node_modules` is a volume
 
@@ -62,6 +63,18 @@ Consequences:
   (`/workspaces/thedavidhanks`) differs from the host's
   (`C:\Users\dave_\workspace\thedavidhanks`), so it starts a fresh project
   entry. Project-scoped memory written on the host won't be visible inside.
+
+## GitHub CLI
+
+The `github-cli` feature puts `gh` on `PATH`. Authenticate once:
+
+```
+gh auth login
+```
+
+The token lands in `/home/node/.config/gh/hosts.yml`, which is a named volume
+(`gh-config`), so it survives rebuilds the same way `gcloud-config` does. To
+force a re-login, `docker volume rm gh-config` and rebuild.
 
 ## Notes
 

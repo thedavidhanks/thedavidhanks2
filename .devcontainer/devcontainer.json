@@ -30,6 +30,13 @@
       "target": "/home/node/.config/gcloud",
       "type": "volume"
     },
+    // `gh auth login` writes its token to hosts.yml here; without a volume it
+    // is lost on every rebuild.
+    {
+      "source": "gh-config",
+      "target": "/home/node/.config/gh",
+      "type": "volume"
+    },
     // Host ~/.claude, exposed read-only alongside (not on top of) the
     // container's own config. setup.sh links the portable parts across.
     // Mounting it directly at /home/node/.claude would be wrong: plugins/

@@ -7,7 +7,11 @@ HOST_CLAUDE=/home/node/.claude-host
 CLAUDE=/home/node/.claude
 
 # Named volumes are created root-owned.
-sudo chown -R node:node "$WORKSPACE/node_modules" "$CLAUDE" /home/node/.config/gcloud
+sudo chown -R node:node \
+  "$WORKSPACE/node_modules" \
+  "$CLAUDE" \
+  /home/node/.config/gcloud \
+  /home/node/.config/gh
 
 if [ -d "$HOST_CLAUDE" ]; then
   # Portable, platform-independent config -- symlinked so edits on the host
