@@ -22,6 +22,13 @@ Create a `.env` in the repo root before `npm run dev`:
 - `VITE_AWS_SKILLS_API_KEY` — API key for the "Ask Me" Lambda (`https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/ask`). Used only by the `/askme` route.
 - `VITE_AWS_APPLY_API_KEY` — API key for the "Apply for Jobs" Lambda. Used only by the `/tools/applyforjobs` route. See `docs/applyforjobs-bedrock-deploy.md` for the backend deploy spec.
 
+In the Amplify console these three must be set as **environment variables**
+(App settings → Environment variables), *not* as Amplify **secrets**. Secrets
+are not exported into the build shell, so Vite would inline `undefined` for
+each one and every route would render blank. `amplify.yml` runs
+`npm run check:env` in `preBuild` so a misconfiguration fails the build instead
+of deploying a blank site.
+
 ## Architecture
 
 Single-page React 19 app bundled with Vite, deployed to AWS Amplify (us-west-2) on push to `master` (see `amplify.yml`).
