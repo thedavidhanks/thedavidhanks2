@@ -18,11 +18,11 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
-    "dompurify": "^3.4.15",
+    "dompurify": "^3.4.16",
     "firebase": "^12.19.0",
     "jquery": "^4.0.0",
     "leaflet": "^1.9.4",
-    "marked": "^18.0.13",
+    "marked": "^18.0.14",
     "popper.js": "^1.16.1",
     "react": "^19.3.0",
     "react-bootstrap": "^2.10.10",
