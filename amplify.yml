@@ -5,6 +5,13 @@ frontend:
       commands:
         # - nvm use $VERSION_NODE_22 # This is not needed because Amplify will use the version specified in package.json or maybe .nvmrc
         - npm ci
+        # `vite build` exits 0 with a missing VITE_* var and inlines `undefined`,
+        # which makes src/firebase.js throw at module load and blanks every
+        # route. Fail here instead of shipping that. .github/workflows/ci.yml
+        # runs lint/test/build on the same commit, but it checks GitHub's
+        # secrets -- only this step sees Amplify's own environment, so it is the
+        # one check that cannot be delegated to CI.
+        - npm run check:env
     build:
       commands:
         # - nvm use $VERSION_NODE_22

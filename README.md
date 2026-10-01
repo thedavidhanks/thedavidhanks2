@@ -14,6 +14,19 @@ npm install
 npm run dev
 ```
 
+## Deployment environment variables
+
+The site needs `VITE_FIREBASE_API_KEY`, `VITE_AWS_SKILLS_API_KEY` and
+`VITE_AWS_APPLY_API_KEY` at build time. In the Amplify console set them as
+**environment variables** (App settings → Environment variables), **not** as
+Amplify **secrets** — secrets are not exported to the build shell, so Vite
+would bake in `undefined` and the deployed site would show a blank page on
+every route.
+
+The build runs `npm run check:env` before `vite build` (see `amplify.yml`), so
+a missing or blank value fails the deployment instead of publishing a broken
+site. The same check runs in CI against the matching GitHub repository secrets.
+
 ## Satisfactory AWESOME Sink optimizer
 
 A calculator that works out what to build from a set of raw products so the
