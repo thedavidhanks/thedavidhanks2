@@ -49,6 +49,11 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      # The Vitest/jsdom suite. Separate from `npm test` because the two
+      # runners are deliberately kept apart -- see CLAUDE.md.
+      - name: Component tests
+        run: npm run test:ui
+
       # Fails if src/data/satisfactory/*.json drifted from what the generator
       # produces out of resources/en-US.json. That export is the game's own
       # 10 MB file and is gitignored, so on a runner this step reports "skipped"
