@@ -39,7 +39,7 @@ const CardContainer = ({projectlist}) => {
               (<ProjectCard 
                   title={project.title} 
                   tags={project.tags}
-                  endpoint={project.path}
+                  endpoint={project.endpoint}
                   key={i}
                   id={i}
                   imgsrc={project.imgsrc}
