@@ -10,4 +10,13 @@ export default defineConfig({
     host: true,
     port: 5173,
   },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.jsx'],
+    // Component tests are .js/.jsx only. src/lib/**/*.test.ts belongs to the
+    // dependency-free `node --test` suite (npm test) and must never be picked
+    // up here; the exclude is belt-and-braces in case a .jsx test lands there.
+    include: ['src/**/*.test.{js,jsx}'],
+    exclude: ['src/lib/**'],
+  },
 })

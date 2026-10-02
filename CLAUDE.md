@@ -9,7 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run preview` — serve the production build locally.
 - `npm run lint` — ESLint (flat config in `eslint.config.js`). Globs `**/*.{js,jsx}` only, so the `.ts` files under `src/lib/` and `scripts/` are not linted.
 - `npm run sink -- "Iron Ore"` — AWESOME Sink optimizer CLI (`--help` for options).
-- `npm run test:sink` — `node --test` over `src/lib/satisfactory-sink/*.test.ts`. This is the only test suite in the repo; the React app has none.
+- `npm run test:sink` — `node --test` over `src/lib/satisfactory-sink/*.test.ts`. Intentionally dependency-free; keep it on Node's runner.
+- `npm run test:ui` — Vitest + jsdom component tests (`src/**/*.test.{js,jsx}`; `src/lib/**` is excluded so the two runners never overlap). Setup in `src/test/`: `setup.jsx` mocks `src/firebase.js` and `react-leaflet` for every test, `server.js` holds the MSW handlers for the AskMe and Apply for Jobs endpoints (unhandled requests fail the test). `src/App.test.jsx` renders every route via `MemoryRouter`; its `PAGES` map must list each new tool/project URL with a heading unique to that page, or the coverage test fails.
 - `npm run data:satisfactory` — regenerate `src/data/satisfactory/*.json` from the game's docs export. `:check` variant exits non-zero if the committed files have drifted.
 
 Node 22+ is required (`.nvmrc` and `engines.node` in `package.json`); the `.ts` files rely on Node's native type-stripping, so they run with no build step and no TypeScript dependency.
@@ -33,9 +34,9 @@ of deploying a blank site.
 
 Single-page React 19 app bundled with Vite, deployed to AWS Amplify (us-west-2) on push to `master` (see `amplify.yml`).
 
-- `src/main.jsx` is the entrypoint: it constructs the top-level `App` class component, wires `BrowserRouter`, and defines all routes. Adding a new top-level page means adding a `<Route>` here and (usually) a link in the `menuItems` state.
+- `src/main.jsx` is the thin entrypoint: it mounts `App` inside `BrowserRouter`. `src/App.jsx` is the top-level class component and defines all routes (it renders no router itself, so tests can wrap it in `MemoryRouter`). Adding a new top-level page means adding a `<Route>` in `App.jsx`, (usually) a link in the `menuItems` state, and an entry in `PAGES` in `src/App.test.jsx`.
 - `src/firebase.js` initializes the Firebase compat SDK (auth + firestore) and exports `auth`, `db`, `provider`. Auth state lives on `App`'s `state.user`; `login`/`logout` use `signInWithPopup`/`signOut` and are passed down to `BSnavbar`.
-- `src/components/projects/index.jsx` is its own nested-router subtree: a `projectlist` array drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`.
+- `src/components/projects/index.jsx` is its own nested-router subtree: the `projectlist` array in `projectlist.jsx` drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`. Because `ProjectHome` is mounted at `/projects/*` and each `path` starts with `projects/`, project pages are served at `/projects/projects/<name>`.
 - `src/components/askme/index.jsx` is a chat UI that POSTs `{question, sessionId?}` to the AWS API Gateway endpoint above and types the response character-by-character via a `setInterval`. The `sessionId` returned by the API is reused for follow-up questions to maintain conversation context.
 - Styling is Bootstrap 5 + react-bootstrap, with the bundle JS imported once in `main.jsx`.
 
