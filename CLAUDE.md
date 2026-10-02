@@ -36,9 +36,25 @@ Single-page React 19 app bundled with Vite, deployed to AWS Amplify (us-west-2) 
 
 - `src/main.jsx` is the thin entrypoint: it mounts `App` inside `BrowserRouter`. `src/App.jsx` is the top-level class component and defines all routes (it renders no router itself, so tests can wrap it in `MemoryRouter`). Adding a new top-level page means adding a `<Route>` in `App.jsx`, (usually) a link in the `menuItems` state, and an entry in `PAGES` in `src/App.test.jsx`.
 - `src/firebase.js` initializes the Firebase compat SDK (auth + firestore) and exports `auth`, `db`, `provider`. Auth state lives on `App`'s `state.user`; `login`/`logout` use `signInWithPopup`/`signOut` and are passed down to `BSnavbar`.
-- `src/components/projects/index.jsx` is its own nested-router subtree: the `projectlist` array in `projectlist.jsx` drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`. Because `ProjectHome` is mounted at `/projects/*` and each `path` starts with `projects/`, project pages are served at `/projects/projects/<name>`.
+- `src/components/projects/index.jsx` is its own nested-router subtree: the `projectlist` array in `projectlist.jsx` drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, endpoint, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`. `ProjectHome` is mounted at `/projects/*`, so its descendant `<Routes>` matches only the remaining segment: `path` is the bare slug (`gps-tracker`) and `endpoint` is the full path minus the leading slash (`projects/gps-tracker`), which `ProjectCard` links to absolutely. Pages are served at `/projects/<slug>`. This mirrors `toollist.jsx`/`ToolCard.jsx`; re-adding a `projects/` prefix to `path` is what caused the doubled `/projects/projects/<slug>` URLs in #36.
 - `src/components/askme/index.jsx` is a chat UI that POSTs `{question, sessionId?}` to the AWS API Gateway endpoint above and types the response character-by-character via a `setInterval`. The `sessionId` returned by the API is reused for follow-up questions to maintain conversation context.
 - Styling is Bootstrap 5 + react-bootstrap, with the bundle JS imported once in `main.jsx`.
+
+## Branch protection
+
+Three repository rulesets, all `active`. View them with `gh api repos/thedavidhanks/thedavidhanks2/rulesets`.
+
+| Branch | Ruleset | Rules | Bypass |
+| --- | --- | --- | --- |
+| `master` | `master: production gate` | PR required (0 approvals), `verify` must pass, no force-push, no deletion | none |
+| `dev` | `dev: no force-push or delete` | no force-push, no deletion | none |
+| `dev` | `run tests on branch` | PR required (0 approvals), `verify` must pass | Repository admin, mode `always` |
+
+- `verify` is the job name in `ci.yml`. It is pinned by `name: verify` precisely because the rulesets reference that string — renaming the job silently disables the gate on both branches.
+- **`master` has no bypass for anyone.** Changes reach it only through a PR with a green `verify`; `dev-to-master-monthly.yml` opens that PR on the 1st and deliberately does not merge it.
+- `dev` is split across two rulesets on purpose. The admin bypass is scoped to the PR/status-check ruleset so the owner can push to `dev` directly, while force-push and deletion stay blocked for everyone.
+- No workflow holds the admin role, so every automated path — Dependabot included — still goes through a PR. See `docs/dependabot-automation.md`.
+- Required approvals are `0` on both branches and should stay there: this is a single-maintainer repo and GitHub forbids approving your own PR, so any higher count makes self-authored PRs unmergeable. For the same reason `require_extra_approval_for_unattributed_changes` is `false` on `master`.
 
 ## Conventions to be aware of
 

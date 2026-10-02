@@ -61,9 +61,12 @@ that ecosystem entry stop applying to them. So security PRs still arrive against
 the same place: both end with an auto-merging PR into `dev`, gated on the same
 `verify` check.
 
-`dev` is branch-protected and requires `verify`, which is why the automation
-raises a PR rather than pushing to `dev` directly — a direct push would be
-rejected by the protection rule.
+`dev` requires a pull request and a green `verify`, which is why the automation
+raises a PR rather than pushing to `dev` directly — a direct push from Actions
+would be rejected by the ruleset. The repository admin holds a bypass on that
+ruleset and *can* push to `dev` directly, but no workflow runs with that role, so
+every automated path still goes through a PR. See
+[Branch protection](../CLAUDE.md#branch-protection) for the full ruleset layout.
 
 ## Outcomes per PR
 
