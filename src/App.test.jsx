@@ -23,16 +23,17 @@ const PAGES = {
     '/tools/satisfactory-sink': 'Satisfactory Sink Maximizer',
     '/tools/nwmap': 'New World',
 
-    // ProjectHome is mounted at /projects/* and each project's path already
-    // starts with "projects/", so project pages live at /projects/projects/*.
-    // That is what the cards link to today; this pins it.
-    '/projects/projects/gps-tracker': 'GPS Tracker',
-    '/projects/projects/cellantenna': 'Cricket Antenna',
-    '/projects/projects/shearcalculator': 'Shear Calculator',
-    '/projects/projects/kaleidoscope': 'Kaleidoscope',
-    '/projects/projects/temphumiditysensor': 'Temperature & Humidity Sensor',
-    '/projects/projects/pythonreport': 'Python Report Generator',
-    '/projects/projects/jobcomparer': 'Android Job Evaluator',
+    // ProjectHome is mounted at /projects/*, so each project's path is the
+    // bare slug the descendant <Routes> matches against (issue #36: these
+    // used to be declared as "projects/<slug>" and only resolved at the
+    // doubled URL /projects/projects/<slug>).
+    '/projects/gps-tracker': 'GPS Tracker',
+    '/projects/cellantenna': 'Cricket Antenna',
+    '/projects/shearcalculator': 'Shear Calculator',
+    '/projects/kaleidoscope': 'Kaleidoscope',
+    '/projects/temphumiditysensor': 'Temperature & Humidity Sensor',
+    '/projects/pythonreport': 'Python Report Generator',
+    '/projects/jobcomparer': 'Android Job Evaluator',
 };
 
 const toolUrl = (tool) => `/tools/${tool.path}`;
@@ -75,6 +76,13 @@ describe('route render smoke test', () => {
 
         // findAll: some pages repeat their title in a carousel caption.
         expect(await main().findAllByRole('heading', { name: heading })).not.toHaveLength(0);
+    });
+
+    // Regression guard for issue #36: the children of /projects/* must not
+    // re-declare the "projects/" segment the parent route already consumed.
+    it('does not serve project pages at the doubled /projects/projects/* URL', () => {
+        renderAt('/projects/projects/gps-tracker');
+        expect(main().queryByRole('heading', { name: 'GPS Tracker' })).not.toBeInTheDocument();
     });
 
     it('renders none of the page headings for an unknown URL', () => {
