@@ -12,6 +12,7 @@
     "test": "node --test \"src/lib/**/*.test.ts\"",
     "test:sink": "node --test \"src/lib/satisfactory-sink/*.test.ts\"",
     "check:env": "node scripts/check-env.ts",
+    "check:routes": "node scripts/check-routes.ts",
     "verify": "npm run lint && npm run check:env && npm run test && npm run test:ui && npm run data:satisfactory:check && npm run build",
     "data:satisfactory": "node scripts/build-satisfactory-data.ts",
     "data:satisfactory:check": "node scripts/build-satisfactory-data.ts --check",
