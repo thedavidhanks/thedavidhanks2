@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run test:sink` — `node --test` over `src/lib/satisfactory-sink/*.test.ts`. Intentionally dependency-free; keep it on Node's runner.
 - `npm run test:ui` — Vitest + jsdom component tests (`src/**/*.test.{js,jsx}`; `src/lib/**` is excluded so the two runners never overlap). Setup in `src/test/`: `setup.jsx` mocks `src/firebase.js` and `react-leaflet` for every test, `server.js` holds the MSW handlers for the AskMe and Apply for Jobs endpoints (unhandled requests fail the test). `src/App.test.jsx` renders every route via `MemoryRouter`; its `PAGES` map must list each new tool/project URL with a heading unique to that page, or the coverage test fails.
 - `npm run data:satisfactory` — regenerate `src/data/satisfactory/*.json` from the game's docs export. `:check` variant exits non-zero if the committed files have drifted.
+- `npm run check:routes` — asserts every deployed URL returns HTTP 200 against the live site (`-- --base=<url>` to target master; defaults to dev). Derives its path list from `src/App.jsx` and the `endpoint` fields in the two route tables, so new pages are covered automatically. Deliberately **not** part of `verify` — it hits production over the network. See `docs/amplify-redirects.md`.
 
 Node 22+ is required (`.nvmrc` and `engines.node` in `package.json`); the `.ts` files rely on Node's native type-stripping, so they run with no build step and no TypeScript dependency.
 
@@ -33,6 +34,8 @@ of deploying a blank site.
 ## Architecture
 
 Single-page React 19 app bundled with Vite, deployed to AWS Amplify (us-west-2) on push to `master` (see `amplify.yml`).
+
+Because it is a client-routed SPA, every deep link depends on an Amplify rewrite rule sending non-asset paths to `/index.html` with status 200. `amplify.yml` cannot express redirects — they live in app-level `customRules`, outside this repo — so **`docs/amplify-redirects.md` is the source of truth for that rule set**. Read it before touching routing, and update it in the same sitting if you change the rules in the console. It also covers Amplify's built-in trailing-slash behavior and the soft-404 tradeoff the 200 rewrite introduces.
 
 - `src/main.jsx` is the thin entrypoint: it mounts `App` inside `BrowserRouter`. `src/App.jsx` is the top-level class component and defines all routes (it renders no router itself, so tests can wrap it in `MemoryRouter`). Adding a new top-level page means adding a `<Route>` in `App.jsx`, (usually) a link in the `menuItems` state, and an entry in `PAGES` in `src/App.test.jsx`.
 - `src/firebase.js` initializes the Firebase compat SDK (auth + firestore) and exports `auth`, `db`, `provider`. Auth state lives on `App`'s `state.user`; `login`/`logout` use `signInWithPopup`/`signOut` and are passed down to `BSnavbar`.
