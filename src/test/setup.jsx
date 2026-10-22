@@ -47,7 +47,10 @@ vi.mock('react-leaflet', () => {
 // jsdom does not implement scrollIntoView; AskMe calls it after each message.
 Element.prototype.scrollIntoView = vi.fn();
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+// msw 3 renamed `onUnhandledRequest` to `onUnhandledFrame`. The old name is
+// not rejected, it is silently ignored, which drops the handler back to its
+// 'warn' default and lets an unmatched request reach the real AWS endpoint.
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => {
     cleanup();
     server.resetHandlers();
