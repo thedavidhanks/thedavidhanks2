@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
-    "dompurify": "^3.4.16",
+    "dompurify": "^3.4.17",
     "firebase": "^12.19.0",
     "jquery": "^4.0.0",
     "leaflet": "^1.9.4",
