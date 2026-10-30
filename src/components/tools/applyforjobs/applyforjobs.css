@@ -59,3 +59,21 @@
     align-items: center;
     margin-bottom: 10px;
 }
+
+/* Saved applications render as sanitized markdown rather than disabled
+   textareas, so history reads as a document and cannot be mistaken for the
+   live editor. */
+.applyforjobs-readonly {
+    background: #fff;
+    border: 1px solid #e5e5ea;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 0.95rem;
+    max-height: 40em;
+    overflow-y: auto;
+    word-wrap: break-word;
+}
+
+.applyforjobs-readonly > :last-child {
+    margin-bottom: 0;
+}

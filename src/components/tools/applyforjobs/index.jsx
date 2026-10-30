@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import {
+    createApplication,
+    deleteApplication,
+    subscribeToApplications,
+    updateApplicationOutputs,
+} from './history.js';
 import './applyforjobs.css';
 
 // TODO: update API_URL once the Bedrock backend is deployed.
@@ -165,14 +172,129 @@ const PrintIcon = () => (
     </svg>
 );
 
-const ApplyForJobs = () => {
+// Edits to the result are mirrored back to Firestore. Without a debounce
+// every keystroke would be a write, which is pointless and would chew through
+// the 20k/day free write quota.
+const SAVE_DEBOUNCE_MS = 1500;
+
+// Saved markdown is user-supplied, so sanitize before rendering it read-only.
+// Reuses the same marked + DOMPurify pair as the PDF path above.
+const renderMarkdown = (markdown) => ({
+    __html: DOMPurify.sanitize(marked.parse(markdown || '', { gfm: true, breaks: false })),
+});
+
+// "{datetime} - {company} {position}", with em dashes for values the user
+// left blank so the label never renders as a ragged "2026-10-28 -  ".
+const labelFor = (app) => {
+    const when = app.createdAtMs
+        ? new Date(app.createdAtMs).toLocaleString()
+        : '—';
+    return `${when} - ${app.company || '—'} ${app.position || '—'}`;
+};
+
+const ApplyForJobs = ({ user }) => {
+    const uid = user?.uid || null;
+
     const [jobPosting, setJobPosting] = useState('');
     const [applicantContext, setApplicantContext] = useState('');
+    const [company, setCompany] = useState('');
+    const [position, setPosition] = useState('');
     const [showContext, setShowContext] = useState(false);
     const [sessionId, setSessionId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [result, setResult] = useState(null);
+
+    // Persistence state, kept separate from `error` so a storage failure is
+    // never presented as a failed generation.
+    const [savedId, setSavedId] = useState(null);
+    const [saveError, setSaveError] = useState('');
+    const [applications, setApplications] = useState([]);
+    const [viewingId, setViewingId] = useState(null);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+    // Derived from the live snapshot rather than held as its own copy, so an
+    // edit-save is reflected here and a deleted record drops the detail view
+    // back to the form on its own.
+    const viewing = applications.find((app) => app.id === viewingId) || null;
+
+    const saveTimer = useRef(null);
+    const pendingSave = useRef(null);
+
+    useEffect(() => {
+        // No uid means no history to show. RequireAuth unmounts the tool on
+        // logout, so there is no populated list left behind to clear here.
+        if (!uid) return undefined;
+
+        const unsubscribe = subscribeToApplications(uid, setApplications, () => {
+            // A failed read just leaves the menu empty; it must not take the
+            // generation flow down with it.
+            setSaveError('Couldn\'t load your saved applications.');
+        });
+        return () => {
+            if (typeof unsubscribe === 'function') unsubscribe();
+        };
+    }, [uid]);
+
+    // Push any debounced edit that is still waiting. Reads only refs, so the
+    // closure captured by the unmount effect below stays correct.
+    const flushSave = () => {
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        const pending = pendingSave.current;
+        pendingSave.current = null;
+        if (!pending) return;
+        updateApplicationOutputs(pending.uid, pending.id, pending.outputs).catch(() => {
+            setSaveError('Couldn\'t save your latest edits to your history.');
+        });
+    };
+
+    // Flush on unmount so edits made right before navigating away survive.
+    useEffect(() => flushSave, []);
+
+    const scheduleSave = (outputs) => {
+        if (!uid || !savedId) return;
+        pendingSave.current = { uid, id: savedId, outputs };
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(flushSave, SAVE_DEBOUNCE_MS);
+    };
+
+    const updateOutput = (field, value) => {
+        const next = { ...result, [field]: value };
+        setResult(next);
+        scheduleSave({ coverLetter: next.coverLetter, resume: next.resume });
+    };
+
+    // Fire-and-forget: deliberately not awaited inside handleSubmit's try, so
+    // a storage failure cannot be caught as a generation failure.
+    const persist = (generated, resolvedSessionId, posting) => {
+        if (!uid) return;
+        createApplication(uid, {
+            company: company.trim(),
+            position: position.trim(),
+            jobPosting: posting,
+            applicantContext: applicantContext.trim(),
+            coverLetter: generated.coverLetter,
+            resume: generated.resume,
+            sessionId: resolvedSessionId,
+        })
+            .then(setSavedId)
+            .catch(() => setSaveError('Couldn\'t save this to your history.'));
+    };
+
+    const handleDelete = async (app) => {
+        if (!uid) return;
+        try {
+            await deleteApplication(uid, app.id);
+            if (savedId === app.id) setSavedId(null);
+            setConfirmingDelete(false);
+            setViewingId(null);
+        } catch {
+            setSaveError('Couldn\'t delete that application.');
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -180,8 +302,10 @@ const ApplyForJobs = () => {
         if (!posting) return;
 
         setError('');
+        setSaveError('');
         setLoading(true);
         setResult(null);
+        setSavedId(null);
 
         try {
             const response = await fetch(API_URL, {
@@ -203,10 +327,12 @@ const ApplyForJobs = () => {
 
             const data = await response.json();
             if (data.sessionId) setSessionId(data.sessionId);
-            setResult({
+            const generated = {
                 coverLetter: data.coverLetter || '',
                 resume: data.resume || '',
-            });
+            };
+            setResult(generated);
+            persist(generated, data.sessionId || sessionId, posting);
         } catch {
             setError('Something went wrong. Please try again.');
         } finally {
@@ -215,22 +341,93 @@ const ApplyForJobs = () => {
     };
 
     const startOver = () => {
+        flushSave();
         setJobPosting('');
         setApplicantContext('');
+        setCompany('');
+        setPosition('');
         setShowContext(false);
         setResult(null);
         setError('');
+        setSaveError('');
+        setSavedId(null);
     };
 
     return (
         <div className="applyforjobs-container">
-            <h3>Apply for Jobs</h3>
-            <p style={{ color: '#666' }}>
-                Paste a job posting below and get a tailored cover letter and resume.
-            </p>
+            <div className="d-flex justify-content-between align-items-start gap-3">
+                <h3>Apply for Jobs</h3>
+                {uid && (
+                    <Dropdown align="end">
+                        <Dropdown.Toggle
+                            variant="outline-secondary"
+                            size="sm"
+                            id="past-applications"
+                        >
+                            Past applications
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            {applications.length === 0 ? (
+                                <Dropdown.ItemText className="text-muted">
+                                    No saved applications yet
+                                </Dropdown.ItemText>
+                            ) : (
+                                applications.map((app) => (
+                                    <Dropdown.Item
+                                        key={app.id}
+                                        onClick={() => {
+                                            setConfirmingDelete(false);
+                                            setViewingId(app.id);
+                                        }}
+                                    >
+                                        {labelFor(app)}
+                                    </Dropdown.Item>
+                                ))
+                            )}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                )}
+            </div>
 
-            {!result && (
+            {!viewing && (
+                <p style={{ color: '#666' }}>
+                    Paste a job posting below and get a tailored cover letter and resume.
+                </p>
+            )}
+
+            {saveError && (
+                <div className="alert alert-warning" role="status">{saveError}</div>
+            )}
+
+            {!viewing && !result && (
                 <form onSubmit={handleSubmit}>
+                    <div className="row">
+                        <div className="col-sm-6 mb-3">
+                            <label htmlFor="company" className="form-label">Company</label>
+                            <input
+                                id="company"
+                                type="text"
+                                className="form-control"
+                                placeholder="Optional"
+                                value={company}
+                                onChange={(e) => setCompany(e.target.value)}
+                                disabled={loading}
+                            />
+                        </div>
+                        <div className="col-sm-6 mb-3">
+                            <label htmlFor="position" className="form-label">Position</label>
+                            <input
+                                id="position"
+                                type="text"
+                                className="form-control"
+                                placeholder="Optional"
+                                value={position}
+                                onChange={(e) => setPosition(e.target.value)}
+                                disabled={loading}
+                            />
+                        </div>
+                    </div>
+
                     <div className="mb-3">
                         <label htmlFor="jobPosting" className="form-label">
                             Job posting <span style={{ color: '#c00' }}>*</span>
@@ -281,7 +478,7 @@ const ApplyForJobs = () => {
                 </form>
             )}
 
-            {result && (
+            {!viewing && result && (
                 <>
                     <div className="applyforjobs-result">
                         <div className="applyforjobs-section-header">
@@ -299,9 +496,7 @@ const ApplyForJobs = () => {
                             className="applyforjobs-editor form-control"
                             aria-label="Cover letter markdown (editable)"
                             value={result.coverLetter}
-                            onChange={(e) =>
-                                setResult((r) => ({ ...r, coverLetter: e.target.value }))
-                            }
+                            onChange={(e) => updateOutput('coverLetter', e.target.value)}
                         />
                     </div>
 
@@ -321,9 +516,7 @@ const ApplyForJobs = () => {
                             className="applyforjobs-editor form-control"
                             aria-label="Resume markdown (editable)"
                             value={result.resume}
-                            onChange={(e) =>
-                                setResult((r) => ({ ...r, resume: e.target.value }))
-                            }
+                            onChange={(e) => updateOutput('resume', e.target.value)}
                         />
                     </div>
 
@@ -331,6 +524,102 @@ const ApplyForJobs = () => {
                         Start over
                     </button>
                 </>
+            )}
+
+            {viewing && (
+                <div className="applyforjobs-history-detail">
+                    <button
+                        className="btn btn-outline-secondary btn-sm mb-3"
+                        onClick={() => {
+                            setConfirmingDelete(false);
+                            setViewingId(null);
+                        }}
+                    >
+                        Back
+                    </button>
+
+                    <h4 className="mb-1">
+                        {viewing.company || '—'} — {viewing.position || '—'}
+                    </h4>
+                    <p style={{ color: '#666' }}>
+                        {viewing.createdAtMs
+                            ? new Date(viewing.createdAtMs).toLocaleString()
+                            : '—'}
+                    </p>
+
+                    <h5 className="mt-4">Job posting</h5>
+                    <div
+                        className="applyforjobs-readonly"
+                        dangerouslySetInnerHTML={renderMarkdown(viewing.jobPosting)}
+                    />
+
+                    {viewing.applicantContext && (
+                        <>
+                            <h5 className="mt-4">Additional context</h5>
+                            <div
+                                className="applyforjobs-readonly"
+                                dangerouslySetInnerHTML={renderMarkdown(
+                                    viewing.applicantContext
+                                )}
+                            />
+                        </>
+                    )}
+
+                    <div className="applyforjobs-section-header mt-4">
+                        <h5 className="mb-0">Cover Letter</h5>
+                        <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => downloadPdf('Cover Letter', viewing.coverLetter)}
+                        >
+                            <PrintIcon />
+                        </button>
+                    </div>
+                    <div
+                        className="applyforjobs-readonly"
+                        dangerouslySetInnerHTML={renderMarkdown(viewing.coverLetter)}
+                    />
+
+                    <div className="applyforjobs-section-header mt-4">
+                        <h5 className="mb-0">Resume</h5>
+                        <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => downloadPdf('Resume', viewing.resume)}
+                        >
+                            <PrintIcon />
+                        </button>
+                    </div>
+                    <div
+                        className="applyforjobs-readonly"
+                        dangerouslySetInnerHTML={renderMarkdown(viewing.resume)}
+                    />
+
+                    <div className="mt-4 d-flex gap-2 align-items-center">
+                        {confirmingDelete ? (
+                            <>
+                                <span>Delete this application?</span>
+                                <button
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() => handleDelete(viewing)}
+                                >
+                                    Confirm delete
+                                </button>
+                                <button
+                                    className="btn btn-sm btn-outline-secondary"
+                                    onClick={() => setConfirmingDelete(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => setConfirmingDelete(true)}
+                            >
+                                Delete
+                            </button>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );

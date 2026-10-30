@@ -4,7 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-- `npm run dev` — start Vite dev server.
+- `npm run dev` — start Vite dev server (talks to the real Firebase project).
+- `npm run dev:emulator` — same, but with `VITE_FIREBASE_EMULATOR=true` so auth and Firestore hit the local emulators instead. Pair with `npm run emulators` in another terminal. Requires **JDK 21+** (Debian bookworm's default JDK 17 is too old for current `firebase-tools`). See `docs/local-firebase-emulator.md`.
+- `npm run emulators` — Firebase Emulator Suite (firestore :8080, auth :9099, UI :4000).
+- `npm run check:rules` — asserts `firestore.rules` allows/denies what the app needs, against a running emulator. Like `check:routes`, deliberately **not** part of `verify` (it depends on a running emulator). The emulator reads the rules file only at startup, so restart it after editing rules.
 - `npm run build` — production build (output to `dist/`).
 - `npm run preview` — serve the production build locally.
 - `npm run lint` — ESLint (flat config in `eslint.config.js`). Globs `**/*.{js,jsx}` only, so the `.ts` files under `src/lib/` and `scripts/` are not linted.
@@ -39,6 +42,7 @@ Because it is a client-routed SPA, every deep link depends on an Amplify rewrite
 
 - `src/main.jsx` is the thin entrypoint: it mounts `App` inside `BrowserRouter`. `src/App.jsx` is the top-level class component and defines all routes (it renders no router itself, so tests can wrap it in `MemoryRouter`). Adding a new top-level page means adding a `<Route>` in `App.jsx`, (usually) a link in the `menuItems` state, and an entry in `PAGES` in `src/App.test.jsx`.
 - `src/firebase.js` initializes the Firebase compat SDK (auth + firestore) and exports `auth`, `db`, `provider`. Auth state lives on `App`'s `state.user`; `login`/`logout` use `signInWithPopup`/`signOut` and are passed down to `BSnavbar`.
+- Firestore security rules are committed as `firestore.rules` (wired up by `firebase.json`) and deployed with `firebase deploy --only firestore:rules` — that deploy **replaces the console ruleset wholesale**, so the file must cover every collection the app touches, NWmap's `/Games/{gameId}/Points` included. It was reconstructed from the code, not exported from the console; reconcile the two before the first deploy. `/tools/applyforjobs` persists saved generations to `users/{uid}/jobApplications`, a per-user subcollection whose isolation comes from the path plus a `request.auth.uid == userId` rule. See `docs/applyforjobs-history.md`.
 - `src/components/projects/index.jsx` is its own nested-router subtree: the `projectlist` array in `projectlist.jsx` drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, endpoint, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`. `ProjectHome` is mounted at `/projects/*`, so its descendant `<Routes>` matches only the remaining segment: `path` is the bare slug (`gps-tracker`) and `endpoint` is the full path minus the leading slash (`projects/gps-tracker`), which `ProjectCard` links to absolutely. Pages are served at `/projects/<slug>`. This mirrors `toollist.jsx`/`ToolCard.jsx`; re-adding a `projects/` prefix to `path` is what caused the doubled `/projects/projects/<slug>` URLs in #36.
 - `src/components/askme/index.jsx` is a chat UI that POSTs `{question, sessionId?}` to the AWS API Gateway endpoint above and types the response character-by-character via a `setInterval`. The `sessionId` returned by the API is reused for follow-up questions to maintain conversation context.
 - Styling is Bootstrap 5 + react-bootstrap, with the bundle JS imported once in `main.jsx`.

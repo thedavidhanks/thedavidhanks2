@@ -1,0 +1,53 @@
+// Firestore security rules for the thedavidhanks Firebase project.
+//
+// !! RECONCILE WITH THE CONSOLE BEFORE DEPLOYING !!
+// Until now these rules lived only in the Firebase console and were never
+// committed, so this file is a reconstruction, not a copy. Deploying it with
+//
+//     firebase deploy --only firestore:rules
+//
+// REPLACES the console ruleset wholesale — anything the console allows today
+// that is not written below stops working the moment this lands. Open
+// Firebase Console -> Firestore -> Rules, diff it against this file, and fold
+// in whatever is missing before the first deploy. Afterwards this file is the
+// source of truth and console edits must be mirrored back here (same
+// out-of-repo-config precedent as docs/amplify-redirects.md).
+//
+// See docs/applyforjobs-history.md for the design behind the /users rules.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Per-user private data. Recursive on purpose: it covers
+    // users/{uid}/jobApplications/{id} (the Apply for Jobs history) today and
+    // the planned users/{uid}/knowledgeBase/* per-user resume corpus without
+    // a rules change. Ownership is enforced by the path, so no query can span
+    // users. See docs/applyforjobs-history.md ("Multi-user readiness").
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // NWmap (/tools/nwmap) — PRE-EXISTING, NOT PART OF THE HISTORY FEATURE.
+    // src/components/nwmap.jsx reads and writes
+    // /Games/PM2ahWu01w0wb5KQcoV8/Points. Without this block the /users rule
+    // above would deny it and the map would break in production.
+    //
+    // GUESSED RULE — verify against the console before deploying. The code
+    // tells us the access pattern but not the intended policy:
+    //   - Read: the route has no `requireAuth` flag in
+    //     src/components/tools/toollist.jsx and NWmap subscribes via
+    //     onSnapshot in componentDidMount, so signed-out visitors read it
+    //     today. Public read is therefore required to preserve behavior.
+    //   - Write: handleSubmit dereferences firebase.auth().currentUser.email,
+    //     which throws when signed out, so in practice only signed-in users
+    //     add points. Requiring auth here matches that.
+    // If the console is stricter (or is still in test mode), take the console
+    // version instead of this one.
+    match /Games/{gameId}/Points/{pointId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+  }
+}

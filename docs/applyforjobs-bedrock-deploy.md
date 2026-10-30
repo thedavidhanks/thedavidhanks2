@@ -162,4 +162,7 @@ After deploy, set the front-end's API URL constant in
   the front-end gates the route by Firebase login; the API key is a shared
   secret).
 - PDF/DOCX downloads (front-end currently downloads `.md`).
-- Persisting prior generations per user in DynamoDB.
+- ~~Persisting prior generations per user in DynamoDB.~~ Now specced on
+  Firestore instead — see
+  [applyforjobs-history.md](applyforjobs-history.md), which explains why the
+  shared API key makes per-user storage behind this Lambda unworkable.

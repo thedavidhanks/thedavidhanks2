@@ -363,19 +363,23 @@ why it is not optional.
 
 ## Implementation checklist
 
-- [ ] Merge the security rules into the Firebase console; verify the existing
-      default rule first. Prefer committing `firestore.rules` + `firebase.json`
-      and deploying via the CLI — required before other users are invited
-- [ ] `RequireAuth` injects `user` into its child
-- [ ] `history.js` Firestore module (compat API)
-- [ ] Company / position fields on the form
-- [ ] Auto-save on success + debounced edit-save + non-blocking save-error UI
-- [ ] Past-applications dropdown and read-only detail view with print + delete
-- [ ] Extend the Firestore mock in `src/test/setup.jsx`
-- [ ] Component tests (five cases above)
-- [ ] Update the "Out of scope" list in `applyforjobs-bedrock-deploy.md` to
+- [x] `firestore.rules` + `firebase.json` committed, using the wider recursive
+      `/users/{userId}/{document=**}` match. **Still outstanding:** diff the file
+      against the live console ruleset and deploy it. A `firebase deploy --only
+      firestore:rules` replaces the console ruleset wholesale, and the committed
+      file is a reconstruction from the code — it carries a guessed rule for
+      NWmap's pre-existing `/Games/{gameId}/Points`, which would break in
+      production if that guess is wrong
+- [x] `RequireAuth` injects `user` into its child
+- [x] `history.js` Firestore module (compat API)
+- [x] Company / position fields on the form
+- [x] Auto-save on success + debounced edit-save + non-blocking save-error UI
+- [x] Past-applications dropdown and read-only detail view with print + delete
+- [x] Extend the Firestore mock in `src/test/setup.jsx`
+- [x] Component tests (five cases above)
+- [x] Update the "Out of scope" list in `applyforjobs-bedrock-deploy.md` to
       point here
-- [ ] Note the new Firestore collection in the Architecture section of
+- [x] Note the new Firestore collection in the Architecture section of
       `CLAUDE.md`
 
 ## Out of scope
