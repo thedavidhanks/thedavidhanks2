@@ -97,6 +97,12 @@ const CASES: Case[] = [
   { name: 'NWmap points readable signed-out', method: 'GET', path: NWMAP_POINTS, uid: null, allow: true },
   { name: 'NWmap points writable signed-in', method: 'POST', path: NWMAP_POINTS, uid: 'alice', allow: true },
   { name: 'NWmap points not writable signed-out', method: 'POST', path: NWMAP_POINTS, uid: null, allow: false },
+
+  // The game id is pinned, not wildcarded, matching the ruleset this replaced.
+  // Guards against someone loosening it back to /Games/{gameId}/Points, which
+  // would let any signed-in user create points under arbitrary game documents.
+  { name: 'other game documents are not writable', method: 'POST', path: '/Games/some-other-game/Points', uid: 'alice', allow: false },
+  { name: 'other game documents are not readable', method: 'GET', path: '/Games/some-other-game/Points', uid: null, allow: false },
 ]
 
 const reachable = await fetch(`http://${HOST}/`).then(() => true).catch(() => false)

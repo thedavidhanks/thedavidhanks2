@@ -364,12 +364,11 @@ why it is not optional.
 ## Implementation checklist
 
 - [x] `firestore.rules` + `firebase.json` committed, using the wider recursive
-      `/users/{userId}/{document=**}` match. **Still outstanding:** diff the file
-      against the live console ruleset and deploy it. A `firebase deploy --only
-      firestore:rules` replaces the console ruleset wholesale, and the committed
-      file is a reconstruction from the code — it carries a guessed rule for
-      NWmap's pre-existing `/Games/{gameId}/Points`, which would break in
-      production if that guess is wrong
+      `/users/{userId}/{document=**}` match, and diffed against the live console
+      ruleset. The old ruleset granted `allow read` on `/{document=**}` (global
+      unauthenticated read) and permitted no writes outside NWmap's path, so it
+      both exposed data and made this feature impossible. **Still outstanding:**
+      deploy it — see [firestore-rules.md](firestore-rules.md)
 - [x] `RequireAuth` injects `user` into its child
 - [x] `history.js` Firestore module (compat API)
 - [x] Company / position fields on the form
