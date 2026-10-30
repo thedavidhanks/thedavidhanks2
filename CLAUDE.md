@@ -25,9 +25,12 @@ Create a `.env` in the repo root before `npm run dev`:
 
 - `VITE_FIREBASE_API_KEY` — Firebase Web API key (from Firebase Console → thedavidhanks → project settings). `src/firebase.js` throws on startup if this is missing.
 - `VITE_AWS_SKILLS_API_KEY` — API key for the "Ask Me" Lambda (`https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/ask`). Used only by the `/askme` route.
-- `VITE_AWS_APPLY_API_KEY` — API key for the "Apply for Jobs" Lambda. Used only by the `/tools/applyforjobs` route. See `docs/applyforjobs-bedrock-deploy.md` for the backend deploy spec.
+- `VITE_AWS_APPLICATION_API_URL` — full URL of the async "Apply for Jobs" API, ending in `.../Prod/application`. Used only by the `/tools/applyforjobs` route.
+- `VITE_AWS_APPLICATION_API_KEY` — API key for that API, sent as the `X-Api-Key` header. Used only by the `/tools/applyforjobs` route.
 
-In the Amplify console these three must be set as **environment variables**
+The `/tools/applyforjobs` route calls the async `/application` API: it submits with `POST /application`, then polls `GET /application/{jobId}` until the package is ready. The contract is in `docs/handoff/APPLICATION_API.md`; see `docs/applyforjobs-bedrock-deploy.md` for the original backend deploy spec (which describes the older synchronous `/apply` Lambda).
+
+In the Amplify console these four must be set as **environment variables**
 (App settings → Environment variables), *not* as Amplify **secrets**. Secrets
 are not exported into the build shell, so Vite would inline `undefined` for
 each one and every route would render blank. `amplify.yml` runs

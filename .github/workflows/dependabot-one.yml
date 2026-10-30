@@ -119,7 +119,8 @@ jobs:
     env:
       VITE_FIREBASE_API_KEY: placeholder-not-a-real-key
       VITE_AWS_SKILLS_API_KEY: placeholder-not-a-real-key
-      VITE_AWS_APPLY_API_KEY: placeholder-not-a-real-key
+      VITE_AWS_APPLICATION_API_URL: https://placeholder.invalid/Prod/application
+      VITE_AWS_APPLICATION_API_KEY: placeholder-not-a-real-key
 
     steps:
       - uses: actions/checkout@v7

@@ -23,7 +23,8 @@ Two things therefore never go in an issue.
 
 Never paste a live credential, even to illustrate a bug. That includes:
 
-- `VITE_FIREBASE_API_KEY`, `VITE_AWS_SKILLS_API_KEY`, `VITE_AWS_APPLY_API_KEY`
+- `VITE_FIREBASE_API_KEY`, `VITE_AWS_SKILLS_API_KEY`,
+  `VITE_AWS_APPLICATION_API_URL`, `VITE_AWS_APPLICATION_API_KEY`
   and any other `.env` value
 - AWS access keys, session tokens, Amplify app IDs paired with account IDs
 - Firebase service-account JSON, `.firebaserc` private config

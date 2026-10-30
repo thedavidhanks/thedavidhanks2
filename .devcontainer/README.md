@@ -9,7 +9,7 @@ Reproduces the Amplify build environment (Debian, Node 22) locally so
    gitignored but bind-mounted in with the rest of the workspace, so the
    container sees whatever is on the host. Required keys are listed in the
    root `CLAUDE.md`: `VITE_FIREBASE_API_KEY`, `VITE_AWS_SKILLS_API_KEY`,
-   `VITE_AWS_APPLY_API_KEY`.
+   `VITE_AWS_APPLICATION_API_URL`, `VITE_AWS_APPLICATION_API_KEY`.
 2. **Dev Containers: Reopen in Container.** `npm ci` runs automatically on
    create.
 3. `npm run dev` — port 5173 is auto-forwarded.

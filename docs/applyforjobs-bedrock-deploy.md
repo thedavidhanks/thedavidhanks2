@@ -139,7 +139,11 @@ to the front-end.
 
 Issue an API key in API Gateway, attach it to a usage plan associated with
 the `/apply` resource. The key is set in the front-end `.env` as
-`VITE_AWS_APPLY_API_KEY` and sent in the `x-api-key` request header.
+`VITE_AWS_APPLICATION_API_KEY` and sent in the `x-api-key` request header.
+
+> Note: the UI now uses the async `/application` API (see
+> [handoff/APPLICATION_API.md](handoff/APPLICATION_API.md)) instead of `/apply`;
+> this document describes the original synchronous `/apply` design.
 
 ## Throttling
 
@@ -154,7 +158,7 @@ Recommended on the usage plan:
 After deploy, set the front-end's API URL constant in
 [src/components/tools/applyforjobs/index.jsx](../src/components/tools/applyforjobs/index.jsx)
 (`API_URL` near the top — TODO comment there) and add
-`VITE_AWS_APPLY_API_KEY` to `.env`.
+`VITE_AWS_APPLICATION_API_KEY` to `.env`.
 
 ## Out of scope (future)
 
