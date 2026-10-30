@@ -60,3 +60,10 @@ tmp/
 firestore-debug.log
 firebase-debug.log
 ui-debug.log
+
+# Impeccable design skill (`npx impeccable install --project`): the skill and
+# its agents ship a 21 MB engine binary, and .impeccable/ holds local preview
+# harnesses and review screenshots. Kept on disk, out of the repo.
+.impeccable/
+.claude/skills/impeccable/
+.claude/agents/impeccable-*.md
