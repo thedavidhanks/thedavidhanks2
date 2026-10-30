@@ -50,3 +50,13 @@ build/static/media/shearcalcbop2.1aa0294884d2ea80f49a.jpeg
 build/static/media/TeamDesign.b7fee239dabdabd5959d.png
 build/static/media/UseCase.f79f86ebf3d494395ea8.png
 .env
+
+# Scratch space: throwaway checkouts, git worktrees, pasted console config.
+# Nothing in here is part of the build.
+tmp/
+
+# Firebase emulator state, written by `npm run emulators --export-on-exit`.
+.emulator-data/
+firestore-debug.log
+firebase-debug.log
+ui-debug.log
