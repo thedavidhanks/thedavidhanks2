@@ -8,7 +8,7 @@ import App from './App.jsx';
 import { toollist } from './components/tools/toollist.jsx';
 import { projectlist } from './components/projects/projectlist.jsx';
 import { auth } from './firebase.js';
-import { server, ASK_URL, APPLY_URL } from './test/server.js';
+import { server, ASK_URL, APPLICATION_URL, fixtures } from './test/server.js';
 
 // The spec: every leaf URL the app serves and a heading that only that page
 // renders. URLs are written out literally (not derived from the tables) so
@@ -136,17 +136,23 @@ describe('/tools/applyforjobs auth gate', () => {
         expect(screen.queryByRole('link', { name: 'Apply for Jobs' })).not.toBeInTheDocument();
     });
 
-    it('signed in: submits the posting to the apply API and shows the result', async () => {
+    it('signed in: submits the posting to the application API and shows the result', async () => {
         let body;
         server.use(
-            http.post(APPLY_URL, async ({ request }) => {
+            http.post(APPLICATION_URL, async ({ request }) => {
                 body = await request.json();
-                return HttpResponse.json({
+                return HttpResponse.json(
+                    { ...fixtures.accepted202, pollAfterSeconds: 0.01 },
+                    { status: 202 }
+                );
+            }),
+            http.get(`${APPLICATION_URL}/:jobId`, () =>
+                HttpResponse.json({
+                    ...fixtures.completeNoRecs,
                     coverLetter: 'Dear hiring manager',
                     resume: 'Resume body',
-                    sessionId: 'apply-1',
-                });
-            })
+                })
+            )
         );
         const user = userEvent.setup();
         renderAt('/tools/applyforjobs');

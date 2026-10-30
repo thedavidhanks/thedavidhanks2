@@ -77,3 +77,10 @@
 .applyforjobs-readonly > :last-child {
     margin-bottom: 0;
 }
+
+/* marked wraps list/section text in <p>; drop the trailing 1rem Bootstrap adds
+   so recommendation items aren't double-spaced. */
+.applyforjobs-recommendations li > div > :last-child,
+.applyforjobs-recommendations section > div > :last-child {
+    margin-bottom: 0;
+}

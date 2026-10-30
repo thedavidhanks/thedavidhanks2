@@ -57,6 +57,7 @@ async function request(
   method: 'GET' | 'POST',
   path: string,
   uid: string | null,
+  fields: object = { probe: { stringValue: 'check-rules' } },
 ): Promise<number> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (uid) headers.Authorization = `Bearer ${tokenFor(uid)}`
@@ -64,7 +65,7 @@ async function request(
     method,
     headers,
     body: method === 'POST'
-      ? JSON.stringify({ fields: { probe: { stringValue: 'check-rules' } } })
+      ? JSON.stringify({ fields })
       : undefined,
   })
   return res.status
@@ -76,6 +77,42 @@ type Case = {
   path: string
   uid: string | null
   allow: boolean
+  /** Firestore REST typed-value fields for a POST; defaults to a tiny probe. */
+  fields?: object
+}
+
+const str = (stringValue: string) => ({ stringValue })
+const list = (...values: string[]) => ({ arrayValue: { values: values.map(str) } })
+
+/**
+ * A saved application as history.js writes it once /application returns a fit
+ * report: `recommendations` is a nested map with string and array members.
+ * Mirrors the shape in docs/handoff/APPLICATION_API.md.
+ */
+const RECORD_WITH_RECOMMENDATIONS = {
+  schemaVersion: { integerValue: '1' },
+  company: str('Northwind'),
+  coverLetter: str('# cover'),
+  resume: str('# resume'),
+  sessionId: str('s-1'),
+  recommendations: {
+    mapValue: {
+      fields: {
+        fit: { integerValue: '62' },
+        gaps: str('- **a:** b'),
+        strengths: { nullValue: null },
+        position: str('Role\n\n---'),
+        recommendedSkills: list('**x:** y'),
+        recommendedCourses: list(),
+      },
+    },
+  },
+}
+
+/** Same record when the job completed with `recommendations: null`. */
+const RECORD_WITHOUT_RECOMMENDATIONS = {
+  ...RECORD_WITH_RECOMMENDATIONS,
+  recommendations: { nullValue: null },
 }
 
 const CASES: Case[] = [
@@ -85,6 +122,13 @@ const CASES: Case[] = [
   { name: 'other user cannot read them', method: 'GET', path: '/users/alice/jobApplications', uid: 'bob', allow: false },
   { name: 'signed-out cannot read them', method: 'GET', path: '/users/alice/jobApplications', uid: null, allow: false },
   { name: 'other user cannot write them', method: 'POST', path: '/users/alice/jobApplications', uid: 'bob', allow: false },
+
+  // Saved history now carries `recommendations` (map, or null). The rules do not
+  // validate fields, so these guard against someone adding validation later
+  // that forgets the field -- and confirm isolation holds for the larger record.
+  { name: 'owner writes record with recommendations', method: 'POST', path: '/users/alice/jobApplications', uid: 'alice', allow: true, fields: RECORD_WITH_RECOMMENDATIONS },
+  { name: 'owner writes record with null recommendations', method: 'POST', path: '/users/alice/jobApplications', uid: 'alice', allow: true, fields: RECORD_WITHOUT_RECOMMENDATIONS },
+  { name: 'other user cannot write such a record', method: 'POST', path: '/users/alice/jobApplications', uid: 'bob', allow: false, fields: RECORD_WITH_RECOMMENDATIONS },
 
   // The /users rule is recursive so the planned per-user knowledge base is
   // already covered. See docs/applyforjobs-history.md ("Multi-user readiness").
@@ -114,7 +158,7 @@ if (!reachable) {
 
 let failed = 0
 for (const testCase of CASES) {
-  const status = await request(testCase.method, testCase.path, testCase.uid)
+  const status = await request(testCase.method, testCase.path, testCase.uid, testCase.fields)
   const allowed = status >= 200 && status < 300
   const pass = allowed === testCase.allow
   if (!pass) failed++

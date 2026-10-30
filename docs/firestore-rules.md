@@ -45,6 +45,10 @@ than from reading the rules by eye.
 
 ## What the current file does
 
+- Does not validate document fields, types or size under `/users/{uid}/**`, so
+  adding a field to a saved application (e.g. `recommendations`, a nested map
+  or null) needs no rules change. `npm run check:rules` includes writes of such
+  a record to prove it; if you ever add field validation, update those cases.
 - Removes the global read. There is no catch-all match block; anything not
   named below is denied by default.
 - `users/{userId}/{document=**}` — owner-only read and write, enforced by

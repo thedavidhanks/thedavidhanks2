@@ -64,6 +64,9 @@ export const createApplication = async (uid, record) => {
         applicantContext: record.applicantContext || '',
         coverLetter: record.coverLetter || '',
         resume: record.resume || '',
+        // Additive field (no schemaVersion bump): null when the job completed
+        // without a fit report, absent on records saved before /application.
+        recommendations: record.recommendations || null,
         sessionId: record.sessionId || null,
     });
     return docRef.id;

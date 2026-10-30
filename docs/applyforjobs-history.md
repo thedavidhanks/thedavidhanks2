@@ -6,6 +6,10 @@ signed-in user can review past submissions. Companion to
 this feature under "Out of scope (future)" as *"Persisting prior generations
 per user in DynamoDB"* — that line is superseded by this document.
 
+> Note: the UI now uses the async `/application` API (see
+> [handoff/APPLICATION_API.md](handoff/APPLICATION_API.md)) instead of `/apply`;
+> references to `/apply` below describe the original design.
+
 ## Decisions
 
 | Question | Decision |
@@ -19,7 +23,7 @@ per user in DynamoDB"* — that line is superseded by this document.
 
 The deploy doc's original instinct was DynamoDB, next to the Lambda. The
 blocker is identity. `/apply` is secured by a single shared API key
-(`VITE_AWS_APPLY_API_KEY`); the Lambda has **no idea which user is calling**.
+(`VITE_AWS_APPLICATION_API_KEY`); the Lambda has **no idea which user is calling**.
 Storing per-user records server-side therefore requires implementing Firebase
 ID-token verification in the Lambda first — itself listed as out of scope —
 and without it any signed-in user could read every other user's applications.
@@ -77,9 +81,23 @@ field inside a subcollection needs no composite index, whereas
   coverLetter: '…',            // markdown
   resume:      '…',            // markdown
 
-  sessionId: 'abc123',         // string | null, as returned by /apply
+  // Fit report from the async /application API (docs/handoff/APPLICATION_API.md).
+  // Object as returned (fit, gaps, strengths, position, scoreRationale and the
+  // four recommended*/resumeRecommendations arrays), stored verbatim -- the
+  // strings are still raw markdown with their trailing `---` artifacts and are
+  // cleaned and sanitized at render time. null when the job completed without a
+  // report. ABSENT on records saved before this field existed.
+  recommendations: { fit: 62, … } | null,
+
+  sessionId: 'abc123',         // string | null, as returned by the API
 }
 ```
+
+**`recommendations` is additive.** No `schemaVersion` bump: readers treat a
+missing field and `null` identically (the panel is omitted), so legacy records
+load unchanged. Edit-saves (`updateApplicationOutputs`) touch only
+`coverLetter`/`resume`, so they never clobber it. The history detail view
+renders the same collapsed `Recommendations` panel as a live result.
 
 **Size cap.** A Firestore document is limited to 1 MiB. A realistic record is
 5–20 KB, but a pathological paste (someone dumping a whole careers page)
@@ -210,7 +228,7 @@ under `users/{uid}/` with no new service.
 
 ### Unrelated gap that multi-user makes worse
 
-`VITE_AWS_APPLY_API_KEY` is inlined into the public JS bundle at build time —
+`VITE_AWS_APPLICATION_API_KEY` is inlined into the public JS bundle at build time —
 that is how Vite handles `VITE_`-prefixed vars, and it is what the
 `check:env` guard in `CLAUDE.md` is describing. The login gate does not
 protect it: the key ships to every visitor whether or not they sign in, so

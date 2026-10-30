@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
+import Modal from 'react-bootstrap/Modal';
+import Spinner from 'react-bootstrap/Spinner';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import {
@@ -8,12 +10,139 @@ import {
     subscribeToApplications,
     updateApplicationOutputs,
 } from './history.js';
+import { renderMarkdown } from './markdown.js';
+import Recommendations from './Recommendations.jsx';
 import './applyforjobs.css';
 
-// TODO: update API_URL once the Bedrock backend is deployed.
-// See docs/applyforjobs-bedrock-deploy.md
-const API_URL = 'https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/apply';
-const API_KEY = import.meta.env.VITE_AWS_APPLY_API_KEY;
+// Async application API: POST submits and returns a jobId, then
+// GET {API_URL}/{jobId} is polled until the job completes or fails.
+// Contract: docs/handoff/APPLICATION_API.md
+const API_URL = (import.meta.env.VITE_AWS_APPLICATION_API_URL || '').replace(/\/+$/, '');
+const API_KEY = import.meta.env.VITE_AWS_APPLICATION_API_KEY;
+
+// Give up polling after this long and tell the user. A typical run is ~46s.
+const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+// Only used if the 202 omits pollAfterSeconds. The server value always wins,
+// because polling spends a 2000/day request budget.
+const FALLBACK_POLL_SECONDS = 10;
+// Tolerate a few consecutive transient poll failures (network blip, 5xx, 429)
+// before giving up; every poll still waits the full interval.
+const MAX_TRANSIENT_POLL_FAILURES = 3;
+
+// Failures from the submit/poll flow carry a user-facing message so the catch
+// block can show it as-is.
+class ApplicationError extends Error {}
+
+const SUBMIT_ERRORS = {
+    400: 'The job posting couldn\'t be submitted. Check that it isn\'t empty and try again.',
+    403: 'This tool isn\'t set up correctly (access denied). Please try again later.',
+    500: 'The service had trouble starting your request. Please try again.',
+};
+const GENERIC_ERROR = 'Something went wrong. Please try again.';
+const FAILED_ERROR = 'Generating your documents didn\'t work. Please try again.';
+const GONE_ERROR = 'This result is no longer available. Please submit the job posting again.';
+const TIMEOUT_ERROR = 'This is taking longer than expected. Please try again in a few minutes.';
+
+// Resolves after `ms`, or rejects with an AbortError as soon as `signal`
+// aborts, clearing the timer so nothing outlives an unmount.
+const sleep = (ms, signal) =>
+    new Promise((resolve, reject) => {
+        if (signal.aborted) {
+            reject(new DOMException('Aborted', 'AbortError'));
+            return;
+        }
+        const onAbort = () => {
+            clearTimeout(timer);
+            reject(new DOMException('Aborted', 'AbortError'));
+        };
+        const timer = setTimeout(() => {
+            signal.removeEventListener('abort', onAbort);
+            resolve();
+        }, ms);
+        signal.addEventListener('abort', onAbort, { once: true });
+    });
+
+// A stalled connection (captive portal, half-open socket) would otherwise leave
+// `await fetch` pending forever, and with it the non-dismissable progress modal.
+// Aborts after REQUEST_TIMEOUT_MS with a TimeoutError, or immediately with an
+// AbortError if the parent signal aborts (unmount / cancel). Always clears its
+// timer.
+const REQUEST_TIMEOUT_MS = 20 * 1000;
+const fetchWithTimeout = async (url, options, parentSignal) => {
+    const controller = new AbortController();
+    let timedOut = false;
+    const onParentAbort = () => controller.abort();
+    if (parentSignal.aborted) controller.abort();
+    else parentSignal.addEventListener('abort', onParentAbort, { once: true });
+    const timer = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } catch (err) {
+        if (timedOut && !parentSignal.aborted) {
+            const timeoutError = new Error('Request timed out');
+            timeoutError.name = 'TimeoutError';
+            throw timeoutError;
+        }
+        throw err;
+    } finally {
+        clearTimeout(timer);
+        parentSignal.removeEventListener('abort', onParentAbort);
+    }
+};
+
+const pollDelayMs = (pollAfterSeconds) => {
+    const seconds = Number(pollAfterSeconds);
+    return (Number.isFinite(seconds) && seconds > 0 ? seconds : FALLBACK_POLL_SECONDS) * 1000;
+};
+
+// Wait pollAfterSeconds before the first poll and between polls. Resolves with
+// the `complete` body; throws ApplicationError for failed / 404 / timeout.
+const pollForResult = async (jobId, delayMs, startedAt, signal) => {
+    let transientFailures = 0;
+    for (;;) {
+        await sleep(delayMs, signal);
+
+        let body = null;
+        try {
+            const response = await fetchWithTimeout(
+                `${API_URL}/${encodeURIComponent(jobId)}`,
+                { headers: { 'X-Api-Key': API_KEY } },
+                signal
+            );
+            if (response.status === 404) throw new ApplicationError(GONE_ERROR);
+            if (response.status === 403) throw new ApplicationError(SUBMIT_ERRORS[403]);
+            if (response.ok) body = await response.json();
+        } catch (err) {
+            // A per-request TimeoutError (or network error) is a transient failure.
+            if (err instanceof ApplicationError || err.name === 'AbortError') throw err;
+        }
+
+        if (body === null) {
+            transientFailures += 1;
+            if (transientFailures >= MAX_TRANSIENT_POLL_FAILURES) {
+                throw new ApplicationError(GENERIC_ERROR);
+            }
+        } else {
+            transientFailures = 0;
+            if (body.status === 'complete') return body;
+            if (body.status === 'failed') throw new ApplicationError(FAILED_ERROR);
+            // pending / running: a long pending is normal, keep waiting.
+        }
+
+        if (Date.now() - startedAt >= POLL_TIMEOUT_MS) {
+            throw new ApplicationError(TIMEOUT_ERROR);
+        }
+    }
+};
+
+const formatElapsed = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    return `${minutes}:${seconds}`;
+};
 
 // Print stylesheet for the generated PDF (the equivalent of the Python
 // pipeline's css_path). Styles headings, tables, italics, bold, and lists.
@@ -177,12 +306,6 @@ const PrintIcon = () => (
 // the 20k/day free write quota.
 const SAVE_DEBOUNCE_MS = 1500;
 
-// Saved markdown is user-supplied, so sanitize before rendering it read-only.
-// Reuses the same marked + DOMPurify pair as the PDF path above.
-const renderMarkdown = (markdown) => ({
-    __html: DOMPurify.sanitize(marked.parse(markdown || '', { gfm: true, breaks: false })),
-});
-
 // "{datetime} - {company} {position}", with em dashes for values the user
 // left blank so the label never renders as a ragged "2026-10-28 -  ".
 const labelFor = (app) => {
@@ -202,6 +325,8 @@ const ApplyForJobs = ({ user }) => {
     const [showContext, setShowContext] = useState(false);
     const [sessionId, setSessionId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [startedAtMs, setStartedAtMs] = useState(0);
+    const [nowMs, setNowMs] = useState(0);
     const [error, setError] = useState('');
     const [result, setResult] = useState(null);
 
@@ -220,6 +345,29 @@ const ApplyForJobs = ({ user }) => {
 
     const saveTimer = useRef(null);
     const pendingSave = useRef(null);
+    // Aborts the in-flight submit/poll (including its sleep timer) on unmount
+    // or when a new submit supersedes it.
+    const abortRef = useRef(null);
+
+    useEffect(() => () => abortRef.current?.abort(), []);
+
+    // Elapsed-time readout for the progress modal. The API reports no progress
+    // or ETA, so time-on-task is the honest indicator.
+    useEffect(() => {
+        if (!loading) return undefined;
+        const interval = setInterval(() => setNowMs(Date.now()), 1000);
+        return () => clearInterval(interval);
+    }, [loading]);
+    const elapsedSeconds = Math.max(0, Math.floor((nowMs - startedAtMs) / 1000));
+
+    // Move focus to the results when they appear. The form (and the submit
+    // button the modal would restore focus to) unmounts in the same commit, so
+    // without this focus falls to <body> and nothing announces the new content.
+    const resultHeadingRef = useRef(null);
+    const hasResult = result !== null;
+    useEffect(() => {
+        if (hasResult) resultHeadingRef.current?.focus();
+    }, [hasResult]);
 
     useEffect(() => {
         // No uid means no history to show. RequireAuth unmounts the tool on
@@ -278,6 +426,7 @@ const ApplyForJobs = ({ user }) => {
             applicantContext: applicantContext.trim(),
             coverLetter: generated.coverLetter,
             resume: generated.resume,
+            recommendations: generated.recommendations,
             sessionId: resolvedSessionId,
         })
             .then(setSavedId)
@@ -307,37 +456,62 @@ const ApplyForJobs = ({ user }) => {
         setResult(null);
         setSavedId(null);
 
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+        const startedAt = Date.now();
+        setStartedAtMs(startedAt);
+        setNowMs(startedAt);
+
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetchWithTimeout(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': API_KEY,
+                    'X-Api-Key': API_KEY,
                 },
                 body: JSON.stringify({
                     jobPosting: posting,
                     ...(applicantContext.trim() && { applicantContext: applicantContext.trim() }),
                     ...(sessionId && { sessionId }),
                 }),
-            });
+            }, controller.signal);
 
             if (!response.ok) {
-                throw new Error(`Request failed (${response.status})`);
+                throw new ApplicationError(SUBMIT_ERRORS[response.status] || GENERIC_ERROR);
             }
 
-            const data = await response.json();
+            const accepted = await response.json();
+            if (!accepted.jobId) throw new ApplicationError(GENERIC_ERROR);
+
+            const data = await pollForResult(
+                accepted.jobId,
+                pollDelayMs(accepted.pollAfterSeconds),
+                startedAt,
+                controller.signal
+            );
+
             if (data.sessionId) setSessionId(data.sessionId);
+            // `recommendations` is legitimately null on a complete job.
             const generated = {
                 coverLetter: data.coverLetter || '',
                 resume: data.resume || '',
+                recommendations: data.recommendations || null,
             };
             setResult(generated);
             persist(generated, data.sessionId || sessionId, posting);
-        } catch {
-            setError('Something went wrong. Please try again.');
-        } finally {
-            setLoading(false);
+        } catch (err) {
+            // Aborted means unmounted or superseded: leave state alone.
+            if (err.name === 'AbortError') return;
+            setError(err instanceof ApplicationError ? err.message : GENERIC_ERROR);
         }
+        if (abortRef.current === controller) setLoading(false);
+    };
+
+    // Escape hatch from the progress modal: stops the poll loop and its timers.
+    const cancelGeneration = () => {
+        abortRef.current?.abort();
+        setLoading(false);
     };
 
     const startOver = () => {
@@ -398,6 +572,37 @@ const ApplyForJobs = ({ user }) => {
             {saveError && (
                 <div className="alert alert-warning" role="status">{saveError}</div>
             )}
+
+            <Modal
+                show={loading}
+                backdrop="static"
+                keyboard={false}
+                animation={false}
+                centered
+                aria-labelledby="applyforjobs-progress-title"
+                aria-describedby="applyforjobs-progress-desc"
+            >
+                <Modal.Body className="text-center py-4">
+                    <Spinner animation="border" aria-hidden="true" className="mb-3" />
+                    <h5 id="applyforjobs-progress-title">
+                        Generating your cover letter and resume
+                    </h5>
+                    <p id="applyforjobs-progress-desc" className="mb-1">
+                        This usually takes under a minute. Please keep this page open.
+                    </p>
+                    {/* role=timer is not announced on every tick, unlike a live region. */}
+                    <p role="timer" className="text-muted mb-0">
+                        Elapsed time: {formatElapsed(elapsedSeconds)}
+                    </p>
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm mt-3"
+                        onClick={cancelGeneration}
+                    >
+                        Cancel
+                    </button>
+                </Modal.Body>
+            </Modal>
 
             {!viewing && !result && (
                 <form onSubmit={handleSubmit}>
@@ -480,9 +685,13 @@ const ApplyForJobs = ({ user }) => {
 
             {!viewing && result && (
                 <>
+                    <Recommendations recommendations={result.recommendations} level={4} />
+
                     <div className="applyforjobs-result">
                         <div className="applyforjobs-section-header">
-                            <h4 className="mb-0">Cover Letter</h4>
+                            <h4 ref={resultHeadingRef} tabIndex={-1} className="mb-0">
+                                Cover Letter
+                            </h4>
                             <div className="d-flex gap-2">
                                 <button
                                     className="btn btn-sm btn-outline-primary"
@@ -564,6 +773,10 @@ const ApplyForJobs = ({ user }) => {
                             />
                         </>
                     )}
+
+                    <div className="mt-4">
+                        <Recommendations recommendations={viewing.recommendations} level={5} />
+                    </div>
 
                     <div className="applyforjobs-section-header mt-4">
                         <h5 className="mb-0">Cover Letter</h5>
