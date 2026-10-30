@@ -161,9 +161,9 @@ describe('/tools/applyforjobs auth gate', () => {
         expect(auth.signInWithPopup).toHaveBeenCalled();
 
         await user.type(await main().findByLabelText(/Job posting/), 'Senior React engineer');
-        await user.click(main().getByRole('button', { name: /Generate Cover Letter/ }));
+        await user.click(main().getByRole('button', { name: /Generate cover letter/ }));
 
-        expect(await main().findByRole('heading', { name: 'Cover Letter' })).toBeInTheDocument();
+        expect(await main().findByRole('heading', { level: 4, name: 'Your documents' })).toBeInTheDocument();
         expect(main().getByLabelText('Cover letter markdown (editable)')).toHaveValue('Dear hiring manager');
         expect(main().getByLabelText('Resume markdown (editable)')).toHaveValue('Resume body');
         expect(body).toEqual({ jobPosting: 'Senior React engineer' });

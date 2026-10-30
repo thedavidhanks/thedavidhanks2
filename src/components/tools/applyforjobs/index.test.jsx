@@ -15,7 +15,7 @@ const PATH = `users/${UID}/jobApplications`;
 // timezone-dependent, so the expected label is computed the same way rather
 // than hardcoded.
 const labelFor = ({ createdAtMs, company, position }) =>
-    `${new Date(createdAtMs).toLocaleString()} - ${company} ${position}`;
+    `${company || 'Untitled company'}, ${position || 'no position'}, ${new Date(createdAtMs).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`;
 
 const SAVED = [
     {
@@ -50,20 +50,28 @@ const pushSnapshot = (records) => act(() => firestoreMock.emit(PATH, records));
 
 const renderTool = () => render(<ApplyForJobs user={{ uid: UID }} />);
 
-const openHistoryMenu = async (user) => {
-    await user.click(screen.getByRole('button', { name: 'Past applications' }));
-    return document.querySelector('.dropdown-menu.show') ?? document.querySelector('.dropdown-menu');
+// Switches to the Past applications view and returns its container. The nav
+// button may carry a count badge ("Past applications 2"), hence the regex.
+const openHistory = async (user) => {
+    await user.click(
+        within(screen.getByRole('navigation', { name: 'Apply for Jobs views' }))
+            .getByRole('button', { name: /^Past applications/ })
+    );
+    return document.querySelector('.afj-history') ?? document.querySelector('.afj-empty');
+};
+
+const openRecord = async (user, record) => {
+    const list = await openHistory(user);
+    await user.click(within(list).getByRole('button', { name: labelFor(record) }));
+    return document.querySelector('.applyforjobs-history-detail');
 };
 
 const generate = async (user, { company, position, posting, context } = {}) => {
     if (company) await user.type(screen.getByLabelText('Company'), company);
     if (position) await user.type(screen.getByLabelText('Position'), position);
     await user.type(screen.getByLabelText(/Job posting/), posting);
-    if (context) {
-        await user.click(screen.getByRole('button', { name: /optional context/ }));
-        await user.type(screen.getByPlaceholderText(/target tone/), context);
-    }
-    await user.click(screen.getByRole('button', { name: /Generate Cover Letter/ }));
+    if (context) await user.type(screen.getByLabelText(/Additional context/), context);
+    await user.click(screen.getByRole('button', { name: /Generate cover letter/ }));
 };
 
 describe('ApplyForJobs history', () => {
@@ -111,6 +119,11 @@ describe('ApplyForJobs history', () => {
             sessionId: 'apply-session-1',
         });
         expect(typeof collection.add.mock.calls[0][0].createdAtMs).toBe('number');
+
+        // The status line under the title follows the write.
+        expect(
+            await screen.findByText('Saved to Past applications. Edits save automatically.')
+        ).toBeInTheDocument();
     });
 
     it('stores recommendations as null when the job completed without a fit report', async () => {
@@ -154,27 +167,56 @@ describe('ApplyForJobs history', () => {
         expect(document.querySelector('.alert-danger')).toBeNull();
     });
 
-    it('lists saved applications newest-first as "{datetime} - {company} {position}"', async () => {
+    it('lists saved applications newest-first as "{company}, {position}, {date}" rows', async () => {
         const user = userEvent.setup();
         renderTool();
 
         // Ordering is the query's job, so assert the query and then that the
-        // menu preserves the order the snapshot arrives in.
+        // list preserves the order the snapshot arrives in.
         expect(collection.orderBy).toHaveBeenCalledWith('createdAtMs', 'desc');
         expect(collection.limit).toHaveBeenCalledWith(50);
 
-        expect(await openHistoryMenu(user)).toHaveTextContent(
-            'No saved applications yet'
-        );
+        const empty = await openHistory(user);
+        expect(
+            within(empty).getByRole('heading', { name: 'No saved applications yet' })
+        ).toBeInTheDocument();
+        expect(within(empty).getByRole('button', { name: 'New application' })).toBeInTheDocument();
 
         pushSnapshot(SAVED);
-        const menu = await openHistoryMenu(user);
-        const items = within(menu)
+        const list = await screen.findByRole('table');
+        const names = within(list)
             .getAllByRole('button')
-            .map((item) => item.textContent);
+            .map((item) => item.getAttribute('aria-label'));
 
-        expect(items).toEqual([labelFor(SAVED[0]), labelFor(SAVED[1])]);
+        expect(names).toEqual([labelFor(SAVED[0]), labelFor(SAVED[1])]);
         expect(SAVED[0].createdAtMs).toBeGreaterThan(SAVED[1].createdAtMs);
+        expect(screen.getByRole('heading', { name: /Past applications/, level: 4 })).toBeInTheDocument();
+    });
+
+    it('filters the list by company or position and reports when nothing matches', async () => {
+        const user = userEvent.setup();
+        renderTool();
+        pushSnapshot(SAVED);
+        await openHistory(user);
+
+        const filter = screen.getByRole('searchbox', { name: 'Filter past applications' });
+        const rowButtons = () => within(screen.getByRole('table')).queryAllByRole('button');
+
+        await user.type(filter, 'globex');
+        expect(rowButtons().map((b) => b.getAttribute('aria-label'))).toEqual([labelFor(SAVED[0])]);
+
+        // Matches position as well as company.
+        await user.clear(filter);
+        await user.type(filter, 'staff');
+        expect(rowButtons().map((b) => b.getAttribute('aria-label'))).toEqual([labelFor(SAVED[1])]);
+
+        await user.clear(filter);
+        await user.type(filter, 'zzz');
+        expect(rowButtons()).toHaveLength(0);
+        expect(screen.getByText('No applications match “zzz”.')).toBeInTheDocument();
+
+        await user.clear(filter);
+        expect(rowButtons()).toHaveLength(2);
     });
 
     it('renders a saved record read-only, with no editable control in the detail view', async () => {
@@ -182,60 +224,97 @@ describe('ApplyForJobs history', () => {
         renderTool();
         pushSnapshot(SAVED);
 
-        const menu = await openHistoryMenu(user);
-        await user.click(within(menu).getByRole('button', { name: labelFor(SAVED[0]) }));
-
-        const detail = document.querySelector('.applyforjobs-history-detail');
+        const detail = await openRecord(user, SAVED[0]);
         expect(detail).not.toBeNull();
         const panel = within(detail);
 
-        // Header, inputs and outputs are all rendered.
+        // Header and date.
+        const title = panel.getByRole('heading', { name: /Globex — Principal Engineer/, level: 4 });
+        expect(title).toHaveFocus();
         expect(
-            panel.getByRole('heading', { name: /Globex — Principal Engineer/ })
+            panel.getByText(
+                new Date(SAVED[0].createdAtMs).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+            )
         ).toBeInTheDocument();
-        expect(
-            panel.getByText(new Date(SAVED[0].createdAtMs).toLocaleString())
-        ).toBeInTheDocument();
-        expect(panel.getByText(SAVED[0].jobPosting)).toBeInTheDocument();
-        expect(panel.getByText(SAVED[0].applicantContext)).toBeInTheDocument();
-        expect(panel.getByText('Globex cover letter')).toBeInTheDocument();
-        expect(panel.getByText('Globex resume')).toBeInTheDocument();
+        expect(panel.getByRole('button', { name: 'All past applications' })).toBeInTheDocument();
 
-        // Read-only means rendered markdown, not disabled textareas.
-        expect(panel.queryAllByRole('textbox')).toHaveLength(0);
-        expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+        // Every input and output is reachable through its tab, as rendered
+        // markdown in the active pane.
+        const expectations = [
+            ['Cover letter', 'Globex cover letter'],
+            ['Resume', 'Globex resume'],
+            ['Job posting', SAVED[0].jobPosting],
+            ['Your context', SAVED[0].applicantContext],
+        ];
+        for (const [tab, text] of expectations) {
+            await user.click(panel.getByRole('tab', { name: tab }));
+            expect(panel.getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
+            const pane = detail.querySelector('.tab-pane.active');
+            expect(within(pane).getByRole('article')).toHaveTextContent(text);
+            // Read-only means rendered markdown, not disabled textareas.
+            expect(panel.queryAllByRole('textbox')).toHaveLength(0);
+            expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+        }
     });
 
-    it('deletes the viewed record after confirmation and returns to the form', async () => {
+    it('omits the context tab when the record has no applicant context', async () => {
         const user = userEvent.setup();
         renderTool();
         pushSnapshot(SAVED);
 
-        const menu = await openHistoryMenu(user);
-        await user.click(within(menu).getByRole('button', { name: labelFor(SAVED[0]) }));
-        expect(screen.queryByLabelText(/Job posting/)).not.toBeInTheDocument();
+        const detail = await openRecord(user, SAVED[1]);
+        expect(within(detail).getAllByRole('tab').map((t) => t.textContent)).toEqual([
+            'Cover letter',
+            'Resume',
+            'Job posting',
+        ]);
+    });
 
-        // Deleting is a two-step confirm.
+    it('sanitizes markdown in a saved record', async () => {
+        const user = userEvent.setup();
+        renderTool();
+        pushSnapshot([{
+            ...SAVED[1],
+            coverLetter: 'Hello <script>window.__pwned = true</script><img src=x onerror="window.__pwned = true"> there',
+        }]);
+
+        const detail = await openRecord(user, SAVED[1]);
+        const article = within(detail.querySelector('.tab-pane.active')).getByRole('article');
+        expect(article).toHaveTextContent('Hello');
+        expect(article.querySelector('script')).toBeNull();
+        expect(article.querySelector('[onerror]')).toBeNull();
+    });
+
+    it('deletes the viewed record after confirmation and returns to the past applications list', async () => {
+        const user = userEvent.setup();
+        renderTool();
+        pushSnapshot(SAVED);
+
+        await openRecord(user, SAVED[0]);
+        expect(screen.queryByRole('textbox', { name: /Job posting/ })).not.toBeInTheDocument();
+
+        // Deleting is a two-step confirm; Cancel backs out without deleting.
         await user.click(screen.getByRole('button', { name: 'Delete' }));
         expect(screen.getByText('Delete this application?')).toBeInTheDocument();
         const docRef = firestoreMock.doc(PATH, SAVED[0].id);
+        await user.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(screen.queryByText('Delete this application?')).not.toBeInTheDocument();
         expect(docRef.delete).not.toHaveBeenCalled();
 
+        await user.click(screen.getByRole('button', { name: 'Delete' }));
+        expect(docRef.delete).not.toHaveBeenCalled();
         await user.click(screen.getByRole('button', { name: 'Confirm delete' }));
         await waitFor(() => expect(docRef.delete).toHaveBeenCalledTimes(1));
 
         // Firestore would push the shortened list back down the subscription.
         pushSnapshot(SAVED.slice(1));
 
-        await waitFor(() =>
-            expect(screen.getByLabelText(/Job posting/)).toBeInTheDocument()
-        );
+        // Back on the list (not the compose form), minus the deleted record.
+        const table = await screen.findByRole('table');
         expect(document.querySelector('.applyforjobs-history-detail')).toBeNull();
-
-        const remaining = await openHistoryMenu(user);
-        expect(within(remaining).getAllByRole('button')).toHaveLength(1);
-        expect(remaining).toHaveTextContent(labelFor(SAVED[1]));
-        expect(remaining).not.toHaveTextContent(labelFor(SAVED[0]));
+        expect(screen.queryByRole('textbox', { name: /Job posting/ })).not.toBeInTheDocument();
+        const names = within(table).getAllByRole('button').map((b) => b.getAttribute('aria-label'));
+        expect(names).toEqual([labelFor(SAVED[1])]);
     });
 });
 
@@ -254,9 +333,7 @@ describe('ApplyForJobs history with recommendations', () => {
     const openSaved = async (user, record) => {
         renderTool();
         pushSnapshot([record]);
-        const menu = await openHistoryMenu(user);
-        await user.click(within(menu).getByRole('button', { name: labelFor(record) }));
-        return document.querySelector('.applyforjobs-history-detail');
+        return openRecord(user, record);
     };
 
     it('saves the recommendations object with the generated documents', async () => {
@@ -282,14 +359,16 @@ describe('ApplyForJobs history with recommendations', () => {
 
         const toggle = within(detail).getByRole('button', { name: 'Fit score: 62/100' });
         expect(toggle).toHaveAttribute('aria-expanded', 'false');
-        // Sits at h5 beside the history view's other h5 sections.
+        // Sits at h5 under the record's h4 title.
         expect(toggle.closest('h5')).not.toBeNull();
+        const rail = within(detail).getByRole('complementary', { name: 'Fit report' });
         const panel = detail.querySelector('.applyforjobs-recommendations');
+        expect(rail).toContainElement(panel);
         expect(panel.querySelector('.accordion-collapse')).not.toHaveClass('show');
-        // Above the cover letter.
-        const cover = within(detail).getByRole('heading', { name: 'Cover Letter' });
+        // Before the documents in DOM order.
+        const cover = within(detail).getByRole('article', { name: 'Cover letter' });
         expect(
-            panel.compareDocumentPosition(cover) & Node.DOCUMENT_POSITION_FOLLOWING
+            rail.compareDocumentPosition(cover) & Node.DOCUMENT_POSITION_FOLLOWING
         ).toBeTruthy();
 
         await user.click(toggle);
@@ -308,7 +387,27 @@ describe('ApplyForJobs history with recommendations', () => {
         expect(detail).not.toBeNull();
         expect(detail.querySelector('.applyforjobs-recommendations')).toBeNull();
         expect(within(detail).queryByText(/Fit score/)).not.toBeInTheDocument();
-        expect(within(detail).getByRole('heading', { name: 'Cover Letter' })).toBeInTheDocument();
+        expect(within(detail).queryByRole('complementary', { name: 'Fit report' })).not.toBeInTheDocument();
+        expect(within(detail).getByRole('article', { name: 'Cover letter' })).toBeInTheDocument();
+    });
+
+    it('starts expanded on wide screens', async () => {
+        const original = window.matchMedia;
+        window.matchMedia = vi.fn((query) => ({
+            matches: query === '(min-width: 1200px)',
+            media: query,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+        }));
+        try {
+            const user = userEvent.setup();
+            const detail = await openSaved(user, withRecs);
+            const toggle = within(detail).getByRole('button', { name: 'Fit score: 62/100' });
+            expect(toggle).toHaveAttribute('aria-expanded', 'true');
+            expect(detail.querySelector('.accordion-collapse')).toHaveClass('show');
+        } finally {
+            window.matchMedia = original;
+        }
     });
 });
 
@@ -324,7 +423,7 @@ describe('ApplyForJobs async generation', () => {
     // userEvent typing under fake timers is slow and fiddly; fire a change.
     const submitPosting = (posting = 'Northwind is hiring.') => {
         fireEvent.change(screen.getByLabelText(/Job posting/), { target: { value: posting } });
-        fireEvent.click(screen.getByRole('button', { name: /Generate Cover Letter/ }));
+        fireEvent.click(screen.getByRole('button', { name: /Generate cover letter/ }));
     };
 
     // Records every poll so tests can assert on count and spacing.
@@ -364,10 +463,17 @@ describe('ApplyForJobs async generation', () => {
         const user = userEvent.setup();
         renderTool();
 
-        await generate(user, { posting: 'Northwind is hiring.', context: 'Focus on serverless.' });
+        await generate(user, {
+            company: 'Northwind',
+            position: 'Engineer',
+            posting: 'Northwind is hiring.',
+            context: 'Focus on serverless.',
+        });
 
-        // Modal: non-dismissable, labelled, spinner + status + elapsed time.
+        // Modal: non-dismissable, labelled, target + status + elapsed time.
         const dialog = await screen.findByRole('dialog');
+        expect(within(dialog).getByText('Engineer at Northwind')).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
         expect(dialog).toHaveAccessibleName('Generating your cover letter and resume');
         expect(dialog).toHaveAccessibleDescription(/keep this page open/i);
         expect(within(dialog).getByRole('timer')).toHaveTextContent(/Elapsed time: 0:0\d/);
@@ -383,6 +489,7 @@ describe('ApplyForJobs async generation', () => {
         await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
         // Request shape: header, body, and no includeRecommendations.
+        // (Company and position are for the title only, never sent.)
         expect(posts).toHaveLength(1);
         expect(posts[0].key).toBe(APPLICATION_API_KEY);
         expect(posts[0].body).toEqual({
@@ -396,17 +503,21 @@ describe('ApplyForJobs async generation', () => {
         // Recommendations come first, collapsed, showing only the score.
         const toggle = screen.getByRole('button', { name: 'Fit score: 62/100' });
         expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        const rail = screen.getByRole('complementary', { name: 'Fit report' });
         const panel = document.querySelector('.applyforjobs-recommendations');
-        const coverHeading = screen.getByRole('heading', { name: 'Cover Letter' });
+        expect(rail).toContainElement(panel);
+        const coverEditor = screen.getByLabelText('Cover letter markdown (editable)');
         expect(
-            panel.compareDocumentPosition(coverHeading) & Node.DOCUMENT_POSITION_FOLLOWING
+            rail.compareDocumentPosition(coverEditor) & Node.DOCUMENT_POSITION_FOLLOWING
         ).toBeTruthy();
         expect(panel.querySelector('.accordion-collapse')).not.toHaveClass('show');
 
-        // Accessibility: focus lands on the results, and the panel's header is
-        // an h4 like "Cover Letter" (not Bootstrap's default h2 under the h3 title).
-        expect(coverHeading).toHaveFocus();
-        expect(toggle.closest('h4')).not.toBeNull();
+        // Accessibility: focus lands on the result title, and the panel's header
+        // is an h5 under it (not Bootstrap's default h2).
+        const title = screen.getByRole('heading', { level: 4, name: 'Northwind — Engineer' });
+        expect(title).toHaveAttribute('id', 'afj-result-title');
+        expect(title).toHaveFocus();
+        expect(toggle.closest('h5')).not.toBeNull();
     });
 
     it('expanding the panel reveals the report, and the position heading has no stray rule', async () => {
@@ -443,7 +554,93 @@ describe('ApplyForJobs async generation', () => {
             fixtures.completeNoRecs.resume
         );
         expect(document.querySelector('.applyforjobs-recommendations')).toBeNull();
+        expect(screen.queryByRole('complementary', { name: 'Fit report' })).not.toBeInTheDocument();
         expect(screen.queryByText(/Fit score/)).not.toBeInTheDocument();
+        // No company or position entered: neutral title, focused.
+        expect(screen.getByRole('heading', { level: 4, name: 'Your documents' })).toHaveFocus();
+    });
+
+    it('toggles between Edit and Preview and switches documents by tab', async () => {
+        server.use(
+            http.get(JOB_URL, () =>
+                HttpResponse.json({
+                    ...fixtures.completeNoRecs,
+                    coverLetter: '# Letter heading\n\nLetter **body**',
+                    resume: '# Resume heading\n\nResume body',
+                })
+            )
+        );
+        const user = userEvent.setup();
+        renderTool();
+        await generate(user, { posting: 'Northwind is hiring.' });
+
+        const editor = await screen.findByLabelText('Cover letter markdown (editable)');
+        const group = screen.getByRole('group', { name: 'Document view' });
+        const edit = within(group).getByRole('button', { name: 'Edit' });
+        const preview = within(group).getByRole('button', { name: 'Preview' });
+        expect(edit).toHaveAttribute('aria-pressed', 'true');
+        expect(preview).toHaveAttribute('aria-pressed', 'false');
+
+        await user.click(preview);
+        expect(preview).toHaveAttribute('aria-pressed', 'true');
+        expect(edit).toHaveAttribute('aria-pressed', 'false');
+        expect(editor).not.toBeInTheDocument();
+        expect(screen.queryAllByRole('textbox')).toHaveLength(0);
+        const article = screen.getByRole('article', { name: 'Cover letter' });
+        expect(within(article).getByRole('heading', { name: 'Letter heading' })).toBeInTheDocument();
+        expect(article.querySelector('strong')).toHaveTextContent('body');
+
+        // Switching tabs shows the resume, still in Preview.
+        await user.click(screen.getByRole('tab', { name: 'Resume' }));
+        expect(
+            within(screen.getByRole('article', { name: 'Resume' }))
+                .getByRole('heading', { name: 'Resume heading' })
+        ).toBeInTheDocument();
+
+        // Back to Edit: the resume's textarea holds its markdown.
+        await user.click(edit);
+        expect(screen.getByLabelText('Resume markdown (editable)')).toHaveValue(
+            '# Resume heading\n\nResume body'
+        );
+    });
+
+    it('copies the active document markdown and shows "Copied"', async () => {
+        server.use(
+            http.get(JOB_URL, () =>
+                HttpResponse.json({
+                    ...fixtures.completeNoRecs,
+                    coverLetter: 'Cover markdown',
+                    resume: 'Resume markdown',
+                })
+            )
+        );
+        const user = userEvent.setup();
+        // After setup(): userEvent installs its own clipboard stub.
+        const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+        renderTool();
+        await generate(user, { posting: 'Northwind is hiring.' });
+        await screen.findByLabelText('Cover letter markdown (editable)');
+
+        await user.click(screen.getByRole('button', { name: 'Copy' }));
+        expect(writeText).toHaveBeenLastCalledWith('Cover markdown');
+        expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument();
+
+        await user.click(screen.getByRole('tab', { name: 'Resume' }));
+        await user.click(screen.getByRole('button', { name: 'Copy' }));
+        expect(writeText).toHaveBeenLastCalledWith('Resume markdown');
+        expect(writeText).toHaveBeenCalledTimes(2);
+    });
+
+    it('offers Start over, which resets to an empty form', async () => {
+        const user = userEvent.setup();
+        renderTool();
+        await generate(user, { company: 'Northwind', posting: 'Northwind is hiring.' });
+        await screen.findByLabelText('Cover letter markdown (editable)');
+
+        await user.click(screen.getByRole('button', { name: /Start over/ }));
+        expect(screen.getByLabelText(/Job posting/)).toHaveValue('');
+        expect(screen.getByLabelText('Company')).toHaveValue('');
+        expect(screen.queryByLabelText('Cover letter markdown (editable)')).not.toBeInTheDocument();
     });
 
     it('lets the user cancel from the modal, stopping the poll loop', async () => {
@@ -593,6 +790,30 @@ describe('ApplyForJobs async generation', () => {
 
         await act(() => vi.advanceTimersByTimeAsync(65000));
         expect(screen.getByRole('timer')).toHaveTextContent('Elapsed time: 1:05');
+    });
+
+    it('changes the modal message as the wait gets longer', async () => {
+        useFakeClock();
+        server.use(
+            http.post(APPLICATION_URL, () =>
+                HttpResponse.json({ ...fixtures.accepted202, pollAfterSeconds: 10 }, { status: 202 })
+            )
+        );
+        recordPolls(() => HttpResponse.json(fixtures.running));
+        renderTool();
+        submitPosting();
+
+        await act(() => vi.advanceTimersByTimeAsync(5000));
+        let dialog = screen.getByRole('dialog');
+        expect(dialog).toHaveAccessibleDescription(/usually takes under a minute.*keep this page open/i);
+
+        await act(() => vi.advanceTimersByTimeAsync(56000));
+        dialog = screen.getByRole('dialog');
+        expect(dialog).toHaveAccessibleDescription(/Taking longer than usual.*keep this page open/i);
+
+        await act(() => vi.advanceTimersByTimeAsync(120000));
+        dialog = screen.getByRole('dialog');
+        expect(dialog).toHaveAccessibleDescription(/Still working.*keep this page open/i);
     });
 
     it('stops polling and clears every timer when unmounted mid-poll', async () => {

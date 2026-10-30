@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Modal from 'react-bootstrap/Modal';
-import Spinner from 'react-bootstrap/Spinner';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
 import {
     createApplication,
     deleteApplication,
     subscribeToApplications,
     updateApplicationOutputs,
 } from './history.js';
-import { renderMarkdown } from './markdown.js';
+import DocumentWorkspace from './DocumentWorkspace.jsx';
+import { formatDate } from './format.js';
+import HistoryList from './HistoryList.jsx';
+import ProgressModal from './ProgressModal.jsx';
 import Recommendations from './Recommendations.jsx';
+import { ArrowLeftIcon, PlusIcon, TrashIcon } from './icons.jsx';
 import './applyforjobs.css';
 
 // Async application API: POST submits and returns a jobId, then
@@ -138,181 +137,16 @@ const pollForResult = async (jobId, delayMs, startedAt, signal) => {
     }
 };
 
-const formatElapsed = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = String(totalSeconds % 60).padStart(2, '0');
-    return `${minutes}:${seconds}`;
-};
-
-// Print stylesheet for the generated PDF (the equivalent of the Python
-// pipeline's css_path). Styles headings, tables, italics, bold, and lists.
-// @page sets US Letter with 1-inch margins so the browser's print engine
-// (the WeasyPrint equivalent) lays out the PDF.
-const PDF_STYLESHEET = `
-    @page {
-        size: Letter;
-        margin: 0.6in;
-    }
-
-    html {
-        font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Liberation Sans", sans-serif;
-        font-size: 10.5pt;
-        line-height: 1.35;
-        color: #222;
-    }
-
-    body {
-        margin: 0;
-    }
-
-    h1 {
-        font-size: 22pt;
-        margin: 0 0 0.1em 0;
-        line-height: 1.1;
-    }
-
-    h2 {
-        font-size: 13pt;
-        margin: 1em 0 0.3em 0;
-        padding-bottom: 0.1em;
-        border-bottom: 1px solid #444;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    h3 {
-        font-size: 11pt;
-        margin: 0.75em 0 0.15em 0;
-        /* top right bottom left */
-    }
-
-    p {
-        margin: 0 0 1em 0;
-    }
-
-    ul, ol {
-        margin: 0.2em 0 0.5em 0;
-        padding-left: 1.2em;
-    }
-
-    li {
-        margin: 0.1em 0;
-    }
-
-    li > p {
-        margin: 0;
-    }
-
-    strong {
-        color: #000;
-    }
-
-    a {
-        color: #0066cc;
-        text-decoration: underline;
-    }
-
-    hr {
-        border: none;
-        border-top: 1px solid #ccc;
-        margin: 0.8em 0;
-    }
-
-    code {
-        font-family: "SF Mono", Menlo, Consolas, monospace;
-        font-size: 9.5pt;
-        background: #f4f4f4;
-        padding: 0 0.2em;
-        border-radius: 2px;
-    }
-
-    pre {
-        background: #f4f4f4;
-        padding: 0.5em 0.7em;
-        border-radius: 3px;
-        font-size: 9.5pt;
-        overflow-x: hidden;
-        white-space: pre-wrap;
-    }
-
-    blockquote {
-        border-left: 3px solid #ccc;
-        margin: 0.5em 0;
-        padding: 0 0 0 0.8em;
-        color: #555;
-    }
-
-    table {
-        width: 100%;
-        padding: 0 0 0.5em 0;
-        border-collapse: collapse;
-    }
-`;
-
-// Render markdown to a styled PDF via the browser's own print engine.
-// Mirrors the Python markdown_to_pdf: marked (markdown -> HTML) + a CSS
-// stylesheet, rendered to PDF by the browser (the WeasyPrint equivalent).
-// Tables, italics, and bold render as real, selectable text. The user picks
-// "Save as PDF" (or a real printer) in the print dialog.
-const downloadPdf = (title, markdown) => {
-    // GitHub-flavored markdown so pipe tables are parsed. marked is the
-    // JS counterpart to Python's markdown.markdown(..., extensions=['extra']).
-    // The markdown is user-editable, so sanitize the resulting HTML with
-    // DOMPurify to strip any injected scripts/event handlers before it is
-    // written into the print window.
-    const dirtyHtml = marked.parse(markdown, { gfm: true, breaks: false });
-    const html = DOMPurify.sanitize(dirtyHtml);
-
-    const printWindow = window.open('', '_blank', 'width=816,height=1056');
-    if (!printWindow) {
-        // Popup blocked — nothing we can do without a user-gesture window.
-        alert('Please allow pop-ups to download the PDF.');
-        return;
-    }
-
-    printWindow.document.write(
-        `<!DOCTYPE html><html><head><meta charset="utf-8">` +
-        `<title>${title}</title><style>${PDF_STYLESHEET}</style></head>` +
-        `<body>${html}</body></html>`
-    );
-    printWindow.document.close();
-
-    // Wait for layout, trigger the print dialog, then close the helper window.
-    printWindow.focus();
-    printWindow.onload = () => {
-        printWindow.print();
-        printWindow.onafterprint = () => printWindow.close();
-    };
-};
-
-// Inline print icon so no icon-font dependency is needed.
-const PrintIcon = () => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 16 16"
-        fill="currentColor"
-        aria-hidden="true"
-        style={{ verticalAlign: '-2px', marginRight: '4px' }}
-    >
-        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
-        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a1 1 0 0 0-1 1v3h8v-3a1 1 0 0 0-1-1H5zm7 2h2a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2V9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1z" />
-    </svg>
-);
-
 // Edits to the result are mirrored back to Firestore. Without a debounce
 // every keystroke would be a write, which is pointless and would chew through
 // the 20k/day free write quota.
 const SAVE_DEBOUNCE_MS = 1500;
 
-// "{datetime} - {company} {position}", with em dashes for values the user
-// left blank so the label never renders as a ragged "2026-10-28 -  ".
-const labelFor = (app) => {
-    const when = app.createdAtMs
-        ? new Date(app.createdAtMs).toLocaleString()
-        : '—';
-    return `${when} - ${app.company || '—'} ${app.position || '—'}`;
+// "Company — Position" for the result header, falling back to whichever the
+// user filled in, or a neutral title when both were left blank.
+const titleFor = (company, position) => {
+    if (company && position) return `${company} — ${position}`;
+    return company || position || 'Your documents';
 };
 
 const ApplyForJobs = ({ user }) => {
@@ -322,7 +156,6 @@ const ApplyForJobs = ({ user }) => {
     const [applicantContext, setApplicantContext] = useState('');
     const [company, setCompany] = useState('');
     const [position, setPosition] = useState('');
-    const [showContext, setShowContext] = useState(false);
     const [sessionId, setSessionId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [startedAtMs, setStartedAtMs] = useState(0);
@@ -337,6 +170,9 @@ const ApplyForJobs = ({ user }) => {
     const [applications, setApplications] = useState([]);
     const [viewingId, setViewingId] = useState(null);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
+    // 'compose' holds the form and the live result; 'history' holds the
+    // saved-applications list and, when viewingId is set, one record.
+    const [view, setView] = useState('compose');
 
     // Derived from the live snapshot rather than held as its own copy, so an
     // edit-save is reflected here and a deleted record drops the detail view
@@ -368,6 +204,14 @@ const ApplyForJobs = ({ user }) => {
     useEffect(() => {
         if (hasResult) resultHeadingRef.current?.focus();
     }, [hasResult]);
+
+    // Same reasoning for the history detail: the list row that opened it is
+    // gone, so put focus on the record's heading.
+    const detailHeadingRef = useRef(null);
+    const viewingRecordId = viewing?.id;
+    useEffect(() => {
+        if (viewingRecordId) detailHeadingRef.current?.focus();
+    }, [viewingRecordId]);
 
     useEffect(() => {
         // No uid means no history to show. RequireAuth unmounts the tool on
@@ -520,319 +364,313 @@ const ApplyForJobs = ({ user }) => {
         setApplicantContext('');
         setCompany('');
         setPosition('');
-        setShowContext(false);
         setResult(null);
         setError('');
         setSaveError('');
         setSavedId(null);
+        setView('compose');
     };
+
+    const showCompose = () => {
+        setConfirmingDelete(false);
+        setView('compose');
+    };
+
+    const showHistory = () => {
+        setConfirmingDelete(false);
+        setViewingId(null);
+        setView('history');
+    };
+
+    const openApplication = (id) => {
+        setConfirmingDelete(false);
+        setViewingId(id);
+        setView('history');
+    };
+
+    const wordCount = jobPosting.trim() ? jobPosting.trim().split(/\s+/).length : 0;
+    const resultTitle = titleFor(company.trim(), position.trim());
+    let saveStatus = 'Saving to Past applications…';
+    if (savedId) saveStatus = 'Saved to Past applications. Edits save automatically.';
+    else if (saveError) saveStatus = 'Not saved to Past applications.';
 
     return (
         <div className="applyforjobs-container">
-            <div className="d-flex justify-content-between align-items-start gap-3">
-                <h3>Apply for Jobs</h3>
+            <header className="afj-header">
+                <div>
+                    <h3 className="afj-title">Apply for Jobs</h3>
+                    <p className="afj-lede">
+                        Paste a job posting and get a tailored cover letter and resume.
+                    </p>
+                </div>
                 {uid && (
-                    <Dropdown align="end">
-                        <Dropdown.Toggle
-                            variant="outline-secondary"
-                            size="sm"
-                            id="past-applications"
-                        >
-                            Past applications
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            {applications.length === 0 ? (
-                                <Dropdown.ItemText className="text-muted">
-                                    No saved applications yet
-                                </Dropdown.ItemText>
-                            ) : (
-                                applications.map((app) => (
-                                    <Dropdown.Item
-                                        key={app.id}
-                                        onClick={() => {
-                                            setConfirmingDelete(false);
-                                            setViewingId(app.id);
-                                        }}
-                                    >
-                                        {labelFor(app)}
-                                    </Dropdown.Item>
-                                ))
-                            )}
-                        </Dropdown.Menu>
-                    </Dropdown>
+                    <nav aria-label="Apply for Jobs views">
+                        <ul className="nav nav-underline afj-views">
+                            <li className="nav-item">
+                                <button
+                                    type="button"
+                                    className={`nav-link${view === 'compose' ? ' active' : ''}`}
+                                    aria-current={view === 'compose' ? 'page' : undefined}
+                                    onClick={showCompose}
+                                >
+                                    New application
+                                </button>
+                            </li>
+                            <li className="nav-item">
+                                <button
+                                    type="button"
+                                    className={`nav-link${view === 'history' ? ' active' : ''}`}
+                                    aria-current={view === 'history' ? 'page' : undefined}
+                                    onClick={showHistory}
+                                >
+                                    Past applications
+                                    {applications.length > 0 && (
+                                        <span className="afj-count">{applications.length}</span>
+                                    )}
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
                 )}
-            </div>
-
-            {!viewing && (
-                <p style={{ color: '#666' }}>
-                    Paste a job posting below and get a tailored cover letter and resume.
-                </p>
-            )}
+            </header>
 
             {saveError && (
                 <div className="alert alert-warning" role="status">{saveError}</div>
             )}
 
-            <Modal
+            <ProgressModal
                 show={loading}
-                backdrop="static"
-                keyboard={false}
-                animation={false}
-                centered
-                aria-labelledby="applyforjobs-progress-title"
-                aria-describedby="applyforjobs-progress-desc"
-            >
-                <Modal.Body className="text-center py-4">
-                    <Spinner animation="border" aria-hidden="true" className="mb-3" />
-                    <h5 id="applyforjobs-progress-title">
-                        Generating your cover letter and resume
-                    </h5>
-                    <p id="applyforjobs-progress-desc" className="mb-1">
-                        This usually takes under a minute. Please keep this page open.
-                    </p>
-                    {/* role=timer is not announced on every tick, unlike a live region. */}
-                    <p role="timer" className="text-muted mb-0">
-                        Elapsed time: {formatElapsed(elapsedSeconds)}
-                    </p>
-                    <button
-                        type="button"
-                        className="btn btn-outline-secondary btn-sm mt-3"
-                        onClick={cancelGeneration}
-                    >
-                        Cancel
-                    </button>
-                </Modal.Body>
-            </Modal>
+                elapsedSeconds={elapsedSeconds}
+                company={company.trim()}
+                position={position.trim()}
+                onCancel={cancelGeneration}
+            />
 
-            {!viewing && !result && (
-                <form onSubmit={handleSubmit}>
-                    <div className="row">
-                        <div className="col-sm-6 mb-3">
-                            <label htmlFor="company" className="form-label">Company</label>
-                            <input
-                                id="company"
-                                type="text"
-                                className="form-control"
-                                placeholder="Optional"
-                                value={company}
-                                onChange={(e) => setCompany(e.target.value)}
-                                disabled={loading}
-                            />
+            {view === 'compose' && !result && (
+                <form className="afj-compose" onSubmit={handleSubmit}>
+                    <div className="afj-compose-main">
+                        <div className="afj-field-head">
+                            <label htmlFor="jobPosting" className="form-label">
+                                Job posting <span className="afj-required" aria-hidden="true">*</span>
+                            </label>
+                            {wordCount > 0 && (
+                                <span className="afj-hint">
+                                    {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
+                                </span>
+                            )}
                         </div>
-                        <div className="col-sm-6 mb-3">
-                            <label htmlFor="position" className="form-label">Position</label>
-                            <input
-                                id="position"
-                                type="text"
-                                className="form-control"
-                                placeholder="Optional"
-                                value={position}
-                                onChange={(e) => setPosition(e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="mb-3">
-                        <label htmlFor="jobPosting" className="form-label">
-                            Job posting <span style={{ color: '#c00' }}>*</span>
-                        </label>
                         <textarea
                             id="jobPosting"
-                            className="form-control"
-                            rows={20}
-                            placeholder="Paste the job description here..."
+                            className="form-control afj-posting"
+                            placeholder="Paste the full job description: responsibilities, requirements, and anything about the team."
+                            aria-required="true"
                             value={jobPosting}
                             onChange={(e) => setJobPosting(e.target.value)}
                             disabled={loading}
                         />
                     </div>
 
-                    <div className="mb-3">
-                        <button
-                            type="button"
-                            className="btn btn-link p-0"
-                            onClick={() => setShowContext(!showContext)}
-                            disabled={loading}
-                        >
-                            {showContext ? 'Hide' : 'Add'} optional context
-                        </button>
-                        {showContext && (
-                            <textarea
-                                className="form-control mt-2"
-                                rows={3}
-                                placeholder="Optional: target tone, specific experience to emphasize, etc."
-                                value={applicantContext}
-                                onChange={(e) => setApplicantContext(e.target.value)}
-                                disabled={loading}
-                            />
-                        )}
+                    <div className="afj-compose-side">
+                        <div className="afj-panel">
+                            <div className="afj-field">
+                                <label htmlFor="company" className="form-label">Company</label>
+                                <input
+                                    id="company"
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Optional"
+                                    autoComplete="organization"
+                                    value={company}
+                                    onChange={(e) => setCompany(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+                            <div className="afj-field">
+                                <label htmlFor="position" className="form-label">Position</label>
+                                <input
+                                    id="position"
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Optional"
+                                    autoComplete="organization-title"
+                                    value={position}
+                                    onChange={(e) => setPosition(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+                            <div className="afj-field">
+                                <label htmlFor="applicantContext" className="form-label">
+                                    Additional context <span className="afj-hint">Optional</span>
+                                </label>
+                                <textarea
+                                    id="applicantContext"
+                                    className="form-control"
+                                    rows={5}
+                                    placeholder="e.g. target tone, experience to emphasize, or anything the posting leaves out"
+                                    value={applicantContext}
+                                    onChange={(e) => setApplicantContext(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            {error && (
+                                <div className="alert alert-danger mb-0" role="alert">{error}</div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="btn btn-primary afj-submit"
+                                disabled={loading || !jobPosting.trim()}
+                            >
+                                {loading ? 'Generating…' : 'Generate cover letter & resume'}
+                            </button>
+                            <p className="afj-hint afj-submit-note">
+                                Usually takes under a minute. Results are saved to Past applications.
+                            </p>
+                        </div>
                     </div>
-
-                    {error && (
-                        <div className="alert alert-danger" role="alert">{error}</div>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="btn btn-outline-primary"
-                        disabled={loading || !jobPosting.trim()}
-                    >
-                        {loading ? 'Generating...' : 'Generate Cover Letter & Resume'}
-                    </button>
                 </form>
             )}
 
-            {!viewing && result && (
-                <>
-                    <Recommendations recommendations={result.recommendations} level={4} />
-
-                    <div className="applyforjobs-result">
-                        <div className="applyforjobs-section-header">
-                            <h4 ref={resultHeadingRef} tabIndex={-1} className="mb-0">
-                                Cover Letter
+            {view === 'compose' && result && (
+                <section className="afj-workspace" aria-labelledby="afj-result-title">
+                    <div className="afj-workspace-head">
+                        <div>
+                            <h4
+                                id="afj-result-title"
+                                ref={resultHeadingRef}
+                                tabIndex={-1}
+                                className="afj-workspace-title"
+                            >
+                                {resultTitle}
                             </h4>
-                            <div className="d-flex gap-2">
-                                <button
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() => downloadPdf('Cover Letter', result.coverLetter)}
-                                >
-                                    <PrintIcon />
-                                </button>
-                            </div>
+                            {uid && <p className="afj-meta">{saveStatus}</p>}
                         </div>
-                        <textarea
-                            className="applyforjobs-editor form-control"
-                            aria-label="Cover letter markdown (editable)"
-                            value={result.coverLetter}
-                            onChange={(e) => updateOutput('coverLetter', e.target.value)}
-                        />
-                    </div>
-
-                    <div className="applyforjobs-result">
-                        <div className="applyforjobs-section-header">
-                            <h4 className="mb-0">Resume</h4>
-                            <div className="d-flex gap-2">
-                                <button
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() => downloadPdf('Resume', result.resume)}
-                                >
-                                    <PrintIcon />
-                                </button>
-                            </div>
+                        <div className="afj-workspace-actions">
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary afj-tool"
+                                onClick={startOver}
+                            >
+                                <PlusIcon />Start over
+                            </button>
                         </div>
-                        <textarea
-                            className="applyforjobs-editor form-control"
-                            aria-label="Resume markdown (editable)"
-                            value={result.resume}
-                            onChange={(e) => updateOutput('resume', e.target.value)}
-                        />
                     </div>
-
-                    <button className="btn btn-outline-secondary" onClick={startOver}>
-                        Start over
-                    </button>
-                </>
+                    <div className={`afj-workspace-grid${result.recommendations ? ' has-rail' : ''}`}>
+                        {result.recommendations && (
+                            <aside className="afj-rail" aria-label="Fit report">
+                                <Recommendations recommendations={result.recommendations} level={5} />
+                            </aside>
+                        )}
+                        <div className="afj-workspace-main">
+                            <DocumentWorkspace
+                                id="afj-result-docs"
+                                editable
+                                documents={[
+                                    {
+                                        key: 'coverLetter',
+                                        label: 'Cover letter',
+                                        markdown: result.coverLetter,
+                                        pdfTitle: 'Cover Letter',
+                                        ariaLabel: 'Cover letter markdown (editable)',
+                                        onChange: (value) => updateOutput('coverLetter', value),
+                                    },
+                                    {
+                                        key: 'resume',
+                                        label: 'Resume',
+                                        markdown: result.resume,
+                                        pdfTitle: 'Resume',
+                                        ariaLabel: 'Resume markdown (editable)',
+                                        onChange: (value) => updateOutput('resume', value),
+                                    },
+                                ]}
+                            />
+                        </div>
+                    </div>
+                </section>
             )}
 
-            {viewing && (
-                <div className="applyforjobs-history-detail">
-                    <button
-                        className="btn btn-outline-secondary btn-sm mb-3"
-                        onClick={() => {
-                            setConfirmingDelete(false);
-                            setViewingId(null);
-                        }}
-                    >
-                        Back
+            {view === 'history' && !viewing && (
+                <HistoryList
+                    applications={applications}
+                    onOpen={openApplication}
+                    onNew={showCompose}
+                />
+            )}
+
+            {view === 'history' && viewing && (
+                <section
+                    className="afj-workspace applyforjobs-history-detail"
+                    aria-labelledby="afj-detail-title"
+                >
+                    <button type="button" className="btn btn-link afj-back" onClick={showHistory}>
+                        <ArrowLeftIcon />All past applications
                     </button>
-
-                    <h4 className="mb-1">
-                        {viewing.company || '—'} — {viewing.position || '—'}
-                    </h4>
-                    <p style={{ color: '#666' }}>
-                        {viewing.createdAtMs
-                            ? new Date(viewing.createdAtMs).toLocaleString()
-                            : '—'}
-                    </p>
-
-                    <h5 className="mt-4">Job posting</h5>
-                    <div
-                        className="applyforjobs-readonly"
-                        dangerouslySetInnerHTML={renderMarkdown(viewing.jobPosting)}
-                    />
-
-                    {viewing.applicantContext && (
-                        <>
-                            <h5 className="mt-4">Additional context</h5>
-                            <div
-                                className="applyforjobs-readonly"
-                                dangerouslySetInnerHTML={renderMarkdown(
-                                    viewing.applicantContext
-                                )}
-                            />
-                        </>
-                    )}
-
-                    <div className="mt-4">
-                        <Recommendations recommendations={viewing.recommendations} level={5} />
-                    </div>
-
-                    <div className="applyforjobs-section-header mt-4">
-                        <h5 className="mb-0">Cover Letter</h5>
-                        <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => downloadPdf('Cover Letter', viewing.coverLetter)}
-                        >
-                            <PrintIcon />
-                        </button>
-                    </div>
-                    <div
-                        className="applyforjobs-readonly"
-                        dangerouslySetInnerHTML={renderMarkdown(viewing.coverLetter)}
-                    />
-
-                    <div className="applyforjobs-section-header mt-4">
-                        <h5 className="mb-0">Resume</h5>
-                        <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => downloadPdf('Resume', viewing.resume)}
-                        >
-                            <PrintIcon />
-                        </button>
-                    </div>
-                    <div
-                        className="applyforjobs-readonly"
-                        dangerouslySetInnerHTML={renderMarkdown(viewing.resume)}
-                    />
-
-                    <div className="mt-4 d-flex gap-2 align-items-center">
-                        {confirmingDelete ? (
-                            <>
-                                <span>Delete this application?</span>
-                                <button
-                                    className="btn btn-sm btn-danger"
-                                    onClick={() => handleDelete(viewing)}
-                                >
-                                    Confirm delete
-                                </button>
-                                <button
-                                    className="btn btn-sm btn-outline-secondary"
-                                    onClick={() => setConfirmingDelete(false)}
-                                >
-                                    Cancel
-                                </button>
-                            </>
-                        ) : (
-                            <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => setConfirmingDelete(true)}
+                    <div className="afj-workspace-head">
+                        <div>
+                            <h4
+                                id="afj-detail-title"
+                                ref={detailHeadingRef}
+                                tabIndex={-1}
+                                className="afj-workspace-title"
                             >
-                                Delete
-                            </button>
-                        )}
+                                {viewing.company || '—'} — {viewing.position || '—'}
+                            </h4>
+                            <p className="afj-meta">{formatDate(viewing.createdAtMs)}</p>
+                        </div>
+                        <div className="afj-workspace-actions">
+                            {confirmingDelete ? (
+                                <>
+                                    <span className="afj-confirm-text">Delete this application?</span>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-danger"
+                                        onClick={() => handleDelete(viewing)}
+                                    >
+                                        Confirm delete
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={() => setConfirmingDelete(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger afj-tool"
+                                    onClick={() => setConfirmingDelete(true)}
+                                >
+                                    <TrashIcon />Delete
+                                </button>
+                            )}
+                        </div>
                     </div>
-                </div>
+                    <div className={`afj-workspace-grid${viewing.recommendations ? ' has-rail' : ''}`}>
+                        {viewing.recommendations && (
+                            <aside className="afj-rail" aria-label="Fit report">
+                                <Recommendations recommendations={viewing.recommendations} level={5} />
+                            </aside>
+                        )}
+                        <div className="afj-workspace-main">
+                            {/* Keyed by record so switching records resets the open tab. */}
+                            <DocumentWorkspace
+                                key={viewing.id}
+                                id="afj-detail-docs"
+                                documents={[
+                                    { key: 'coverLetter', label: 'Cover letter', markdown: viewing.coverLetter, pdfTitle: 'Cover Letter' },
+                                    { key: 'resume', label: 'Resume', markdown: viewing.resume, pdfTitle: 'Resume' },
+                                    { key: 'jobPosting', label: 'Job posting', markdown: viewing.jobPosting },
+                                    ...(viewing.applicantContext
+                                        ? [{ key: 'context', label: 'Your context', markdown: viewing.applicantContext }]
+                                        : []),
+                                ]}
+                            />
+                        </div>
+                    </div>
+                </section>
             )}
         </div>
     );

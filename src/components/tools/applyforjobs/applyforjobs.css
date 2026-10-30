@@ -1,81 +1,695 @@
-.applyforjobs-container {
-    flex: 1 1 auto; /* fill the flex .row instead of shrinking to content */
-    min-width: 0;   /* allow the flex item to shrink below content's intrinsic width */
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px 0;
+/* Apply for Jobs. Inherits the site's Bootstrap world (system sans, primary
+   blue, light ground); everything here is scoped to the tool's container.
+
+   index.html serves Bootstrap 4.1.3 CSS while react-bootstrap emits Bootstrap 5
+   markup, so nothing here may lean on BS5-only CSS: no --bs-* variables, no
+   .nav-underline, .accordion-*, .stretched-link or .visually-hidden styles.
+   Those are drawn below (or paired with BS4's .sr-only in the markup). */
+
+/* The progress modal portals to <body>, outside the container, so it gets the
+   same tokens. */
+.applyforjobs-container,
+.afj-progress {
+    --afj-ink: #212529;
+    --afj-muted: #5c636a;
+    --afj-line: #dee2e6;
+    --afj-line-soft: #e9ecef;
+    --afj-panel: #f6f7f9;
+    --afj-desk: #eceef2;
+    --afj-accent: #007bff; /* Bootstrap 4 primary, as used across the site */
+    --afj-accent-soft: rgba(0, 123, 255, 0.16);
+    --afj-focus-ring: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    --afj-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --afj-radius: 0.75rem;
+    --afj-sticky-top: 6.5rem; /* clears the fixed navbar (body padding-top: 90px) */
+    --afj-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.08);
 }
 
-@media (min-width: 1024px) {
-    .applyforjobs-container {
-        max-width: 100%;
+.applyforjobs-container {
+    padding: 1.25rem 0 2rem;
+    color: var(--afj-ink);
+}
+
+/* The app shell stops at 1600px. On large monitors this tool takes 80% of the
+   viewport instead, centred on the shell, and never narrower than the shell.
+   `.row >` out-specifies Bootstrap's `.row > * { max-width: 100% }`. */
+.row > .applyforjobs-container {
+    --afj-width: max(100%, 80vw);
+    flex: 0 0 auto;
+    width: var(--afj-width);
+    max-width: none;
+    margin-inline: calc((100% - var(--afj-width)) / 2);
+    /* BS4's .row has a -15px margin and no column here to pay it back. */
+    padding-inline: 15px;
+}
+
+.applyforjobs-container ::selection {
+    background: var(--afj-accent-soft);
+}
+
+.applyforjobs-container textarea,
+.applyforjobs-container input {
+    caret-color: var(--afj-accent);
+}
+
+.applyforjobs-container textarea,
+.applyforjobs-container .afj-rail .accordion-body,
+.applyforjobs-container .afj-table-wrap {
+    scrollbar-width: thin;
+    scrollbar-color: #c3c8cf transparent;
+}
+
+.afj-icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+}
+
+.afj-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.afj-hint {
+    color: var(--afj-muted);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+}
+
+.afj-count {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: var(--afj-line-soft);
+    color: #495057;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    vertical-align: 0.1em;
+    font-variant-numeric: tabular-nums;
+}
+
+.afj-muted {
+    color: var(--afj-muted);
+}
+
+/* ---- Header ---------------------------------------------------------- */
+
+.afj-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--afj-line);
+}
+
+.afj-title {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.afj-lede {
+    margin-bottom: 1rem;
+    color: var(--afj-muted);
+}
+
+/* Underlined navs: the view switch and the document tabs. */
+.afj-views,
+.afj-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin: 0 0 -1px; /* the active underline sits on the rule below */
+    padding: 0;
+    list-style: none;
+}
+
+.afj-views .nav-link,
+.afj-tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0 0.75rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: none;
+    color: var(--afj-muted);
+    font-weight: 500;
+    transition: color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.afj-views .nav-link:hover,
+.afj-tabs .nav-link:hover {
+    color: var(--afj-ink);
+    border-bottom-color: var(--afj-line);
+}
+
+.afj-views .nav-link.active,
+.afj-tabs .nav-link.active {
+    color: var(--afj-ink);
+    border-bottom-color: var(--afj-accent);
+}
+
+.afj-views .nav-link:focus,
+.afj-tabs .nav-link:focus,
+.afj-mode .btn:focus,
+.afj-row-link:focus {
+    outline: none; /* BS4 reboot draws a ring on mouse focus too */
+}
+
+.afj-views .nav-link:focus-visible,
+.afj-tabs .nav-link:focus-visible {
+    outline: 2px solid var(--afj-accent);
+    outline-offset: 2px;
+}
+
+/* ---- Compose --------------------------------------------------------- */
+
+/* minmax(0, 1fr), not the implicit auto track: an auto track grows to the
+   widest unbreakable content (a long URL in a pasted posting or resume) and
+   pushes the page sideways on phones. */
+.afj-compose {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+}
+
+.afj-field-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.afj-compose .form-label {
+    margin-bottom: 0.375rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.afj-required {
+    color: #b02a37;
+}
+
+textarea.afj-posting {
+    min-height: 22rem;
+    padding: 1rem 1.125rem;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+.afj-panel {
+    display: grid;
+    gap: 1.125rem;
+    padding: 1.25rem;
+    border: 1px solid var(--afj-line);
+    border-radius: var(--afj-radius);
+    background: var(--afj-panel);
+}
+
+.afj-field .form-control {
+    background-color: #fff;
+}
+
+.afj-field .form-label .afj-hint {
+    margin-left: 0.25rem;
+}
+
+.afj-submit {
+    width: 100%;
+    padding-block: 0.625rem;
+    font-weight: 600;
+}
+
+.afj-submit-note {
+    margin: -0.375rem 0 0;
+    text-align: center;
+}
+
+@media (min-width: 992px) {
+    .afj-compose {
+        grid-template-columns: minmax(0, 1fr) clamp(18rem, 24vw, 26rem);
+        align-items: start;
+        gap: 2rem;
+    }
+
+    textarea.afj-posting {
+        height: clamp(24rem, calc(100vh - 17rem), 60rem);
+    }
+
+    .afj-compose-side {
+        position: sticky;
+        top: var(--afj-sticky-top);
+        padding-top: 1.875rem; /* aligns the panel with the textarea, below its label */
     }
 }
 
-.applyforjobs-result {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 20px;
-}
+/* ---- Workspace (live result and saved record) ------------------------ */
 
-.applyforjobs-result pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: inherit;
-    font-size: 0.95rem;
-    margin: 0 0 12px 0;
-    max-height: 400px;
-    overflow-y: auto;
-    background: #fff;
-    padding: 12px;
-    border-radius: 4px;
-    border: 1px solid #e5e5ea;
-}
-
-.applyforjobs-editor {
-    width: 100%;
-    display: block;
-    box-sizing: border-box;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: inherit;
-    font-size: 0.95rem;
-    margin: 0 0 12px 0;
-    min-height: 34em; /* ~20 rows at 1.6 line-height */
-    max-height: 40em;
-    overflow: auto;
-    resize: vertical;
-    background: #fff;
-    padding: 12px;
-    border-radius: 4px;
-    border: 1px solid #e5e5ea;
-}
-
-.applyforjobs-section-header {
+.afj-workspace-head {
     display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.afj-workspace-title {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    text-wrap: balance;
+}
+
+.afj-workspace-title:focus {
+    outline: none;
+}
+
+.afj-workspace-title:focus-visible {
+    outline: 2px solid var(--afj-accent);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
+.afj-meta {
+    margin: 0;
+    color: var(--afj-muted);
+    font-size: 0.875rem;
+}
+
+.afj-workspace-actions {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 10px;
+    gap: 0.5rem;
 }
 
-/* Saved applications render as sanitized markdown rather than disabled
-   textareas, so history reads as a document and cannot be mistaken for the
-   live editor. */
-.applyforjobs-readonly {
-    background: #fff;
-    border: 1px solid #e5e5ea;
+.afj-confirm-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.afj-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+.afj-back:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.afj-workspace-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+}
+
+@media (min-width: 1200px) {
+    .afj-workspace-grid.has-rail {
+        grid-template-columns: minmax(0, 1fr) clamp(19rem, 24vw, 28rem);
+        grid-template-areas: "main rail";
+        align-items: start;
+        gap: 1.75rem;
+    }
+
+    .afj-workspace-grid.has-rail .afj-workspace-main {
+        grid-area: main;
+    }
+
+    .afj-workspace-grid.has-rail .afj-rail {
+        grid-area: rail;
+        position: sticky;
+        top: var(--afj-sticky-top);
+    }
+
+    .afj-workspace-grid.has-rail .afj-rail .accordion-body {
+        max-height: calc(100vh - var(--afj-sticky-top) - 7rem);
+        overflow-y: auto;
+    }
+}
+
+/* Large monitors: the sheet stays letter-sized, so the extra width goes to
+   the fit report and the compose panel instead of empty desk. */
+@media (min-width: 1600px) {
+    .afj-workspace-grid.has-rail {
+        grid-template-columns: minmax(0, 1fr) clamp(19rem, 30vw, 40rem);
+    }
+
+    .afj-compose {
+        grid-template-columns: minmax(0, 1fr) clamp(22rem, 28vw, 38rem);
+    }
+}
+
+/* Document bar: tabs on the left, tools for the open document on the right. */
+.afj-docbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    border-bottom: 1px solid var(--afj-line);
+}
+
+.afj-doctools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.afj-mode .btn {
+    min-width: 4.5rem;
+}
+
+/* Selected segment speaks the same accent as the active tab underline. */
+/* Specificity matches BS4's `.btn-outline-secondary:not(:disabled):not(.disabled).active`. */
+.afj-doctools .afj-mode .btn:not(:disabled):not(.disabled).active {
+    border-color: var(--afj-accent);
+    background: var(--afj-accent-soft);
+    color: #0056b3;
+}
+
+.afj-doctools .afj-mode .btn:not(:disabled):not(.disabled):focus:not(:focus-visible),
+.applyforjobs-container .afj-tool:not(:disabled):not(.disabled):focus:not(:focus-visible) {
+    box-shadow: none;
+}
+
+.afj-doctools .afj-mode .btn:not(:disabled):not(.disabled):focus-visible {
+    position: relative;
+    z-index: 2;
+    box-shadow: var(--afj-focus-ring);
+}
+
+/* The desk: a quiet ground the letter-sized sheet sits on. */
+.afj-desk {
+    padding: clamp(0.75rem, 2.5vw, 2.5rem);
+    border-radius: 0 0 var(--afj-radius) var(--afj-radius);
+    background: var(--afj-desk);
+}
+
+.afj-sheet {
+    display: block;
+    width: 100%;
+    max-width: 8.5in;
+    margin: 0 auto;
+    border: 1px solid #dfe2e7;
     border-radius: 4px;
-    padding: 12px;
-    font-size: 0.95rem;
-    max-height: 40em;
-    overflow-y: auto;
-    word-wrap: break-word;
+    background: #fff;
+    box-shadow: var(--afj-shadow);
 }
 
-.applyforjobs-readonly > :last-child {
+.afj-editor {
+    height: clamp(30rem, calc(100vh - 20rem), 70rem);
+    padding: clamp(1rem, 4vw, 3rem);
+    font-family: var(--afj-mono);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--afj-ink);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    resize: vertical;
+}
+
+.afj-editor:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: var(--afj-shadow), var(--afj-focus-ring);
+}
+
+/* Preview typography mirrors PDF_STYLESHEET in pdf.js, so what you read here
+   is what the print dialog produces. */
+.afj-paper {
+    min-height: 11in;
+    padding: clamp(1.25rem, 5vw, 0.75in);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    color: #222;
+    overflow-wrap: break-word;
+}
+
+.afj-paper:empty::before {
+    content: "This document is empty.";
+    color: var(--afj-muted);
+}
+
+.afj-paper h1 {
+    margin: 0 0 0.15em;
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.afj-paper h2 {
+    margin: 1.25em 0 0.4em;
+    padding-bottom: 0.15em;
+    border-bottom: 1px solid #444;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.afj-paper h3 {
+    margin: 0.9em 0 0.2em;
+    font-size: 0.975rem;
+    font-weight: 700;
+}
+
+.afj-paper p {
+    margin: 0 0 1em;
+}
+
+.afj-paper ul,
+.afj-paper ol {
+    margin: 0.25em 0 0.6em;
+    padding-left: 1.25em;
+}
+
+.afj-paper li {
+    margin: 0.15em 0;
+}
+
+.afj-paper li > p {
+    margin: 0;
+}
+
+.afj-paper strong {
+    color: #000;
+}
+
+.afj-paper a {
+    color: #0066cc;
+    text-underline-offset: 0.15em;
+}
+
+.afj-paper hr {
+    margin: 1em 0;
+    border: none;
+    border-top: 1px solid #ccc;
+    opacity: 1;
+}
+
+.afj-paper blockquote {
+    margin: 0.5em 0;
+    padding-left: 0.8em;
+    border-left: 3px solid #ccc;
+    color: #555;
+}
+
+.afj-paper table {
+    width: 100%;
+    margin-bottom: 0.75em;
+    border-collapse: collapse;
+}
+
+.afj-paper th,
+.afj-paper td {
+    overflow-wrap: break-word;
+}
+
+/* On phones the resume's contact-row table stacks one item per line rather
+   than squeezing links into three narrow cells. Screen only; the PDF keeps
+   its row. */
+@media (max-width: 575.98px) {
+    .afj-paper table,
+    .afj-paper thead,
+    .afj-paper tbody,
+    .afj-paper tr,
+    .afj-paper th,
+    .afj-paper td {
+        display: block;
+        width: auto;
+        text-align: left; /* beats the align="..." marked writes on cells */
+    }
+
+    .afj-paper th:empty,
+    .afj-paper td:empty {
+        display: none;
+    }
+}
+
+.afj-paper > :last-child {
     margin-bottom: 0;
+}
+
+/* ---- Fit report rail ------------------------------------------------- */
+
+.applyforjobs-recommendations .accordion-item {
+    border: 1px solid var(--afj-line);
+    border-radius: var(--afj-radius);
+    background: #fff;
+    overflow: hidden;
+}
+
+.applyforjobs-recommendations .accordion-header {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.applyforjobs-recommendations .accordion-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.875rem 1.125rem;
+    border: 0;
+    background: #fff;
+    color: var(--afj-ink);
+    text-align: left;
+    transition: background-color 150ms ease-out;
+}
+
+.applyforjobs-recommendations .accordion-button:hover {
+    background: var(--afj-panel);
+}
+
+.applyforjobs-recommendations .accordion-button:focus {
+    outline: none;
+}
+
+.applyforjobs-recommendations .accordion-button:focus-visible {
+    box-shadow: inset var(--afj-focus-ring);
+}
+
+/* Chevron: a rotated border corner, so no icon asset is needed. */
+.applyforjobs-recommendations .accordion-button::after {
+    content: "";
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: -0.25rem 0.25rem 0 auto;
+    border-right: 2px solid var(--afj-muted);
+    border-bottom: 2px solid var(--afj-muted);
+    transform: rotate(45deg);
+    transition: transform 200ms ease-out;
+}
+
+.applyforjobs-recommendations .accordion-button:not(.collapsed) {
+    box-shadow: inset 0 -1px 0 var(--afj-line-soft);
+}
+
+.applyforjobs-recommendations .accordion-button:not(.collapsed)::after {
+    margin-top: 0.25rem;
+    transform: rotate(-135deg);
+}
+
+.applyforjobs-recommendations .accordion-body {
+    padding: 1rem 1.125rem 1.125rem;
+}
+
+.afj-fit-summary {
+    display: grid;
+    flex: 1;
+    gap: 0.5rem;
+    margin-right: 1rem;
+}
+
+.afj-fit-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.afj-fit-label {
+    color: var(--afj-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.afj-fit-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.afj-fit-max {
+    margin-left: 0.1em;
+    color: var(--afj-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.afj-fit-meter {
+    display: block;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--afj-line-soft);
+    overflow: hidden;
+}
+
+.afj-fit-meter > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--afj-accent);
+}
+
+.applyforjobs-recommendations .accordion-body {
+    font-size: 0.875rem;
+    line-height: 1.55;
+}
+
+.applyforjobs-recommendations .accordion-body > h5,
+.applyforjobs-recommendations .accordion-body > h6:first-child {
+    margin-bottom: 0.875rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-wrap: balance;
+}
+
+.applyforjobs-recommendations section + section {
+    margin-top: 1.125rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--afj-line-soft);
+}
+
+.applyforjobs-recommendations section h6 {
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--afj-ink);
+}
+
+.applyforjobs-recommendations ul {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.applyforjobs-recommendations li + li {
+    margin-top: 0.375rem;
 }
 
 /* marked wraps list/section text in <p>; drop the trailing 1rem Bootstrap adds
@@ -83,4 +697,250 @@
 .applyforjobs-recommendations li > div > :last-child,
 .applyforjobs-recommendations section > div > :last-child {
     margin-bottom: 0;
+}
+
+/* ---- Past applications ----------------------------------------------- */
+
+.afj-history-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.afj-history-bar h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.afj-filter {
+    width: min(100%, 22rem);
+}
+
+.afj-table-wrap {
+    border: 1px solid var(--afj-line);
+    border-radius: var(--afj-radius);
+    overflow: hidden;
+}
+
+.afj-table th {
+    padding: 0.625rem 1rem;
+    background: var(--afj-panel);
+    color: var(--afj-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.afj-table th,
+.afj-table td {
+    border-top: 0;
+    border-bottom: 1px solid var(--afj-line-soft);
+}
+
+.afj-table thead th {
+    border-bottom: 1px solid var(--afj-line);
+}
+
+.afj-table td {
+    padding: 0.875rem 1rem;
+    vertical-align: middle;
+}
+
+.afj-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.afj-row {
+    position: relative; /* containing block for the stretched link */
+}
+
+.afj-row:hover td {
+    background: #f3f6fb;
+}
+
+.afj-row-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--afj-ink);
+    font-weight: 600;
+    text-align: left;
+}
+
+/* The whole row is the hit area (BS 4.1 has no .stretched-link). */
+.afj-row-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.afj-row-link:focus-visible {
+    outline: none;
+}
+
+.afj-row-link:focus-visible::after {
+    outline: 2px solid var(--afj-accent);
+    outline-offset: -2px;
+}
+
+.afj-row:hover .afj-row-link {
+    color: var(--afj-accent);
+}
+
+.afj-row-sub {
+    display: block;
+    color: var(--afj-muted);
+    font-size: 0.8125rem;
+}
+
+.afj-col-position {
+    display: none;
+}
+
+.afj-col-num,
+.afj-col-date {
+    color: var(--afj-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.afj-col-num {
+    text-align: right;
+    color: var(--afj-ink);
+    font-weight: 600;
+}
+
+@media (min-width: 768px) {
+    .afj-col-position {
+        display: table-cell;
+    }
+
+    .afj-row-sub {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .afj-col-date {
+        display: none;
+    }
+}
+
+.afj-no-match {
+    margin: 0;
+    padding: 1.5rem 1rem;
+    color: var(--afj-muted);
+    text-align: center;
+}
+
+.afj-empty {
+    max-width: 34rem;
+    margin: 2rem auto;
+    padding: 2.5rem 2rem;
+    border-radius: var(--afj-radius);
+    background: var(--afj-panel);
+    text-align: center;
+}
+
+.afj-empty h4 {
+    font-weight: 600;
+}
+
+.afj-empty p {
+    margin-bottom: 1.25rem;
+    color: var(--afj-muted);
+}
+
+/* ---- Progress modal -------------------------------------------------- */
+
+.afj-progress {
+    max-width: 26rem;
+}
+
+.afj-progress .modal-content {
+    border: 0;
+    border-radius: var(--afj-radius);
+    box-shadow: 0 24px 48px rgba(16, 24, 40, 0.18);
+    overflow: hidden;
+}
+
+/* Indeterminate: it shows the job is alive, not how far along it is. */
+.afj-progress-track {
+    height: 3px;
+    background: var(--afj-line-soft);
+    overflow: hidden;
+}
+
+.afj-progress-track > span {
+    display: block;
+    width: 35%;
+    height: 100%;
+    background: var(--afj-accent);
+    animation: afj-indeterminate 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes afj-indeterminate {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(300%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .afj-progress-track > span {
+        width: 100%;
+        animation: afj-pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes afj-pulse {
+        0%, 100% { opacity: 0.35; }
+        50% { opacity: 1; }
+    }
+}
+
+.afj-progress-body {
+    padding: 2rem 1.75rem 1.5rem;
+    text-align: center;
+}
+
+.afj-progress-title {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    text-wrap: balance;
+}
+
+.afj-progress-target {
+    margin: 0;
+    color: var(--afj-muted);
+    font-size: 0.875rem;
+}
+
+.afj-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1.5rem 0 1rem;
+}
+
+.afj-timer-value {
+    font-size: 2.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.afj-timer-caption {
+    margin-top: 0.375rem;
+    color: var(--afj-muted);
+    font-size: 0.8125rem;
+}
+
+.afj-progress-desc {
+    max-width: 20rem;
+    margin: 0 auto 1.25rem;
+    color: var(--afj-muted);
+    font-size: 0.9375rem;
 }
