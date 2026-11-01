@@ -190,6 +190,15 @@ Labels are optional; only use ones that already exist (`gh label list`) —
 `bug`, `enhancement`, `question`, `help wanted`, `good first issue`,
 `documentation` if present. Do not invent labels.
 
+Always add `security` to security hardening work (e.g. #46) and to
+security-relevant dependency bumps. The `next-task` skill ranks that label
+above everything else.
+
+If the issue cannot start until another issue is done, say so in the body with
+a line reading `Blocked by #N`. Also record it as a native relationship (issue
+sidebar → Relationships → "Blocked by") when you can. `next-task` reads both and
+works the blocker first.
+
 Report the issue URL back to the user.
 
 ## Checklist before you run `gh`
@@ -199,6 +208,7 @@ Report the issue URL back to the user.
 - [ ] **No exploit recipe** for an unpatched vulnerability; if that is the subject,
       route it privately instead of filing publicly
 - [ ] Assignee set (`thedavidhanks` by default)
+- [ ] `security` label if it is security work; `Blocked by #N` if it depends on another issue
 - [ ] Summary is readable by someone who has never seen the code
 - [ ] Background cites `file.ext:line` and shows real, un-invented output
 - [ ] Agent prompt is fully blockquoted and self-contained — no "as described above"
