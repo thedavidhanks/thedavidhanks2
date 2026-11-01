@@ -29,6 +29,18 @@ const SKIP_DIRECTORIES = new Set(['node_modules', 'dist', '.git'])
 
 const ENV_REFERENCE = /import\.meta\.env\.(VITE_[A-Z0-9_]+)/g
 
+/**
+ * Variables that are read by the source but are genuinely optional, so their
+ * absence must not fail the build. Everything else found by the scan is
+ * required -- that default is the point of this script, so keep this list
+ * short and justify each entry.
+ *
+ * VITE_FIREBASE_EMULATOR: opt-in local-development switch. Unset in CI and in
+ * Amplify, which is exactly the intended production behavior (talk to the real
+ * Firebase project). See docs/local-firebase-emulator.md.
+ */
+const OPTIONAL_VARS = new Set(['VITE_FIREBASE_EMULATOR'])
+
 /* ------------------------------------------------------------------ *
  * Scanning
  * ------------------------------------------------------------------ */
@@ -103,9 +115,16 @@ if (referenced.size === 0) {
 const dotEnv = loadDotEnv(resolve(process.cwd(), '.env'))
 const missing: string[] = []
 
+const skipped: string[] = []
+
 for (const name of [...referenced.keys()].sort()) {
   const value = process.env[name] ?? dotEnv[name]
-  if (value === undefined || value === '') missing.push(name)
+  if (value !== undefined && value !== '') continue
+  if (OPTIONAL_VARS.has(name)) {
+    skipped.push(name)
+    continue
+  }
+  missing.push(name)
 }
 
 if (missing.length > 0) {
@@ -118,4 +137,8 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-console.log(`check-env: all ${referenced.size} referenced VITE_* variable(s) present`)
+const required = referenced.size - skipped.length
+console.log(`check-env: all ${required} required VITE_* variable(s) present`)
+if (skipped.length > 0) {
+  console.log(`check-env: ${skipped.length} optional variable(s) unset: ${skipped.join(', ')}`)
+}

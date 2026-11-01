@@ -5,7 +5,9 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // The impeccable skill's scripts are vendored by `npx impeccable install`,
+  // and .impeccable/ holds local preview harnesses; both are gitignored.
+  globalIgnores(['dist', '.impeccable', '.claude/skills/impeccable']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

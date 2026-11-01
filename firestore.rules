@@ -1,0 +1,55 @@
+// Firestore security rules for the thedavidhanks Firebase project.
+//
+// SOURCE OF TRUTH. Rules used to live only in the Firebase console; this file
+// now replaces that. `firebase deploy --only firestore:rules` REPLACES the
+// console ruleset wholesale, so every collection the app touches must appear
+// below. Mirror any console edit back here, same precedent as
+// docs/amplify-redirects.md.
+//
+// Deploying, verifying and rolling back: docs/firestore-rules.md
+// Design behind the /users rules: docs/applyforjobs-history.md
+//
+// Verified against the live console ruleset on 2026-10-30 and exercised
+// against the emulator with `npm run check:rules`.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny. Spelled out because the ruleset this replaced granted
+    // `allow read` on /{document=**} -- an unauthenticated public read of the
+    // entire database. Do not reintroduce a global match block.
+
+    // Per-user private data. Recursive on purpose: it covers
+    // users/{uid}/jobApplications/{id} (the Apply for Jobs history) today and
+    // the planned users/{uid}/knowledgeBase/* per-user resume corpus without a
+    // rules change. Ownership is enforced by the path, so no query can span
+    // users. See docs/applyforjobs-history.md ("Multi-user readiness").
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // NWmap (/tools/nwmap) -- PRE-EXISTING, NOT PART OF THE HISTORY FEATURE.
+    // src/components/nwmap.jsx:50,99 reads and writes this exact path.
+    //
+    // Matches the behavior of the previous console ruleset, confirmed by
+    // running both rulesets through the emulator:
+    //   - Read is public. The route carries no `requireAuth` flag in
+    //     src/components/tools/toollist.jsx and NWmap subscribes in
+    //     componentDidMount, so signed-out visitors load markers today. The
+    //     old global `allow read` is what permitted this; granting it here
+    //     explicitly is what lets the global rule be removed safely.
+    //   - Write requires sign-in. handleSubmit sets addedBy from
+    //     firebase.auth().currentUser.email. The old rule said
+    //     `isSignedIn()` (request.auth.uid != null); this is equivalent.
+    //
+    // The game document id is pinned rather than wildcarded, matching the old
+    // console rule. A {gameId} wildcard would let any signed-in user create
+    // points under arbitrary game documents.
+    match /Games/PM2ahWu01w0wb5KQcoV8/Points/{pointId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+  }
+}

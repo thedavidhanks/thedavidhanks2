@@ -18,5 +18,11 @@ export default defineConfig({
     // up here; the exclude is belt-and-braces in case a .jsx test lands there.
     include: ['src/**/*.test.{js,jsx}'],
     exclude: ['src/lib/**'],
+    // Fixed so the component and the MSW handlers agree on the endpoint and no
+    // test depends on a developer's .env. Values are not real.
+    env: {
+      VITE_AWS_APPLICATION_API_URL: 'https://application-api.test/Prod/application',
+      VITE_AWS_APPLICATION_API_KEY: 'test-api-key',
+    },
   },
 })

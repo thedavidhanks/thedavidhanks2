@@ -8,7 +8,7 @@ import App from './App.jsx';
 import { toollist } from './components/tools/toollist.jsx';
 import { projectlist } from './components/projects/projectlist.jsx';
 import { auth } from './firebase.js';
-import { server, ASK_URL, APPLY_URL } from './test/server.js';
+import { server, ASK_URL, APPLICATION_URL, fixtures } from './test/server.js';
 
 // The spec: every leaf URL the app serves and a heading that only that page
 // renders. URLs are written out literally (not derived from the tables) so
@@ -23,16 +23,17 @@ const PAGES = {
     '/tools/satisfactory-sink': 'Satisfactory Sink Maximizer',
     '/tools/nwmap': 'New World',
 
-    // ProjectHome is mounted at /projects/* and each project's path already
-    // starts with "projects/", so project pages live at /projects/projects/*.
-    // That is what the cards link to today; this pins it.
-    '/projects/projects/gps-tracker': 'GPS Tracker',
-    '/projects/projects/cellantenna': 'Cricket Antenna',
-    '/projects/projects/shearcalculator': 'Shear Calculator',
-    '/projects/projects/kaleidoscope': 'Kaleidoscope',
-    '/projects/projects/temphumiditysensor': 'Temperature & Humidity Sensor',
-    '/projects/projects/pythonreport': 'Python Report Generator',
-    '/projects/projects/jobcomparer': 'Android Job Evaluator',
+    // ProjectHome is mounted at /projects/*, so each project's path is the
+    // bare slug the descendant <Routes> matches against (issue #36: these
+    // used to be declared as "projects/<slug>" and only resolved at the
+    // doubled URL /projects/projects/<slug>).
+    '/projects/gps-tracker': 'GPS Tracker',
+    '/projects/cellantenna': 'Cricket Antenna',
+    '/projects/shearcalculator': 'Shear Calculator',
+    '/projects/kaleidoscope': 'Kaleidoscope',
+    '/projects/temphumiditysensor': 'Temperature & Humidity Sensor',
+    '/projects/pythonreport': 'Python Report Generator',
+    '/projects/jobcomparer': 'Android Job Evaluator',
 };
 
 const toolUrl = (tool) => `/tools/${tool.path}`;
@@ -75,6 +76,13 @@ describe('route render smoke test', () => {
 
         // findAll: some pages repeat their title in a carousel caption.
         expect(await main().findAllByRole('heading', { name: heading })).not.toHaveLength(0);
+    });
+
+    // Regression guard for issue #36: the children of /projects/* must not
+    // re-declare the "projects/" segment the parent route already consumed.
+    it('does not serve project pages at the doubled /projects/projects/* URL', () => {
+        renderAt('/projects/projects/gps-tracker');
+        expect(main().queryByRole('heading', { name: 'GPS Tracker' })).not.toBeInTheDocument();
     });
 
     it('renders none of the page headings for an unknown URL', () => {
@@ -128,17 +136,23 @@ describe('/tools/applyforjobs auth gate', () => {
         expect(screen.queryByRole('link', { name: 'Apply for Jobs' })).not.toBeInTheDocument();
     });
 
-    it('signed in: submits the posting to the apply API and shows the result', async () => {
+    it('signed in: submits the posting to the application API and shows the result', async () => {
         let body;
         server.use(
-            http.post(APPLY_URL, async ({ request }) => {
+            http.post(APPLICATION_URL, async ({ request }) => {
                 body = await request.json();
-                return HttpResponse.json({
+                return HttpResponse.json(
+                    { ...fixtures.accepted202, pollAfterSeconds: 0.01 },
+                    { status: 202 }
+                );
+            }),
+            http.get(`${APPLICATION_URL}/:jobId`, () =>
+                HttpResponse.json({
+                    ...fixtures.completeNoRecs,
                     coverLetter: 'Dear hiring manager',
                     resume: 'Resume body',
-                    sessionId: 'apply-1',
-                });
-            })
+                })
+            )
         );
         const user = userEvent.setup();
         renderAt('/tools/applyforjobs');
@@ -147,9 +161,9 @@ describe('/tools/applyforjobs auth gate', () => {
         expect(auth.signInWithPopup).toHaveBeenCalled();
 
         await user.type(await main().findByLabelText(/Job posting/), 'Senior React engineer');
-        await user.click(main().getByRole('button', { name: /Generate Cover Letter/ }));
+        await user.click(main().getByRole('button', { name: /Generate cover letter/ }));
 
-        expect(await main().findByRole('heading', { name: 'Cover Letter' })).toBeInTheDocument();
+        expect(await main().findByRole('heading', { level: 4, name: 'Your documents' })).toBeInTheDocument();
         expect(main().getByLabelText('Cover letter markdown (editable)')).toHaveValue('Dear hiring manager');
         expect(main().getByLabelText('Resume markdown (editable)')).toHaveValue('Resume body');
         expect(body).toEqual({ jobPosting: 'Senior React engineer' });

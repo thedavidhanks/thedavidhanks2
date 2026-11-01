@@ -1,178 +1,293 @@
-import React, { useState } from 'react';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+    createApplication,
+    deleteApplication,
+    subscribeToApplications,
+    updateApplicationOutputs,
+} from './history.js';
+import DocumentWorkspace from './DocumentWorkspace.jsx';
+import { formatDate } from './format.js';
+import HistoryList from './HistoryList.jsx';
+import ProgressModal from './ProgressModal.jsx';
+import Recommendations from './Recommendations.jsx';
+import { ArrowLeftIcon, PlusIcon, TrashIcon } from './icons.jsx';
 import './applyforjobs.css';
 
-// TODO: update API_URL once the Bedrock backend is deployed.
-// See docs/applyforjobs-bedrock-deploy.md
-const API_URL = 'https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/apply';
-const API_KEY = import.meta.env.VITE_AWS_APPLY_API_KEY;
+// Async application API: POST submits and returns a jobId, then
+// GET {API_URL}/{jobId} is polled until the job completes or fails.
+// Contract: docs/handoff/APPLICATION_API.md
+const API_URL = (import.meta.env.VITE_AWS_APPLICATION_API_URL || '').replace(/\/+$/, '');
+const API_KEY = import.meta.env.VITE_AWS_APPLICATION_API_KEY;
 
-// Print stylesheet for the generated PDF (the equivalent of the Python
-// pipeline's css_path). Styles headings, tables, italics, bold, and lists.
-// @page sets US Letter with 1-inch margins so the browser's print engine
-// (the WeasyPrint equivalent) lays out the PDF.
-const PDF_STYLESHEET = `
-    @page {
-        size: Letter;
-        margin: 0.6in;
+// Give up polling after this long and tell the user. A typical run is ~46s.
+const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+// Only used if the 202 omits pollAfterSeconds. The server value always wins,
+// because polling spends a 2000/day request budget.
+const FALLBACK_POLL_SECONDS = 10;
+// Tolerate a few consecutive transient poll failures (network blip, 5xx, 429)
+// before giving up; every poll still waits the full interval.
+const MAX_TRANSIENT_POLL_FAILURES = 3;
+
+// Failures from the submit/poll flow carry a user-facing message so the catch
+// block can show it as-is.
+class ApplicationError extends Error {}
+
+const SUBMIT_ERRORS = {
+    400: 'The job posting couldn\'t be submitted. Check that it isn\'t empty and try again.',
+    403: 'This tool isn\'t set up correctly (access denied). Please try again later.',
+    500: 'The service had trouble starting your request. Please try again.',
+};
+const GENERIC_ERROR = 'Something went wrong. Please try again.';
+const FAILED_ERROR = 'Generating your documents didn\'t work. Please try again.';
+const GONE_ERROR = 'This result is no longer available. Please submit the job posting again.';
+const TIMEOUT_ERROR = 'This is taking longer than expected. Please try again in a few minutes.';
+
+// Resolves after `ms`, or rejects with an AbortError as soon as `signal`
+// aborts, clearing the timer so nothing outlives an unmount.
+const sleep = (ms, signal) =>
+    new Promise((resolve, reject) => {
+        if (signal.aborted) {
+            reject(new DOMException('Aborted', 'AbortError'));
+            return;
+        }
+        const onAbort = () => {
+            clearTimeout(timer);
+            reject(new DOMException('Aborted', 'AbortError'));
+        };
+        const timer = setTimeout(() => {
+            signal.removeEventListener('abort', onAbort);
+            resolve();
+        }, ms);
+        signal.addEventListener('abort', onAbort, { once: true });
+    });
+
+// A stalled connection (captive portal, half-open socket) would otherwise leave
+// `await fetch` pending forever, and with it the non-dismissable progress modal.
+// Aborts after REQUEST_TIMEOUT_MS with a TimeoutError, or immediately with an
+// AbortError if the parent signal aborts (unmount / cancel). Always clears its
+// timer.
+const REQUEST_TIMEOUT_MS = 20 * 1000;
+const fetchWithTimeout = async (url, options, parentSignal) => {
+    const controller = new AbortController();
+    let timedOut = false;
+    const onParentAbort = () => controller.abort();
+    if (parentSignal.aborted) controller.abort();
+    else parentSignal.addEventListener('abort', onParentAbort, { once: true });
+    const timer = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } catch (err) {
+        if (timedOut && !parentSignal.aborted) {
+            const timeoutError = new Error('Request timed out');
+            timeoutError.name = 'TimeoutError';
+            throw timeoutError;
+        }
+        throw err;
+    } finally {
+        clearTimeout(timer);
+        parentSignal.removeEventListener('abort', onParentAbort);
     }
-
-    html {
-        font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Liberation Sans", sans-serif;
-        font-size: 10.5pt;
-        line-height: 1.35;
-        color: #222;
-    }
-
-    body {
-        margin: 0;
-    }
-
-    h1 {
-        font-size: 22pt;
-        margin: 0 0 0.1em 0;
-        line-height: 1.1;
-    }
-
-    h2 {
-        font-size: 13pt;
-        margin: 1em 0 0.3em 0;
-        padding-bottom: 0.1em;
-        border-bottom: 1px solid #444;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    h3 {
-        font-size: 11pt;
-        margin: 0.75em 0 0.15em 0;
-        /* top right bottom left */
-    }
-
-    p {
-        margin: 0 0 1em 0;
-    }
-
-    ul, ol {
-        margin: 0.2em 0 0.5em 0;
-        padding-left: 1.2em;
-    }
-
-    li {
-        margin: 0.1em 0;
-    }
-
-    li > p {
-        margin: 0;
-    }
-
-    strong {
-        color: #000;
-    }
-
-    a {
-        color: #0066cc;
-        text-decoration: underline;
-    }
-
-    hr {
-        border: none;
-        border-top: 1px solid #ccc;
-        margin: 0.8em 0;
-    }
-
-    code {
-        font-family: "SF Mono", Menlo, Consolas, monospace;
-        font-size: 9.5pt;
-        background: #f4f4f4;
-        padding: 0 0.2em;
-        border-radius: 2px;
-    }
-
-    pre {
-        background: #f4f4f4;
-        padding: 0.5em 0.7em;
-        border-radius: 3px;
-        font-size: 9.5pt;
-        overflow-x: hidden;
-        white-space: pre-wrap;
-    }
-
-    blockquote {
-        border-left: 3px solid #ccc;
-        margin: 0.5em 0;
-        padding: 0 0 0 0.8em;
-        color: #555;
-    }
-
-    table {
-        width: 100%;
-        padding: 0 0 0.5em 0;
-        border-collapse: collapse;
-    }
-`;
-
-// Render markdown to a styled PDF via the browser's own print engine.
-// Mirrors the Python markdown_to_pdf: marked (markdown -> HTML) + a CSS
-// stylesheet, rendered to PDF by the browser (the WeasyPrint equivalent).
-// Tables, italics, and bold render as real, selectable text. The user picks
-// "Save as PDF" (or a real printer) in the print dialog.
-const downloadPdf = (title, markdown) => {
-    // GitHub-flavored markdown so pipe tables are parsed. marked is the
-    // JS counterpart to Python's markdown.markdown(..., extensions=['extra']).
-    // The markdown is user-editable, so sanitize the resulting HTML with
-    // DOMPurify to strip any injected scripts/event handlers before it is
-    // written into the print window.
-    const dirtyHtml = marked.parse(markdown, { gfm: true, breaks: false });
-    const html = DOMPurify.sanitize(dirtyHtml);
-
-    const printWindow = window.open('', '_blank', 'width=816,height=1056');
-    if (!printWindow) {
-        // Popup blocked — nothing we can do without a user-gesture window.
-        alert('Please allow pop-ups to download the PDF.');
-        return;
-    }
-
-    printWindow.document.write(
-        `<!DOCTYPE html><html><head><meta charset="utf-8">` +
-        `<title>${title}</title><style>${PDF_STYLESHEET}</style></head>` +
-        `<body>${html}</body></html>`
-    );
-    printWindow.document.close();
-
-    // Wait for layout, trigger the print dialog, then close the helper window.
-    printWindow.focus();
-    printWindow.onload = () => {
-        printWindow.print();
-        printWindow.onafterprint = () => printWindow.close();
-    };
 };
 
-// Inline print icon so no icon-font dependency is needed.
-const PrintIcon = () => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 16 16"
-        fill="currentColor"
-        aria-hidden="true"
-        style={{ verticalAlign: '-2px', marginRight: '4px' }}
-    >
-        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z" />
-        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a1 1 0 0 0-1 1v3h8v-3a1 1 0 0 0-1-1H5zm7 2h2a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2V9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1z" />
-    </svg>
-);
+const pollDelayMs = (pollAfterSeconds) => {
+    const seconds = Number(pollAfterSeconds);
+    return (Number.isFinite(seconds) && seconds > 0 ? seconds : FALLBACK_POLL_SECONDS) * 1000;
+};
 
-const ApplyForJobs = () => {
+// Wait pollAfterSeconds before the first poll and between polls. Resolves with
+// the `complete` body; throws ApplicationError for failed / 404 / timeout.
+const pollForResult = async (jobId, delayMs, startedAt, signal) => {
+    let transientFailures = 0;
+    for (;;) {
+        await sleep(delayMs, signal);
+
+        let body = null;
+        try {
+            const response = await fetchWithTimeout(
+                `${API_URL}/${encodeURIComponent(jobId)}`,
+                { headers: { 'X-Api-Key': API_KEY } },
+                signal
+            );
+            if (response.status === 404) throw new ApplicationError(GONE_ERROR);
+            if (response.status === 403) throw new ApplicationError(SUBMIT_ERRORS[403]);
+            if (response.ok) body = await response.json();
+        } catch (err) {
+            // A per-request TimeoutError (or network error) is a transient failure.
+            if (err instanceof ApplicationError || err.name === 'AbortError') throw err;
+        }
+
+        if (body === null) {
+            transientFailures += 1;
+            if (transientFailures >= MAX_TRANSIENT_POLL_FAILURES) {
+                throw new ApplicationError(GENERIC_ERROR);
+            }
+        } else {
+            transientFailures = 0;
+            if (body.status === 'complete') return body;
+            if (body.status === 'failed') throw new ApplicationError(FAILED_ERROR);
+            // pending / running: a long pending is normal, keep waiting.
+        }
+
+        if (Date.now() - startedAt >= POLL_TIMEOUT_MS) {
+            throw new ApplicationError(TIMEOUT_ERROR);
+        }
+    }
+};
+
+// Edits to the result are mirrored back to Firestore. Without a debounce
+// every keystroke would be a write, which is pointless and would chew through
+// the 20k/day free write quota.
+const SAVE_DEBOUNCE_MS = 1500;
+
+// "Company — Position" for the result header, falling back to whichever the
+// user filled in, or a neutral title when both were left blank.
+const titleFor = (company, position) => {
+    if (company && position) return `${company} — ${position}`;
+    return company || position || 'Your documents';
+};
+
+const ApplyForJobs = ({ user }) => {
+    const uid = user?.uid || null;
+
     const [jobPosting, setJobPosting] = useState('');
     const [applicantContext, setApplicantContext] = useState('');
-    const [showContext, setShowContext] = useState(false);
+    const [company, setCompany] = useState('');
+    const [position, setPosition] = useState('');
     const [sessionId, setSessionId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [startedAtMs, setStartedAtMs] = useState(0);
+    const [nowMs, setNowMs] = useState(0);
     const [error, setError] = useState('');
     const [result, setResult] = useState(null);
+
+    // Persistence state, kept separate from `error` so a storage failure is
+    // never presented as a failed generation.
+    const [savedId, setSavedId] = useState(null);
+    const [saveError, setSaveError] = useState('');
+    const [applications, setApplications] = useState([]);
+    const [viewingId, setViewingId] = useState(null);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    // 'compose' holds the form and the live result; 'history' holds the
+    // saved-applications list and, when viewingId is set, one record.
+    const [view, setView] = useState('compose');
+
+    // Derived from the live snapshot rather than held as its own copy, so an
+    // edit-save is reflected here and a deleted record drops the detail view
+    // back to the form on its own.
+    const viewing = applications.find((app) => app.id === viewingId) || null;
+
+    const saveTimer = useRef(null);
+    const pendingSave = useRef(null);
+    // Aborts the in-flight submit/poll (including its sleep timer) on unmount
+    // or when a new submit supersedes it.
+    const abortRef = useRef(null);
+
+    useEffect(() => () => abortRef.current?.abort(), []);
+
+    // Elapsed-time readout for the progress modal. The API reports no progress
+    // or ETA, so time-on-task is the honest indicator.
+    useEffect(() => {
+        if (!loading) return undefined;
+        const interval = setInterval(() => setNowMs(Date.now()), 1000);
+        return () => clearInterval(interval);
+    }, [loading]);
+    const elapsedSeconds = Math.max(0, Math.floor((nowMs - startedAtMs) / 1000));
+
+    // Move focus to the results when they appear. The form (and the submit
+    // button the modal would restore focus to) unmounts in the same commit, so
+    // without this focus falls to <body> and nothing announces the new content.
+    const resultHeadingRef = useRef(null);
+    const hasResult = result !== null;
+    useEffect(() => {
+        if (hasResult) resultHeadingRef.current?.focus();
+    }, [hasResult]);
+
+    // Same reasoning for the history detail: the list row that opened it is
+    // gone, so put focus on the record's heading.
+    const detailHeadingRef = useRef(null);
+    const viewingRecordId = viewing?.id;
+    useEffect(() => {
+        if (viewingRecordId) detailHeadingRef.current?.focus();
+    }, [viewingRecordId]);
+
+    useEffect(() => {
+        // No uid means no history to show. RequireAuth unmounts the tool on
+        // logout, so there is no populated list left behind to clear here.
+        if (!uid) return undefined;
+
+        const unsubscribe = subscribeToApplications(uid, setApplications, () => {
+            // A failed read just leaves the menu empty; it must not take the
+            // generation flow down with it.
+            setSaveError('Couldn\'t load your saved applications.');
+        });
+        return () => {
+            if (typeof unsubscribe === 'function') unsubscribe();
+        };
+    }, [uid]);
+
+    // Push any debounced edit that is still waiting. Reads only refs, so the
+    // closure captured by the unmount effect below stays correct.
+    const flushSave = () => {
+        if (saveTimer.current) {
+            clearTimeout(saveTimer.current);
+            saveTimer.current = null;
+        }
+        const pending = pendingSave.current;
+        pendingSave.current = null;
+        if (!pending) return;
+        updateApplicationOutputs(pending.uid, pending.id, pending.outputs).catch(() => {
+            setSaveError('Couldn\'t save your latest edits to your history.');
+        });
+    };
+
+    // Flush on unmount so edits made right before navigating away survive.
+    useEffect(() => flushSave, []);
+
+    const scheduleSave = (outputs) => {
+        if (!uid || !savedId) return;
+        pendingSave.current = { uid, id: savedId, outputs };
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(flushSave, SAVE_DEBOUNCE_MS);
+    };
+
+    const updateOutput = (field, value) => {
+        const next = { ...result, [field]: value };
+        setResult(next);
+        scheduleSave({ coverLetter: next.coverLetter, resume: next.resume });
+    };
+
+    // Fire-and-forget: deliberately not awaited inside handleSubmit's try, so
+    // a storage failure cannot be caught as a generation failure.
+    const persist = (generated, resolvedSessionId, posting) => {
+        if (!uid) return;
+        createApplication(uid, {
+            company: company.trim(),
+            position: position.trim(),
+            jobPosting: posting,
+            applicantContext: applicantContext.trim(),
+            coverLetter: generated.coverLetter,
+            resume: generated.resume,
+            recommendations: generated.recommendations,
+            sessionId: resolvedSessionId,
+        })
+            .then(setSavedId)
+            .catch(() => setSaveError('Couldn\'t save this to your history.'));
+    };
+
+    const handleDelete = async (app) => {
+        if (!uid) return;
+        try {
+            await deleteApplication(uid, app.id);
+            if (savedId === app.id) setSavedId(null);
+            setConfirmingDelete(false);
+            setViewingId(null);
+        } catch {
+            setSaveError('Couldn\'t delete that application.');
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -180,157 +295,382 @@ const ApplyForJobs = () => {
         if (!posting) return;
 
         setError('');
+        setSaveError('');
         setLoading(true);
         setResult(null);
+        setSavedId(null);
+
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+        const startedAt = Date.now();
+        setStartedAtMs(startedAt);
+        setNowMs(startedAt);
 
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetchWithTimeout(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': API_KEY,
+                    'X-Api-Key': API_KEY,
                 },
                 body: JSON.stringify({
                     jobPosting: posting,
                     ...(applicantContext.trim() && { applicantContext: applicantContext.trim() }),
                     ...(sessionId && { sessionId }),
                 }),
-            });
+            }, controller.signal);
 
             if (!response.ok) {
-                throw new Error(`Request failed (${response.status})`);
+                throw new ApplicationError(SUBMIT_ERRORS[response.status] || GENERIC_ERROR);
             }
 
-            const data = await response.json();
+            const accepted = await response.json();
+            if (!accepted.jobId) throw new ApplicationError(GENERIC_ERROR);
+
+            const data = await pollForResult(
+                accepted.jobId,
+                pollDelayMs(accepted.pollAfterSeconds),
+                startedAt,
+                controller.signal
+            );
+
             if (data.sessionId) setSessionId(data.sessionId);
-            setResult({
+            // `recommendations` is legitimately null on a complete job.
+            const generated = {
                 coverLetter: data.coverLetter || '',
                 resume: data.resume || '',
-            });
-        } catch {
-            setError('Something went wrong. Please try again.');
-        } finally {
-            setLoading(false);
+                recommendations: data.recommendations || null,
+            };
+            setResult(generated);
+            persist(generated, data.sessionId || sessionId, posting);
+        } catch (err) {
+            // Aborted means unmounted or superseded: leave state alone.
+            if (err.name === 'AbortError') return;
+            setError(err instanceof ApplicationError ? err.message : GENERIC_ERROR);
         }
+        if (abortRef.current === controller) setLoading(false);
+    };
+
+    // Escape hatch from the progress modal: stops the poll loop and its timers.
+    const cancelGeneration = () => {
+        abortRef.current?.abort();
+        setLoading(false);
     };
 
     const startOver = () => {
+        flushSave();
         setJobPosting('');
         setApplicantContext('');
-        setShowContext(false);
+        setCompany('');
+        setPosition('');
         setResult(null);
         setError('');
+        setSaveError('');
+        setSavedId(null);
+        setView('compose');
     };
+
+    const showCompose = () => {
+        setConfirmingDelete(false);
+        setView('compose');
+    };
+
+    const showHistory = () => {
+        setConfirmingDelete(false);
+        setViewingId(null);
+        setView('history');
+    };
+
+    const openApplication = (id) => {
+        setConfirmingDelete(false);
+        setViewingId(id);
+        setView('history');
+    };
+
+    const wordCount = jobPosting.trim() ? jobPosting.trim().split(/\s+/).length : 0;
+    const resultTitle = titleFor(company.trim(), position.trim());
+    let saveStatus = 'Saving to Past applications…';
+    if (savedId) saveStatus = 'Saved to Past applications. Edits save automatically.';
+    else if (saveError) saveStatus = 'Not saved to Past applications.';
 
     return (
         <div className="applyforjobs-container">
-            <h3>Apply for Jobs</h3>
-            <p style={{ color: '#666' }}>
-                Paste a job posting below and get a tailored cover letter and resume.
-            </p>
+            <header className="afj-header">
+                <div>
+                    <h3 className="afj-title">Apply for Jobs</h3>
+                    <p className="afj-lede">
+                        Paste a job posting and get a tailored cover letter and resume.
+                    </p>
+                </div>
+                {uid && (
+                    <nav aria-label="Apply for Jobs views">
+                        <ul className="nav nav-underline afj-views">
+                            <li className="nav-item">
+                                <button
+                                    type="button"
+                                    className={`nav-link${view === 'compose' ? ' active' : ''}`}
+                                    aria-current={view === 'compose' ? 'page' : undefined}
+                                    onClick={showCompose}
+                                >
+                                    New application
+                                </button>
+                            </li>
+                            <li className="nav-item">
+                                <button
+                                    type="button"
+                                    className={`nav-link${view === 'history' ? ' active' : ''}`}
+                                    aria-current={view === 'history' ? 'page' : undefined}
+                                    onClick={showHistory}
+                                >
+                                    Past applications
+                                    {applications.length > 0 && (
+                                        <span className="afj-count">{applications.length}</span>
+                                    )}
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                )}
+            </header>
 
-            {!result && (
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label htmlFor="jobPosting" className="form-label">
-                            Job posting <span style={{ color: '#c00' }}>*</span>
-                        </label>
+            {saveError && (
+                <div className="alert alert-warning" role="status">{saveError}</div>
+            )}
+
+            <ProgressModal
+                show={loading}
+                elapsedSeconds={elapsedSeconds}
+                company={company.trim()}
+                position={position.trim()}
+                onCancel={cancelGeneration}
+            />
+
+            {view === 'compose' && !result && (
+                <form className="afj-compose" onSubmit={handleSubmit}>
+                    <div className="afj-compose-main">
+                        <div className="afj-field-head">
+                            <label htmlFor="jobPosting" className="form-label">
+                                Job posting <span className="afj-required" aria-hidden="true">*</span>
+                            </label>
+                            {wordCount > 0 && (
+                                <span className="afj-hint">
+                                    {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
+                                </span>
+                            )}
+                        </div>
                         <textarea
                             id="jobPosting"
-                            className="form-control"
-                            rows={20}
-                            placeholder="Paste the job description here..."
+                            className="form-control afj-posting"
+                            placeholder="Paste the full job description: responsibilities, requirements, and anything about the team."
+                            aria-required="true"
                             value={jobPosting}
                             onChange={(e) => setJobPosting(e.target.value)}
                             disabled={loading}
                         />
                     </div>
 
-                    <div className="mb-3">
-                        <button
-                            type="button"
-                            className="btn btn-link p-0"
-                            onClick={() => setShowContext(!showContext)}
-                            disabled={loading}
-                        >
-                            {showContext ? 'Hide' : 'Add'} optional context
-                        </button>
-                        {showContext && (
-                            <textarea
-                                className="form-control mt-2"
-                                rows={3}
-                                placeholder="Optional: target tone, specific experience to emphasize, etc."
-                                value={applicantContext}
-                                onChange={(e) => setApplicantContext(e.target.value)}
-                                disabled={loading}
-                            />
-                        )}
+                    <div className="afj-compose-side">
+                        <div className="afj-panel">
+                            <div className="afj-field">
+                                <label htmlFor="company" className="form-label">Company</label>
+                                <input
+                                    id="company"
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Optional"
+                                    autoComplete="organization"
+                                    value={company}
+                                    onChange={(e) => setCompany(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+                            <div className="afj-field">
+                                <label htmlFor="position" className="form-label">Position</label>
+                                <input
+                                    id="position"
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Optional"
+                                    autoComplete="organization-title"
+                                    value={position}
+                                    onChange={(e) => setPosition(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+                            <div className="afj-field">
+                                <label htmlFor="applicantContext" className="form-label">
+                                    Additional context <span className="afj-hint">Optional</span>
+                                </label>
+                                <textarea
+                                    id="applicantContext"
+                                    className="form-control"
+                                    rows={5}
+                                    placeholder="e.g. target tone, experience to emphasize, or anything the posting leaves out"
+                                    value={applicantContext}
+                                    onChange={(e) => setApplicantContext(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            {error && (
+                                <div className="alert alert-danger mb-0" role="alert">{error}</div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="btn btn-primary afj-submit"
+                                disabled={loading || !jobPosting.trim()}
+                            >
+                                {loading ? 'Generating…' : 'Generate cover letter & resume'}
+                            </button>
+                            <p className="afj-hint afj-submit-note">
+                                Usually takes under a minute. Results are saved to Past applications.
+                            </p>
+                        </div>
                     </div>
-
-                    {error && (
-                        <div className="alert alert-danger" role="alert">{error}</div>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="btn btn-outline-primary"
-                        disabled={loading || !jobPosting.trim()}
-                    >
-                        {loading ? 'Generating...' : 'Generate Cover Letter & Resume'}
-                    </button>
                 </form>
             )}
 
-            {result && (
-                <>
-                    <div className="applyforjobs-result">
-                        <div className="applyforjobs-section-header">
-                            <h4 className="mb-0">Cover Letter</h4>
-                            <div className="d-flex gap-2">
-                                <button
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() => downloadPdf('Cover Letter', result.coverLetter)}
-                                >
-                                    <PrintIcon />
-                                </button>
-                            </div>
+            {view === 'compose' && result && (
+                <section className="afj-workspace" aria-labelledby="afj-result-title">
+                    <div className="afj-workspace-head">
+                        <div>
+                            <h4
+                                id="afj-result-title"
+                                ref={resultHeadingRef}
+                                tabIndex={-1}
+                                className="afj-workspace-title"
+                            >
+                                {resultTitle}
+                            </h4>
+                            {uid && <p className="afj-meta">{saveStatus}</p>}
                         </div>
-                        <textarea
-                            className="applyforjobs-editor form-control"
-                            aria-label="Cover letter markdown (editable)"
-                            value={result.coverLetter}
-                            onChange={(e) =>
-                                setResult((r) => ({ ...r, coverLetter: e.target.value }))
-                            }
-                        />
-                    </div>
-
-                    <div className="applyforjobs-result">
-                        <div className="applyforjobs-section-header">
-                            <h4 className="mb-0">Resume</h4>
-                            <div className="d-flex gap-2">
-                                <button
-                                    className="btn btn-sm btn-outline-primary"
-                                    onClick={() => downloadPdf('Resume', result.resume)}
-                                >
-                                    <PrintIcon />
-                                </button>
-                            </div>
+                        <div className="afj-workspace-actions">
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-secondary afj-tool"
+                                onClick={startOver}
+                            >
+                                <PlusIcon />Start over
+                            </button>
                         </div>
-                        <textarea
-                            className="applyforjobs-editor form-control"
-                            aria-label="Resume markdown (editable)"
-                            value={result.resume}
-                            onChange={(e) =>
-                                setResult((r) => ({ ...r, resume: e.target.value }))
-                            }
-                        />
                     </div>
+                    <div className={`afj-workspace-grid${result.recommendations ? ' has-rail' : ''}`}>
+                        {result.recommendations && (
+                            <aside className="afj-rail" aria-label="Fit report">
+                                <Recommendations recommendations={result.recommendations} level={5} />
+                            </aside>
+                        )}
+                        <div className="afj-workspace-main">
+                            <DocumentWorkspace
+                                id="afj-result-docs"
+                                editable
+                                documents={[
+                                    {
+                                        key: 'coverLetter',
+                                        label: 'Cover letter',
+                                        markdown: result.coverLetter,
+                                        pdfTitle: 'Cover Letter',
+                                        ariaLabel: 'Cover letter markdown (editable)',
+                                        onChange: (value) => updateOutput('coverLetter', value),
+                                    },
+                                    {
+                                        key: 'resume',
+                                        label: 'Resume',
+                                        markdown: result.resume,
+                                        pdfTitle: 'Resume',
+                                        ariaLabel: 'Resume markdown (editable)',
+                                        onChange: (value) => updateOutput('resume', value),
+                                    },
+                                ]}
+                            />
+                        </div>
+                    </div>
+                </section>
+            )}
 
-                    <button className="btn btn-outline-secondary" onClick={startOver}>
-                        Start over
+            {view === 'history' && !viewing && (
+                <HistoryList
+                    applications={applications}
+                    onOpen={openApplication}
+                    onNew={showCompose}
+                />
+            )}
+
+            {view === 'history' && viewing && (
+                <section
+                    className="afj-workspace applyforjobs-history-detail"
+                    aria-labelledby="afj-detail-title"
+                >
+                    <button type="button" className="btn btn-link afj-back" onClick={showHistory}>
+                        <ArrowLeftIcon />All past applications
                     </button>
-                </>
+                    <div className="afj-workspace-head">
+                        <div>
+                            <h4
+                                id="afj-detail-title"
+                                ref={detailHeadingRef}
+                                tabIndex={-1}
+                                className="afj-workspace-title"
+                            >
+                                {viewing.company || '—'} — {viewing.position || '—'}
+                            </h4>
+                            <p className="afj-meta">{formatDate(viewing.createdAtMs)}</p>
+                        </div>
+                        <div className="afj-workspace-actions">
+                            {confirmingDelete ? (
+                                <>
+                                    <span className="afj-confirm-text">Delete this application?</span>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-danger"
+                                        onClick={() => handleDelete(viewing)}
+                                    >
+                                        Confirm delete
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={() => setConfirmingDelete(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger afj-tool"
+                                    onClick={() => setConfirmingDelete(true)}
+                                >
+                                    <TrashIcon />Delete
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className={`afj-workspace-grid${viewing.recommendations ? ' has-rail' : ''}`}>
+                        {viewing.recommendations && (
+                            <aside className="afj-rail" aria-label="Fit report">
+                                <Recommendations recommendations={viewing.recommendations} level={5} />
+                            </aside>
+                        )}
+                        <div className="afj-workspace-main">
+                            {/* Keyed by record so switching records resets the open tab. */}
+                            <DocumentWorkspace
+                                key={viewing.id}
+                                id="afj-detail-docs"
+                                documents={[
+                                    { key: 'coverLetter', label: 'Cover letter', markdown: viewing.coverLetter, pdfTitle: 'Cover Letter' },
+                                    { key: 'resume', label: 'Resume', markdown: viewing.resume, pdfTitle: 'Resume' },
+                                    { key: 'jobPosting', label: 'Job posting', markdown: viewing.jobPosting },
+                                    ...(viewing.applicantContext
+                                        ? [{ key: 'context', label: 'Your context', markdown: viewing.applicantContext }]
+                                        : []),
+                                ]}
+                            />
+                        </div>
+                    </div>
+                </section>
             )}
         </div>
     );

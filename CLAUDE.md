@@ -4,7 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-- `npm run dev` — start Vite dev server.
+- `npm run dev` — start Vite dev server (talks to the real Firebase project).
+- `npm run dev:emulator` — same, but with `VITE_FIREBASE_EMULATOR=true` so auth and Firestore hit the local emulators instead. Pair with `npm run emulators` in another terminal. Requires **JDK 21+** (Debian bookworm's default JDK 17 is too old for current `firebase-tools`). See `docs/local-firebase-emulator.md`.
+- `npm run emulators` — Firebase Emulator Suite (firestore :8080, auth :9099, UI :4000).
+- `npm run check:rules` — asserts `firestore.rules` allows/denies what the app needs, against a running emulator. Like `check:routes`, deliberately **not** part of `verify` (it depends on a running emulator). The emulator reads the rules file only at startup, so restart it after editing rules.
 - `npm run build` — production build (output to `dist/`).
 - `npm run preview` — serve the production build locally.
 - `npm run lint` — ESLint (flat config in `eslint.config.js`). Globs `**/*.{js,jsx}` only, so the `.ts` files under `src/lib/` and `scripts/` are not linted.
@@ -12,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run test:sink` — `node --test` over `src/lib/satisfactory-sink/*.test.ts`. Intentionally dependency-free; keep it on Node's runner.
 - `npm run test:ui` — Vitest + jsdom component tests (`src/**/*.test.{js,jsx}`; `src/lib/**` is excluded so the two runners never overlap). Setup in `src/test/`: `setup.jsx` mocks `src/firebase.js` and `react-leaflet` for every test, `server.js` holds the MSW handlers for the AskMe and Apply for Jobs endpoints (unhandled requests fail the test). `src/App.test.jsx` renders every route via `MemoryRouter`; its `PAGES` map must list each new tool/project URL with a heading unique to that page, or the coverage test fails.
 - `npm run data:satisfactory` — regenerate `src/data/satisfactory/*.json` from the game's docs export. `:check` variant exits non-zero if the committed files have drifted.
+- `npm run check:routes` — asserts every deployed URL returns HTTP 200 against the live site (`-- --base=<url>` to target master; defaults to dev). Derives its path list from `src/App.jsx` and the `endpoint` fields in the two route tables, so new pages are covered automatically. Deliberately **not** part of `verify` — it hits production over the network. See `docs/amplify-redirects.md`.
 
 Node 22+ is required (`.nvmrc` and `engines.node` in `package.json`); the `.ts` files rely on Node's native type-stripping, so they run with no build step and no TypeScript dependency.
 
@@ -21,9 +25,12 @@ Create a `.env` in the repo root before `npm run dev`:
 
 - `VITE_FIREBASE_API_KEY` — Firebase Web API key (from Firebase Console → thedavidhanks → project settings). `src/firebase.js` throws on startup if this is missing.
 - `VITE_AWS_SKILLS_API_KEY` — API key for the "Ask Me" Lambda (`https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/ask`). Used only by the `/askme` route.
-- `VITE_AWS_APPLY_API_KEY` — API key for the "Apply for Jobs" Lambda. Used only by the `/tools/applyforjobs` route. See `docs/applyforjobs-bedrock-deploy.md` for the backend deploy spec.
+- `VITE_AWS_APPLICATION_API_URL` — full URL of the async "Apply for Jobs" API, ending in `.../Prod/application`. Used only by the `/tools/applyforjobs` route.
+- `VITE_AWS_APPLICATION_API_KEY` — API key for that API, sent as the `X-Api-Key` header. Used only by the `/tools/applyforjobs` route.
 
-In the Amplify console these three must be set as **environment variables**
+The `/tools/applyforjobs` route calls the async `/application` API: it submits with `POST /application`, then polls `GET /application/{jobId}` until the package is ready. The contract is in `docs/handoff/APPLICATION_API.md`; see `docs/applyforjobs-bedrock-deploy.md` for the original backend deploy spec (which describes the older synchronous `/apply` Lambda).
+
+In the Amplify console these four must be set as **environment variables**
 (App settings → Environment variables), *not* as Amplify **secrets**. Secrets
 are not exported into the build shell, so Vite would inline `undefined` for
 each one and every route would render blank. `amplify.yml` runs
@@ -34,11 +41,30 @@ of deploying a blank site.
 
 Single-page React 19 app bundled with Vite, deployed to AWS Amplify (us-west-2) on push to `master` (see `amplify.yml`).
 
+Because it is a client-routed SPA, every deep link depends on an Amplify rewrite rule sending non-asset paths to `/index.html` with status 200. `amplify.yml` cannot express redirects — they live in app-level `customRules`, outside this repo — so **`docs/amplify-redirects.md` is the source of truth for that rule set**. Read it before touching routing, and update it in the same sitting if you change the rules in the console. It also covers Amplify's built-in trailing-slash behavior and the soft-404 tradeoff the 200 rewrite introduces.
+
 - `src/main.jsx` is the thin entrypoint: it mounts `App` inside `BrowserRouter`. `src/App.jsx` is the top-level class component and defines all routes (it renders no router itself, so tests can wrap it in `MemoryRouter`). Adding a new top-level page means adding a `<Route>` in `App.jsx`, (usually) a link in the `menuItems` state, and an entry in `PAGES` in `src/App.test.jsx`.
 - `src/firebase.js` initializes the Firebase compat SDK (auth + firestore) and exports `auth`, `db`, `provider`. Auth state lives on `App`'s `state.user`; `login`/`logout` use `signInWithPopup`/`signOut` and are passed down to `BSnavbar`.
-- `src/components/projects/index.jsx` is its own nested-router subtree: the `projectlist` array in `projectlist.jsx` drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`. Because `ProjectHome` is mounted at `/projects/*` and each `path` starts with `projects/`, project pages are served at `/projects/projects/<name>`.
+- Firestore security rules are committed as `firestore.rules` (wired up by `firebase.json`) and deployed with `firebase deploy --only firestore:rules` — that deploy **replaces the console ruleset wholesale**, so the file must cover every collection the app touches, NWmap's pinned `/Games/PM2ahWu01w0wb5KQcoV8/Points` included. It supersedes a console-only ruleset that granted `allow read` on `/{document=**}`; do not reintroduce a global match block. `/tools/applyforjobs` persists saved generations to `users/{uid}/jobApplications`, a per-user subcollection whose isolation comes from the path plus a `request.auth.uid == userId` rule. **`docs/firestore-rules.md` is the source of truth for deploying, verifying and rolling back rules**; see also `docs/applyforjobs-history.md`.
+- `src/components/projects/index.jsx` is its own nested-router subtree: the `projectlist` array in `projectlist.jsx` drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, endpoint, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`. `ProjectHome` is mounted at `/projects/*`, so its descendant `<Routes>` matches only the remaining segment: `path` is the bare slug (`gps-tracker`) and `endpoint` is the full path minus the leading slash (`projects/gps-tracker`), which `ProjectCard` links to absolutely. Pages are served at `/projects/<slug>`. This mirrors `toollist.jsx`/`ToolCard.jsx`; re-adding a `projects/` prefix to `path` is what caused the doubled `/projects/projects/<slug>` URLs in #36.
 - `src/components/askme/index.jsx` is a chat UI that POSTs `{question, sessionId?}` to the AWS API Gateway endpoint above and types the response character-by-character via a `setInterval`. The `sessionId` returned by the API is reused for follow-up questions to maintain conversation context.
 - Styling is Bootstrap 5 + react-bootstrap, with the bundle JS imported once in `main.jsx`.
+
+## Branch protection
+
+Three repository rulesets, all `active`. View them with `gh api repos/thedavidhanks/thedavidhanks2/rulesets`.
+
+| Branch | Ruleset | Rules | Bypass |
+| --- | --- | --- | --- |
+| `master` | `master: production gate` | PR required (0 approvals), `verify` must pass, no force-push, no deletion | none |
+| `dev` | `dev: no force-push or delete` | no force-push, no deletion | none |
+| `dev` | `run tests on branch` | PR required (0 approvals), `verify` must pass | Repository admin, mode `always` |
+
+- `verify` is the job name in `ci.yml`. It is pinned by `name: verify` precisely because the rulesets reference that string — renaming the job silently disables the gate on both branches.
+- **`master` has no bypass for anyone.** Changes reach it only through a PR with a green `verify`; `dev-to-master-monthly.yml` opens that PR on the 1st and deliberately does not merge it.
+- `dev` is split across two rulesets on purpose. The admin bypass is scoped to the PR/status-check ruleset so the owner can push to `dev` directly, while force-push and deletion stay blocked for everyone.
+- No workflow holds the admin role, so every automated path — Dependabot included — still goes through a PR. See `docs/dependabot-automation.md`.
+- Required approvals are `0` on both branches and should stay there: this is a single-maintainer repo and GitHub forbids approving your own PR, so any higher count makes self-authored PRs unmergeable. For the same reason `require_extra_approval_for_unattributed_changes` is `false` on `master`.
 
 ## Conventions to be aware of
 

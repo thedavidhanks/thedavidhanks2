@@ -11,7 +11,7 @@ const ProjectCard = (props) => {
     // or
     // <Card bg="info"
     return(
-    <Link to={props.endpoint} style={{ color: '#000' }}>
+    <Link to={`/${props.endpoint}`} style={{ color: '#000' }}>
     {props.imgsrc? <CardWithImageOverlay {...props} key={props.id}/>:<CardNoOverlay {...props} key={props.id}/>}
     </Link>
 )};

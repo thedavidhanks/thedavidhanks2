@@ -44,7 +44,8 @@ jobs:
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_AWS_SKILLS_API_KEY: ${{ secrets.VITE_AWS_SKILLS_API_KEY }}
-          VITE_AWS_APPLY_API_KEY: ${{ secrets.VITE_AWS_APPLY_API_KEY }}
+          VITE_AWS_APPLICATION_API_URL: ${{ secrets.VITE_AWS_APPLICATION_API_URL }}
+          VITE_AWS_APPLICATION_API_KEY: ${{ secrets.VITE_AWS_APPLICATION_API_KEY }}
 
       - name: Unit tests
         run: npm test
@@ -66,4 +67,5 @@ jobs:
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_AWS_SKILLS_API_KEY: ${{ secrets.VITE_AWS_SKILLS_API_KEY }}
-          VITE_AWS_APPLY_API_KEY: ${{ secrets.VITE_AWS_APPLY_API_KEY }}
+          VITE_AWS_APPLICATION_API_URL: ${{ secrets.VITE_AWS_APPLICATION_API_URL }}
+          VITE_AWS_APPLICATION_API_KEY: ${{ secrets.VITE_AWS_APPLICATION_API_KEY }}
