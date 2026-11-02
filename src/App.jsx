@@ -43,18 +43,22 @@ class App extends Component {
     }  
     render(){
         return (
-            <div className="app-shell">
+            <>
+                {/* Outside .app-shell so the sticky-top navbar spans the full
+                    viewport rather than the shell's narrower content width. */}
                 <BSnavbar user={this.state.user} login={this.login} logout={this.logout}/>
-                <div role="main" className="row contentwrapper">
-                    <Routes>
-                        <Route path="/" element={<AboutMe/>}/>
-                        <Route path="/tools/*" element={<ToolHome user={this.state.user} login={this.login}/>}/>
-                        <Route path="/projects/*" element={<ProjectHome/>}/>
-                        <Route path="/about" element={<AboutMe/>}/>
-                        <Route path="/askme" element={<AskMe/>}/>
-                    </Routes>
+                <div className="app-shell">
+                    <div role="main" className="row contentwrapper">
+                        <Routes>
+                            <Route path="/" element={<AboutMe/>}/>
+                            <Route path="/tools/*" element={<ToolHome user={this.state.user} login={this.login}/>}/>
+                            <Route path="/projects/*" element={<ProjectHome/>}/>
+                            <Route path="/about" element={<AboutMe/>}/>
+                            <Route path="/askme" element={<AskMe/>}/>
+                        </Routes>
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 };

@@ -147,8 +147,6 @@
     padding-bottom: 0px;
 }
 
-body { padding-top: 90px; }
-
 /** About page **/
 .highlightSkill{
     font-weight: bold;
@@ -165,6 +163,9 @@ body { padding-top: 90px; }
 
 /** Home **/
 .contentwrapper{
+    /* The navbar is sticky-top, so it occupies its own space in the flow and
+       the body needs no padding to clear it; this is just breathing room. */
+    padding-top: 2rem;
     margin-bottom: 60px;
 }
 

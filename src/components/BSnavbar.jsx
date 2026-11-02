@@ -11,7 +11,8 @@ function BSnavbar({ user, login, logout }) {
     const visibleTools = toollist.filter((tool) => user || !tool.requireAuth);
 
     return (
-            <div className="navbar navbar-expand-md navbar-dark bg-dark fixed-top row">
+            <div className="navbar navbar-expand-md navbar-dark bg-dark sticky-top">
+              <div className="container-fluid">
                 <a className="navbar-brand" href="/">TheDavidHanks</a>
                 <button
                   className="navbar-toggler"
@@ -23,9 +24,9 @@ function BSnavbar({ user, login, logout }) {
                   <span className="navbar-toggler-icon"></span>
                 </button>
                 <div className={`navbar-collapse ${menuOpen ? '' : 'collapse'}`}>
-                    <ul className="navbar-nav mr-auto">
+                    <ul className="navbar-nav me-auto">
                       <li className="nav-item">
-                        <NavLink className="nav-link" to="/projects" >Projects<span className="sr-only">(current)</span></NavLink>
+                        <NavLink className="nav-link" to="/projects" >Projects</NavLink>
                       </li>
                       <li className="nav-item">
                         <NavLink className="nav-link" to="/askme">Ask Me</NavLink>
@@ -43,6 +44,7 @@ function BSnavbar({ user, login, logout }) {
                     {user ? <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={logout}>Logout</button> : <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={login}>Login</button>}
                     </div>
                 </div>
+              </div>
             </div>
     );
 }

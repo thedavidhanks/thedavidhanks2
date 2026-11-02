@@ -86,11 +86,7 @@ const AlternatePicker = ({ alternates, unlocked, onChange }) => {
         <fieldset className="mb-3">
             <legend className="h6">Unlocked alternate recipes</legend>
 
-            {/* `sr-only` as well as `visually-hidden`: index.html still serves
-                Bootstrap 4 CSS, which has no `.visually-hidden`, so on its own
-                this label renders as visible body text. Drop `sr-only` once the
-                app loads Bootstrap 5 CSS. */}
-            <label htmlFor={searchId} className="visually-hidden sr-only">
+            <label htmlFor={searchId} className="visually-hidden">
                 Search alternate recipes
             </label>
             <input

@@ -64,7 +64,7 @@ export default function Recommendations({ recommendations, level = 4 }) {
                     <span className="afj-fit-summary">
                         <span className="afj-fit-head">
                             <span className="afj-fit-label">
-                                Fit score<span className="visually-hidden sr-only">:</span>
+                                Fit score<span className="visually-hidden">:</span>
                             </span>{' '}
                             <span className="afj-fit-value">
                                 {hasFit ? (

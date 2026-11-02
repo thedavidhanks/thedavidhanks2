@@ -1,10 +1,9 @@
 /* Apply for Jobs. Inherits the site's Bootstrap world (system sans, primary
    blue, light ground); everything here is scoped to the tool's container.
 
-   index.html serves Bootstrap 4.1.3 CSS while react-bootstrap emits Bootstrap 5
-   markup, so nothing here may lean on BS5-only CSS: no --bs-* variables, no
-   .nav-underline, .accordion-*, .stretched-link or .visually-hidden styles.
-   Those are drawn below (or paired with BS4's .sr-only in the markup). */
+   The tabs, segmented control, row links and accent colour are drawn here
+   rather than taken from Bootstrap 5 utilities, which this tool predates
+   loading (it was built against the Bootstrap 4.1 CSS the site once served). */
 
 /* The progress modal portals to <body>, outside the container, so it gets the
    same tokens. */
@@ -16,12 +15,12 @@
     --afj-line-soft: #e9ecef;
     --afj-panel: #f6f7f9;
     --afj-desk: #eceef2;
-    --afj-accent: #007bff; /* Bootstrap 4 primary, as used across the site */
+    --afj-accent: #007bff; /* Bootstrap 4 primary, kept from before the BS5 CSS move */
     --afj-accent-soft: rgba(0, 123, 255, 0.16);
     --afj-focus-ring: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     --afj-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --afj-radius: 0.75rem;
-    --afj-sticky-top: 6.5rem; /* clears the fixed navbar (body padding-top: 90px) */
+    --afj-sticky-top: 6.5rem; /* clears the sticky-top navbar plus a gap */
     --afj-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.08);
 }
 
@@ -39,7 +38,7 @@
     width: var(--afj-width);
     max-width: none;
     margin-inline: calc((100% - var(--afj-width)) / 2);
-    /* BS4's .row has a -15px margin and no column here to pay it back. */
+    /* Pays back .row's negative gutter; 15px rather than BS5's 12px for parity. */
     padding-inline: 15px;
 }
 
@@ -159,7 +158,7 @@
 .afj-tabs .nav-link:focus,
 .afj-mode .btn:focus,
 .afj-row-link:focus {
-    outline: none; /* BS4 reboot draws a ring on mouse focus too */
+    outline: none; /* the ring is drawn on :focus-visible below instead */
 }
 
 .afj-views .nav-link:focus-visible,
@@ -374,7 +373,7 @@ textarea.afj-posting {
 }
 
 /* Selected segment speaks the same accent as the active tab underline. */
-/* Specificity matches BS4's `.btn-outline-secondary:not(:disabled):not(.disabled).active`. */
+/* Specificity outranks Bootstrap's `.btn-outline-secondary.active` rules. */
 .afj-doctools .afj-mode .btn:not(:disabled):not(.disabled).active {
     border-color: var(--afj-accent);
     background: var(--afj-accent-soft);
@@ -770,7 +769,7 @@ textarea.afj-posting {
     text-align: left;
 }
 
-/* The whole row is the hit area (BS 4.1 has no .stretched-link). */
+/* The whole row is the hit area, like Bootstrap's .stretched-link. */
 .afj-row-link::after {
     content: "";
     position: absolute;

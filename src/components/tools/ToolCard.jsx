@@ -7,7 +7,7 @@ const TagBox = ({ tagname }) => (
 );
 
 const ToolCard = ({ id, title, description, tags, endpoint, style }) => (
-    <Link to={`/${endpoint}`} style={{ color: '#000' }}>
+    <Link to={`/${endpoint}`} className="text-decoration-none" style={{ color: '#000' }}>
         <Card key={id} style={style}>
             <Card.Body>
                 <Card.Title>{title}</Card.Title>
