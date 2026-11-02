@@ -1,16 +1,14 @@
 /* The expanded flow diagram: 90% of the viewport in both directions.
-   Sized here rather than with a Bootstrap size class because index.html still
-   serves Bootstrap 4.1 CSS, which has neither `.modal-xl` (4.2) nor
-   `.modal-fullscreen` (5.0) — the class would resolve to nothing and the
-   dialog would fall back to its 500px default. */
+   Sized here rather than with a Bootstrap size class because none fits:
+   `.modal-xl` caps at 1140px and `.modal-fullscreen` takes the whole screen. */
 .flow-diagram-modal {
     max-width: 90vw;
     width: 90vw;
     margin: 0 auto;
 }
 
-/* Bootstrap 4 centres the dialog inside `calc(100% - 3.5rem)` — the room left
-   over once its own default margin is subtracted. That margin is zeroed above,
+/* Bootstrap centres the dialog inside `calc(100% - 2 * --bs-modal-margin)` —
+   the room left over once its own default margin is subtracted. That margin is zeroed above,
    so without this the 90vh card sits 28px high of true centre. */
 .flow-diagram-modal.modal-dialog-centered {
     min-height: 100%;

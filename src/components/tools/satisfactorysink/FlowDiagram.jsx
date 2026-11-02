@@ -247,16 +247,12 @@ const FlowViewport = ({ layout, labels, hasSink, style, onActivate }) => (
     // (WCAG 1.4.10 Reflow). A scroll container with no focusable
     // children is unreachable from the keyboard, hence tabIndex — the
     // role/label give that tab stop a name worth landing on.
-    // `overflow` is set inline and not with Bootstrap's `overflow-auto`
-    // because index.html still serves Bootstrap 4 CSS, which has no
-    // overflow utilities — the class would do nothing and a 3000px-wide
-    // plan would push the whole page sideways.
-    // `scrollMarginTop` clears the `fixed-top` navbar: without it,
+    // `scrollMarginTop` clears the `sticky-top` navbar: without it,
     // tabbing here scrolls the container flush to the viewport top and
     // the navbar covers its focus ring (WCAG 2.4.11).
     <div
-        className="border rounded bg-white"
-        style={{ overflow: 'auto', scrollMarginTop: '4.5rem', ...style }}
+        className="border rounded bg-white overflow-auto"
+        style={{ scrollMarginTop: '4.5rem', ...style }}
         tabIndex={0}
         role="group"
         aria-label="Flow diagram of the plan, scrollable"
@@ -341,9 +337,6 @@ const FlowDiagram = ({ plan, dataset }) => {
 
     return (
         <section className="mb-4">
-            {/* `d-flex` and the gap utilities are Bootstrap 4 spellings that
-                survive in 5; `gap-2` is not, hence the inline margin on the
-                button. */}
             <div className="d-flex align-items-center justify-content-between mb-2">
                 <h3 className="h5 mb-0">How it flows</h3>
                 {/* Font Awesome 4.7 is what index.html loads, so this is
@@ -361,12 +354,7 @@ const FlowDiagram = ({ plan, dataset }) => {
                     <i className="fa fa-arrows-alt" aria-hidden="true" />
                 </Button>
             </div>
-            {/* `text-muted` as well as `text-body-secondary`: index.html still
-                serves Bootstrap 4 CSS, which has no `.text-body-secondary`, so
-                on its own this paragraph renders at full body weight and the
-                section loses its de-emphasised tier. Drop `text-muted` once the
-                app loads Bootstrap 5 CSS. */}
-            <p className="small text-muted text-body-secondary">
+            <p className="small text-body-secondary">
                 Source products at the top{hasSink ? ', the AWESOME Sink at the bottom' : ''}.
                 Each box is a product; the line under a box is the recipe that makes it.
                 Numbers on the arrows are how much of that product moves along the belt.
@@ -390,10 +378,8 @@ const FlowDiagram = ({ plan, dataset }) => {
                 the one thing the arrows are for. In a plain Iron Ore plan 7 of
                 the 11 arrow numbers appear here and nowhere else on the page, so
                 without this list the drawing would be the sole carrier of them.
-                Hidden from sight because it only repeats the picture; `sr-only`
-                as well as `visually-hidden` because index.html still serves
-                Bootstrap 4 CSS, where the latter does not exist. */}
-            <div className="visually-hidden sr-only">
+                Hidden from sight because it only repeats the picture. */}
+            <div className="visually-hidden">
                 <h4>Every connection in the diagram, as text</h4>
                 <ul>
                     {layout.edges.map((edge, index) => {
@@ -416,11 +402,9 @@ const FlowDiagram = ({ plan, dataset }) => {
                 node moved: React would unmount and remount the SVG on every
                 open and close, which is a scroll position lost each way.
                 `centered` and the sizing live in flowdiagram.css because
-                Bootstrap 4.1 has no dialog size big enough to ask for.
-                No `closeButton` on the header — react-bootstrap renders
-                Bootstrap 5's `.btn-close`, which the Bootstrap 4 CSS this page
-                loads does not style at all, so it would be an invisible
-                control. The explicit button below is styled either way. */}
+                no Bootstrap dialog size is 90% of the viewport.
+                No `closeButton` on the header: the labelled Close button
+                below takes its place. */}
             <Modal
                 show={expanded}
                 onHide={() => setExpanded(false)}

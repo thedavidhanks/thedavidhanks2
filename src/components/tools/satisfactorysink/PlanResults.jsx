@@ -156,7 +156,7 @@ const PlanResults = ({ plan, mode, dataset }) => {
                 <section className="mb-4">
                     <h3 className="h5">Source products consumed</h3>
                     <Table responsive size="sm" className="align-middle">
-                        <caption className="visually-hidden sr-only">
+                        <caption className="visually-hidden">
                             Source products consumed by the plan, with the share of the source
                             budget each one takes.
                         </caption>
@@ -210,7 +210,7 @@ const PlanResults = ({ plan, mode, dataset }) => {
                         machine at a partial clock rate, not two machines.
                     </p>
                     <Table responsive size="sm" className="align-middle">
-                        <caption className="visually-hidden sr-only">
+                        <caption className="visually-hidden">
                             Recipes the plan runs, with the number of crafts of each.
                         </caption>
                         <thead>
@@ -239,7 +239,7 @@ const PlanResults = ({ plan, mode, dataset }) => {
                 <section className="mb-4">
                     <h3 className="h5">Feed to the AWESOME Sink</h3>
                     <Table responsive size="sm" className="align-middle">
-                        <caption className="visually-hidden sr-only">
+                        <caption className="visually-hidden">
                             Products to feed to the AWESOME Sink, with the points each one earns.
                         </caption>
                         <thead>
@@ -278,7 +278,7 @@ const PlanResults = ({ plan, mode, dataset }) => {
                         vented or dumped.
                     </p>
                     <Table responsive size="sm" className="align-middle">
-                        <caption className="visually-hidden sr-only">
+                        <caption className="visually-hidden">
                             Byproducts the plan cannot use, with the quantity of each to dispose of.
                         </caption>
                         <thead>

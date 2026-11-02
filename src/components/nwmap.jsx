@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { ImageOverlay, MapContainer, Marker, Popup } from 'react-leaflet';
 import { CRS } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import firebase, { db } from '../firebase.js';
 
 import MapImage from '../images/CombinedNW.png';
