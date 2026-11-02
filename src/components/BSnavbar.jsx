@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { toollist } from './tools/toollist.jsx';
 
 function BSnavbar({ user, login, logout }) {
@@ -13,7 +13,7 @@ function BSnavbar({ user, login, logout }) {
     return (
             <div className="navbar navbar-expand-md navbar-dark bg-dark sticky-top">
               <div className="container-fluid">
-                <a className="navbar-brand" href="/">TheDavidHanks</a>
+                <Link className="navbar-brand" to="/">TheDavidHanks</Link>
                 <button
                   className="navbar-toggler"
                   type="button"
@@ -25,6 +25,9 @@ function BSnavbar({ user, login, logout }) {
                 </button>
                 <div className={`navbar-collapse ${menuOpen ? '' : 'collapse'}`}>
                     <ul className="navbar-nav me-auto">
+                      <li className="nav-item">
+                        <NavLink className="nav-link" to="/about">About</NavLink>
+                      </li>
                       <li className="nav-item">
                         <NavLink className="nav-link" to="/projects" >Projects</NavLink>
                       </li>
