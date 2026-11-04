@@ -144,6 +144,8 @@ describe('home and about', () => {
         renderAt('/about');
         expect(main().queryByRole('link', { name: /Download resume/ })).not.toBeInTheDocument();
         expect(main().getByRole('heading', { name: 'Skills' })).toBeInTheDocument();
+        expect(main().getByRole('link', { name: 'dphanks@gmail.com' }))
+            .toHaveAttribute('href', 'mailto:dphanks@gmail.com');
     });
 
     it.each(['/', '/about'])('%s has one h1 and never skips a heading level', (url) => {

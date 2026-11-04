@@ -3,13 +3,13 @@ import React from 'react';
 // Descriptions used to live in title tooltips, which touch and keyboard users
 // never see; they are rendered as visible text now.
 const coursework = [
-    { title: 'Game AI', href: 'https://omscs.gatech.edu/cs-7632-game-ai', description: 'Artifical Intelligence in video games.' },
-    { title: 'ML for Trading', href: 'https://omscs.gatech.edu/cs-7646-machine-learning-trading', description: 'Probabilistic machine learning approaches (linear regression, Q-Learning, KNN, and regression trees)for trading decisions.' },
-    { title: 'Computer Networks', href: 'https://omscs.gatech.edu/cs-6250-computer-networks', description: 'routing, SDN, BGP hijacking, and Internet measurements.' },
+    { title: 'Game AI', href: 'https://omscs.gatech.edu/cs-7632-game-ai', description: 'Artificial intelligence in video games.' },
+    { title: 'ML for Trading', href: 'https://omscs.gatech.edu/cs-7646-machine-learning-trading', description: 'Probabilistic machine learning approaches (linear regression, Q-Learning, KNN, and regression trees) for trading decisions.' },
+    { title: 'Computer Networks', href: 'https://omscs.gatech.edu/cs-6250-computer-networks', description: 'Routing, SDN, BGP hijacking, and Internet measurements.' },
     { title: 'Embedded System Optimization', href: 'https://omscs.gatech.edu/cs-6291-embedded-systems-optimization', description: 'Focus on optimizing software for hardware with embedded ARM processors.' },
     { title: 'Software Design and Arch', href: 'https://omscs.gatech.edu/cs-6310-software-architecture-design' },
     { title: 'Operating Systems', href: 'https://omscs.gatech.edu/cs-6200-introduction-operating-systems', description: 'The practical component of the course teaches multithread programming, inter-process communication, and distributed interactions via RPC.' },
-    { title: 'Graduate Algorthms', href: 'https://omscs.gatech.edu/cs-6515-intro-graduate-algorithms', description: 'The main topics covered in the course include: dynamic programming; divide and conquer, including FFT; randomized algorithms, including RSA cryptosystem;  graph algorithms; max-flow algorithms; linear programming; and NP-completeness.' },
+    { title: 'Graduate Algorithms', href: 'https://omscs.gatech.edu/cs-6515-intro-graduate-algorithms', description: 'The main topics covered in the course include: dynamic programming; divide and conquer, including FFT; randomized algorithms, including RSA cryptosystem; graph algorithms; max-flow algorithms; linear programming; and NP-completeness.' },
     { title: 'Software Dev Process', href: 'https://omscs.gatech.edu/cs-6300-software-development-process' },
     { title: 'Video Game Design', href: 'https://omscs.gatech.edu/cs-6457-video-game-design', description: 'Game design in Unity and C#' },
     { title: 'AWS CCP training', href: 'https://www.udemy.com/certificate/UC-0bda0691-7c4b-466f-a5fe-b5a171594b7a/?utm_medium=email&utm_campaign=email&utm_source=sendgrid.com' },
@@ -26,7 +26,7 @@ const coursework = [
 // skills permanently shrunk to ~10px.
 const skillGroups = [
     { name: 'Languages', skills: ['Python', 'C', 'C++', 'Java', 'JavaScript', 'NodeJS'] },
-    { name: 'Web & cloud', skills: ['ReactJS', 'Leaflet', 'Bootstrap', 'AWS', 'Firebase'] },
+    { name: 'Web & cloud', skills: ['ReactJS', 'Leaflet', 'Bootstrap', 'Drupal', 'Django', 'LAMP', 'Salesforce (LWC, Apex)', 'AWS', 'GCP', 'Firebase', 'PythonAnywhere', 'DNS'] },
     { name: 'Engineering & CAD', skills: ['Solidworks', 'AutoCAD', 'Fusion360', 'Inventor', 'Pro/E', 'Ansys', 'hydraulics', 'structural analysis'] },
     { name: 'Tools', skills: ['Visual Studio Code', 'Visual Studio', 'NetBeans', 'git', 'GitHub', 'Unity', 'Blender'] },
 ];
@@ -37,22 +37,14 @@ const AboutMe = () => {
             <h1>About David Hanks</h1>
             <div className="row">
                 <div className="col-md-8 prose">
-                    <p className="lead">Greetings! I'm David Hanks.</p>
-                    <p>I'm an engineer and developer with a passion for pushing boundaries and embracing diverse challenges.  I bring a unique blend of mechanical engineering and software development.</p>
-                    <p>I earned my stripes at the Georgia Institute of Technology, graduating with a Masters degree in Computer Science. My journey began in 2002 when I obtained a BS in Mechanical Engineering from the University of Louisiana. Over the years, I've honed my skills in the oil and gas industry, specializing in the development and maintenance of critical product lines such as tongs/slips, blow-out preventers, and supporting controls.</p>
-                    <p>My professional trajectory has granted me a comprehensive understanding of the product life cycle, from collaborative specification development with customers to on-site equipment installations. I thrive in dynamic environments, consistently delivering innovative solutions and leveraging my expertise in drawing creation, load analysis, test design, and execution.</p>
-                    <p>In recent years, I've expanded my horizons into the realm of software and electronics. Fueled by an innate curiosity and a desire to stay at the forefront of technology, I dove into online courses to refresh my skills in HTML, CSS, and Javascript. At the local makerspace, I delved into DC circuits, embracing hands-on learning experiences. The advent of open-source boards like Arduino captivated me, prompting a deeper exploration of this evolving landscape.</p>
-                    <p>In 2019, I embarked on a new chapter by enrolling in a Computer Science Master's program at Georgia Tech. The curriculum has exposed me to a diverse range of topics, from Operating Systems and Computer Networks to Software Development, Embedded Systems Optimizations, Game Design, and Game AI. Currently gearing up for my Spring 2023 course, "Machine Learning for Trading," I am eager to unravel the possibilities that lie ahead.</p>
-                    <p>Beyond my professional pursuits, I am an avid climber, ultimate freesbier, video gamer, and Eagle Scout. My love for exploration extends to my travels, and I take pride in being a native Cajun and devoted husband.</p>
-                    <p>As I continue to evolve professionally and personally, I am excited about the prospect of leveraging my multifaceted skills and experiences to contribute to innovative projects. I am eager to connect with like-minded professionals and explore opportunities that align with my passion for technology, problem-solving, and continuous growth. Let's build something extraordinary together!</p>
-                    <h2 className="h3">My journey with computing</h2>
-                    <p>My programming journey began in the early '90s with BASIC on my Apple IIgs. My father introduced me to the world of coding through paperbound books with sample programs, from calculators to choose-your-own adventures. Despite the challenges of saving work to a 5.25" floppy disk, the process taught me programming logic and debugging - foundational skills that have stayed with me.</p>
-                    <p>Building on this foundation, I delved into Pascal in high school and later explored Visual Basic in college. I set up LANs in various environments, from my college fraternity house to every home I've lived in, fostering my interest in networking. My early ventures into web development involved creating a PHP photo album and a phpBB forum for my family.</p>
-                    <p>During a year of travel in 2004, I crafted a PHP website to showcase my experiences, demonstrating my commitment to combining technology with personal projects. Though these early works are lost to the digital ether, the lessons learned were invaluable.</p>
-                    <p>Fast forward to today, and my projects are centered around web and mobile application development in React within the AWS and Firebase infrastructure. 
-                        I've established margeeanddave.com to document our travels across the US. Currently, I'm diving into React-Native, working on a mobile app to assist 
-                        climbers in geo-tagging their photos for discovering rock climbing locations.</p>
-                    <p>This journey reflects my continuous passion for technology and showcases my evolution from early coding experiences to contemporary web and mobile development projects. I am excited about the prospect of applying these skills and experiences to contribute to innovative and challenging projects in a professional setting. Let's connect and explore the possibilities together!</p>
+                    <p className="lead">I'm a software developer and a licensed mechanical engineer.</p>
+                    <p>I earned a B.S. in Mechanical Engineering from the University of Louisiana in 2002 and spent more than 20 years engineering oil and gas equipment. At Frank's Casing I was a mechanical engineer working on power tongs and slips. At Hydril / GE (mechanical engineer, lead mechanical engineer and field engineer), Oceaneering (senior mechanical engineer) and Offshore Technical Solutions (principal engineer) I worked on blow-out preventers, their controls and BOP shear reports. Across those roles I covered the full product life cycle, from writing specifications with customers through drawings, load analysis and test design to installing equipment on site. I'm a licensed Professional Engineer in Texas (#104644).</p>
+                    <p>Alongside that work I went back to software and electronics. I took online courses in HTML, CSS and JavaScript, learned DC circuits at a local makerspace, and built projects on Arduino boards.</p>
+                    <p>In 2019 I enrolled in Georgia Tech's M.S. in Computer Science program and graduated in December 2023. My coursework included operating systems, computer networks, embedded systems optimization, graduate algorithms, game AI and machine learning for trading.</p>
+                    <p>I'm a software engineer at Rice University, where I work across Rice's stacks, including Drupal, Django, LAMP and Salesforce (LWC and Apex), host applications on-premises and in the cloud (AWS, GCP, PythonAnywhere and Salesforce), and manage DNS records, among other things.</p>
+                    <p>In my own projects I use React, AWS and Firebase. I built margeeanddave.com to document our travels across the US, and a React Native app that helps climbers geo-tag their photos to find rock climbing locations; it reached a development release on Google Play before I paused it.</p>
+                    <p>Outside work I'm a climber, an ultimate frisbee player and a video gamer, an Eagle Scout and a native Cajun. I've been programming since BASIC on an Apple IIgs.</p>
+                    <p>Want to talk? Email me at <a href="mailto:dphanks@gmail.com">dphanks@gmail.com</a>.</p>
                 </div>
                 <div className="col-md-4 certificates resumeBorder">
                     <h2 className="h5">Certificates</h2>
