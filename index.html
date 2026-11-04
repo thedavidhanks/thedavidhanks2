@@ -2,10 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TheDavidHanks</title>
+    <!-- Static metadata for crawlers and link-preview bots that never run JS.
+         The data-static-head tags are removed by main.jsx before React renders
+         each page's own (src/components/PageMeta.jsx). Keep the title and
+         description in sync with src/seo.js; see docs/seo.md. -->
+    <title data-static-head>David Hanks: Software Developer &amp; Licensed Mechanical Engineer (P.E.)</title>
+    <meta data-static-head name="description" content="David Hanks: software developer (React, AWS, Firebase) and Texas-licensed mechanical engineer with a Georgia Tech CS master's and 20+ years in oil &amp; gas." />
+    <link data-static-head rel="canonical" href="https://www.thedavidhanks.com/" />
+    <meta name="theme-color" content="#212529" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="David Hanks" />
+    <meta property="og:title" content="David Hanks: Software Developer &amp; Licensed Mechanical Engineer (P.E.)" />
+    <meta property="og:description" content="David Hanks: software developer (React, AWS, Firebase) and Texas-licensed mechanical engineer with a Georgia Tech CS master's and 20+ years in oil &amp; gas." />
+    <meta property="og:url" content="https://www.thedavidhanks.com/" />
+    <meta property="og:image" content="https://www.thedavidhanks.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="David Hanks: Software Developer, Licensed Mechanical Engineer (P.E.)" />
+    <meta property="profile:first_name" content="David" />
+    <meta property="profile:last_name" content="Hanks" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "David Hanks",
+        "jobTitle": "Software Developer",
+        "description": "David Hanks: software developer (React, AWS, Firebase) and Texas-licensed mechanical engineer with a Georgia Tech CS master's and 20+ years in oil & gas.",
+        "url": "https://www.thedavidhanks.com/",
+        "image": "https://www.thedavidhanks.com/og-image.png",
+        "email": "mailto:dphanks@gmail.com",
+        "sameAs": [
+          "https://www.linkedin.com/in/thedavidhanks",
+          "https://github.com/thedavidhanks/"
+        ],
+        "alumniOf": [
+          { "@type": "CollegeOrUniversity", "name": "Georgia Institute of Technology" },
+          { "@type": "CollegeOrUniversity", "name": "University of Louisiana" }
+        ],
+        "hasCredential": {
+          "@type": "EducationalOccupationalCredential",
+          "name": "Professional Engineer (Mechanical), State of Texas",
+          "credentialCategory": "license",
+          "identifier": "104644",
+          "recognizedBy": {
+            "@type": "GovernmentOrganization",
+            "name": "Texas Board of Professional Engineers and Land Surveyors",
+            "url": "https://pels.texas.gov/"
+          }
+        }
+      }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
   <body>
     <div id="root"></div>

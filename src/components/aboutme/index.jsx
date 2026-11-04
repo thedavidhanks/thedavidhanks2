@@ -1,5 +1,8 @@
 import React from 'react';
 
+import PageMeta from '../PageMeta.jsx';
+import { pageTitle } from '../../seo.js';
+
 // Descriptions used to live in title tooltips, which touch and keyboard users
 // never see; they are rendered as visible text now.
 const coursework = [
@@ -34,6 +37,11 @@ const skillGroups = [
 const AboutMe = () => {
     return (
         <div className="resume">
+            <PageMeta
+                title={pageTitle('About')}
+                description="How David Hanks went from 20+ years engineering oil and gas equipment to a Georgia Tech CS master's and software development, plus skills and coursework."
+                path="/about"
+            />
             <h1>About David Hanks</h1>
             <div className="row">
                 <div className="col-md-8 prose">

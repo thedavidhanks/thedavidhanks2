@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:emulator": "VITE_FIREBASE_EMULATOR=true vite",
     "emulators": "firebase emulators:start --project thedavidhanks-559b0",
-    "build": "vite build",
+    "build": "node scripts/build-seo.ts && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "sink": "node src/lib/satisfactory-sink/cli.ts",
