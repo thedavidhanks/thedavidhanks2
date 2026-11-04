@@ -12,16 +12,10 @@ If you change the rules in the console, update this file in the same sitting.
 
 Two rules, in this order:
 
-> **Pending (#85), not yet applied in the console.** Rule 1 should become a
-> `301` so search engines consolidate on www, and rule 2's allow-list needs
-> `xml` so `/sitemap.xml` reaches the origin instead of being rewritten to
-> `index.html` (see `docs/seo.md`). Update the table and both JSON blocks below,
-> and delete this note, in the same sitting as the console change.
-
 | # | Source | Target | Type |
 | --- | --- | --- | --- |
-| 1 | `https://thedavidhanks.com` | `https://www.thedavidhanks.com` | `302` (Redirect — Temporary) |
-| 2 | `</^[^.]+$\|\.(?!(css\|gif\|ico\|jpg\|jpeg\|js\|png\|txt\|svg\|woff\|woff2\|ttf\|map\|json\|webp)$)([^.]+$)/>` | `/index.html` | `200` (Rewrite) |
+| 1 | `https://thedavidhanks.com` | `https://www.thedavidhanks.com` | `301` (Redirect — Permanent) |
+| 2 | `</^[^.]+$\|\.(?!(css\|gif\|ico\|jpg\|jpeg\|js\|png\|txt\|xml\|svg\|woff\|woff2\|ttf\|map\|json\|webp)$)([^.]+$)/>` | `/index.html` | `200` (Rewrite) |
 
 As JSON, which is what `aws amplify update-app --custom-rules` takes and what
 the console's **Open text editor** expects:
@@ -30,11 +24,11 @@ the console's **Open text editor** expects:
 [
   {
     "source": "https://thedavidhanks.com",
-    "status": "302",
+    "status": "301",
     "target": "https://www.thedavidhanks.com"
   },
   {
-    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>",
+    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|xml|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>",
     "status": "200",
     "target": "/index.html"
   }
@@ -80,6 +74,16 @@ So: "change `404` to `404-200`" is a plausible-looking non-fix. Use plain
 the incoming request path, whereas the 404 variants only engage once the origin
 has already missed — which is also why the `200` rule needs a source pattern
 that excludes real asset extensions, rather than a bare `/<*>`.
+
+## Status: #85 changes applied 2026-11-04
+
+Rule 1 went from `302` to `301` so search engines consolidate on www, and `xml`
+joined rule 2's allow-list so `/sitemap.xml` reaches the origin instead of being
+rewritten to the HTML shell (see `docs/seo.md`). Verified with
+`npm run check:routes` against both hosts: all routes `200`, `/robots.txt`
+`200 text/plain`, `/sitemap.xml` `200 text/xml`, and the apex answers `301` to
+`https://www.thedavidhanks.com/`. Rollback target: the 2026-10-04 rules below,
+which differ only in `302` and the missing `xml`.
 
 ## Status: applied 2026-10-04
 
@@ -167,11 +171,11 @@ just the SPA one:
 aws amplify update-app --region us-west-2 --app-id <APP_ID> --custom-rules '[
   {
     "source": "https://thedavidhanks.com",
-    "status": "302",
+    "status": "301",
     "target": "https://www.thedavidhanks.com"
   },
   {
-    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>",
+    "source": "</^[^.]+$|\\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|xml|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>",
     "status": "200",
     "target": "/index.html"
   }
