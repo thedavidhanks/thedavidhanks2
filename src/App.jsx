@@ -5,6 +5,7 @@ import { auth, provider } from './firebase.js'
 import BSnavbar from './components/BSnavbar.jsx';
 import ToolHome from './components/tools/index.jsx';
 import ProjectHome from './components/projects/index.jsx';
+import Home from './components/home/index.jsx';
 import AboutMe from './components/aboutme/index.jsx';
 import AskMe from './components/askme/index.jsx';
 
@@ -50,7 +51,7 @@ class App extends Component {
                 <div className="app-shell">
                     <div role="main" className="row contentwrapper">
                         <Routes>
-                            <Route path="/" element={<AboutMe/>}/>
+                            <Route path="/" element={<Home/>}/>
                             <Route path="/tools/*" element={<ToolHome user={this.state.user} login={this.login}/>}/>
                             <Route path="/projects/*" element={<ProjectHome/>}/>
                             <Route path="/about" element={<AboutMe/>}/>
