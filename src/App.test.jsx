@@ -9,6 +9,7 @@ import { toollist } from './components/tools/toollist.jsx';
 import { projectlist } from './components/projects/projectlist.jsx';
 import { RESUME_SOFTWARE, RESUME_MECHANICAL } from './components/home/index.jsx';
 import { auth } from './firebase.js';
+import { HOME_TITLE, SITE_URL } from './seo.js';
 import { server, ASK_URL, APPLICATION_URL, fixtures } from './test/server.js';
 
 // The spec: every leaf URL the app serves and a heading that only that page
@@ -126,6 +127,42 @@ describe('index pages', () => {
             expect(card).toHaveAttribute('href', projectUrl(project));
             expect(PAGES).toHaveProperty([projectUrl(project)]);
         }
+    });
+});
+
+describe('page metadata', () => {
+    // Index pages are not in PAGES (they have no unique heading), but they
+    // render their own metadata too.
+    const urls = [...Object.keys(PAGES), '/projects', '/tools'];
+
+    it('/ and /about set distinct document titles', () => {
+        const { unmount } = renderAt('/');
+        const home = document.title;
+        unmount();
+        renderAt('/about');
+        expect(home).toBe(HOME_TITLE);
+        expect(document.title).toBe('About · David Hanks');
+    });
+
+    it.each(urls)('%s has exactly one title, description and canonical', (url) => {
+        renderAt(url);
+        const head = document.head;
+        expect(head.querySelectorAll('title')).toHaveLength(1);
+        expect(head.querySelectorAll('meta[name="description"]')).toHaveLength(1);
+        expect(head.querySelector('meta[name="description"]').content).not.toBe('');
+        const canonicals = head.querySelectorAll('link[rel="canonical"]');
+        expect(canonicals).toHaveLength(1);
+        expect(canonicals[0]).toHaveAttribute('href', `${SITE_URL}${url}`);
+    });
+
+    it('every page has a different title', () => {
+        const titles = urls.map((url) => {
+            const { unmount } = renderAt(url);
+            const title = document.title;
+            unmount();
+            return title;
+        });
+        expect(new Set(titles).size).toBe(urls.length);
     });
 });
 

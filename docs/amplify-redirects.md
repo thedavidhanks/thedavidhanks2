@@ -12,6 +12,12 @@ If you change the rules in the console, update this file in the same sitting.
 
 Two rules, in this order:
 
+> **Pending (#85), not yet applied in the console.** Rule 1 should become a
+> `301` so search engines consolidate on www, and rule 2's allow-list needs
+> `xml` so `/sitemap.xml` reaches the origin instead of being rewritten to
+> `index.html` (see `docs/seo.md`). Update the table and both JSON blocks below,
+> and delete this note, in the same sitting as the console change.
+
 | # | Source | Target | Type |
 | --- | --- | --- | --- |
 | 1 | `https://thedavidhanks.com` | `https://www.thedavidhanks.com` | `302` (Redirect — Temporary) |

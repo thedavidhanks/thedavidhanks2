@@ -136,6 +136,18 @@ async function main(): Promise<void> {
     `${okMissing ? 'ok  ' : 'FAIL'}  ${'/assets/does-not-exist.js'.padEnd(32)} ${missing.status} ${missing.contentType}`,
   )
 
+  /* robots.txt and sitemap.xml (scripts/build-seo.ts) must reach the origin
+   * too. Rule 2's regex only lets allow-listed extensions through, so an
+   * extension missing from that list is rewritten to index.html: a 200 with an
+   * HTML body, which a status check alone would wave through. See
+   * docs/seo.md. */
+  for (const [file, type] of [['/robots.txt', 'text/plain'], ['/sitemap.xml', 'xml']]) {
+    const seo = await probe(`${base}${file}`, bust)
+    const okSeo = seo.status === 200 && seo.contentType.includes(type)
+    if (!okSeo) failures++
+    console.log(`${okSeo ? 'ok  ' : 'FAIL'}  ${file.padEnd(32)} ${seo.status} ${seo.contentType}`)
+  }
+
   /* The apex -> www redirect is a custom rule living in the same app-level
    * list as the SPA rewrite, and every write replaces that list wholesale. It
    * is therefore the single thing most likely to be deleted by accident while

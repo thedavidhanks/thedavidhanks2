@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import PageMeta from '../PageMeta.jsx';
+import { HOME_TITLE, HOME_DESCRIPTION } from '../../seo.js';
+
 export const RESUME_SOFTWARE = 'https://tdh-public-files.s3.us-east-2.amazonaws.com/resume/SoftwareDeveloper.pdf';
 export const RESUME_MECHANICAL = 'https://tdh-public-files.s3.us-east-2.amazonaws.com/resume/SeniorMechanicalEngineer.pdf';
 
@@ -8,6 +11,7 @@ export const RESUME_MECHANICAL = 'https://tdh-public-files.s3.us-east-2.amazonaw
 const Home = () => {
     return (
         <div className="home">
+            <PageMeta title={HOME_TITLE} description={HOME_DESCRIPTION} path="/" />
             <h1>David Hanks</h1>
             <p className="lead mb-2">Software developer and licensed mechanical engineer (P.E.)</p>
             <p className="prose">

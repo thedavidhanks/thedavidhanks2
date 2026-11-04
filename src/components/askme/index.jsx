@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './askme.css';
 
+import PageMeta from '../PageMeta.jsx';
+import { pageTitle } from '../../seo.js';
+
 const API_URL = 'https://6oyuu5k3l1.execute-api.us-east-1.amazonaws.com/Prod/ask';
 const API_KEY = import.meta.env.VITE_AWS_SKILLS_API_KEY;
 
@@ -95,6 +98,11 @@ const AskMe = () => {
 
     return (
         <div className="resume askme-container" style={{ margin: '0 auto', display: 'flex', flexDirection: 'column', height: '80vh' }}>
+            <PageMeta
+                title={pageTitle('Ask Me Anything')}
+                description="Chat with an AI assistant about David Hanks's software and engineering experience, skills and expertise."
+                path="/askme"
+            />
             {!hasMessages && (
                 <div style={{ textAlign: 'center', marginBottom: 30, marginTop: 60 }}>
                     <h3>Ask Me Anything</h3>

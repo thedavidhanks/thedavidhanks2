@@ -1,9 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { isIndexable } from './scripts/site-env.ts'
+
+// Only the production (master) build may be indexed; every other build gets
+// noindex here and a Disallow-all robots.txt from scripts/build-seo.ts. The
+// decision lives in scripts/site-env.ts. See docs/seo.md.
+const noindexOffProduction = {
+  name: 'noindex-off-production',
+  transformIndexHtml: () =>
+    isIndexable() ? [] : [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex' }, injectTo: 'head' }],
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), noindexOffProduction],
   server: {
     // Bind 0.0.0.0 so the dev server is reachable from the host through the
     // devcontainer's forwarded port (see .devcontainer/devcontainer.json).
