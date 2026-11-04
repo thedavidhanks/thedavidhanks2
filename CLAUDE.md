@@ -8,14 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev:emulator` — same, but with `VITE_FIREBASE_EMULATOR=true` so auth and Firestore hit the local emulators instead. Pair with `npm run emulators` in another terminal. Requires **JDK 21+** (Debian bookworm's default JDK 17 is too old for current `firebase-tools`). See `docs/local-firebase-emulator.md`.
 - `npm run emulators` — Firebase Emulator Suite (firestore :8080, auth :9099, UI :4000).
 - `npm run check:rules` — asserts `firestore.rules` allows/denies what the app needs, against a running emulator. Like `check:routes`, deliberately **not** part of `verify` (it depends on a running emulator). The emulator reads the rules file only at startup, so restart it after editing rules.
-- `npm run build` — production build (output to `dist/`).
+- `npm run build` — production build (output to `dist/`). Runs `scripts/build-seo.ts` first, which writes the gitignored `public/sitemap.xml` and `public/robots.txt`. Only a build with `AWS_BRANCH=master` (set automatically by Amplify) is indexable; every other build, local ones included, gets `noindex` and `Disallow: /`. Use `AWS_BRANCH=master npm run build` to check the production variant. See `docs/seo.md`.
 - `npm run preview` — serve the production build locally.
 - `npm run lint` — ESLint (flat config in `eslint.config.js`). Globs `**/*.{js,jsx}` only, so the `.ts` files under `src/lib/` and `scripts/` are not linted.
 - `npm run sink -- "Iron Ore"` — AWESOME Sink optimizer CLI (`--help` for options).
 - `npm run test:sink` — `node --test` over `src/lib/satisfactory-sink/*.test.ts`. Intentionally dependency-free; keep it on Node's runner.
 - `npm run test:ui` — Vitest + jsdom component tests (`src/**/*.test.{js,jsx}`; `src/lib/**` is excluded so the two runners never overlap). Setup in `src/test/`: `setup.jsx` mocks `src/firebase.js` and `react-leaflet` for every test, `server.js` holds the MSW handlers for the AskMe and Apply for Jobs endpoints (unhandled requests fail the test). `src/App.test.jsx` renders every route via `MemoryRouter`; its `PAGES` map must list each new tool/project URL with a heading unique to that page, or the coverage test fails.
 - `npm run data:satisfactory` — regenerate `src/data/satisfactory/*.json` from the game's docs export. `:check` variant exits non-zero if the committed files have drifted.
-- `npm run check:routes` — asserts every deployed URL returns HTTP 200 against the live site (`-- --base=<url>` to target master; defaults to dev). Derives its path list from `src/App.jsx` and the `endpoint` fields in the two route tables, so new pages are covered automatically. Deliberately **not** part of `verify` — it hits production over the network. See `docs/amplify-redirects.md`.
+- `npm run check:routes` — asserts every deployed URL returns HTTP 200 against the live site (`-- --base=<url>` to target master; defaults to dev). Derives its path list from `src/App.jsx` and the `endpoint` fields in the two route tables (`scripts/routes.ts`, shared with the sitemap generator), so new pages are covered automatically. Also checks that `/robots.txt` and `/sitemap.xml` are served as text/XML rather than rewritten to the HTML shell. Deliberately **not** part of `verify` — it hits production over the network. See `docs/amplify-redirects.md`.
 
 Node 22+ is required (`.nvmrc` and `engines.node` in `package.json`); the `.ts` files rely on Node's native type-stripping, so they run with no build step and no TypeScript dependency.
 
@@ -37,6 +37,9 @@ each one and every route would render blank. `amplify.yml` runs
 `npm run check:env` in `preBuild` so a misconfiguration fails the build instead
 of deploying a blank site.
 
+No `VITE_*` variable controls search indexing: that is keyed off `AWS_BRANCH`,
+which Amplify sets itself (see `docs/seo.md`).
+
 ## Architecture
 
 Single-page React 19 app bundled with Vite, deployed to AWS Amplify (us-west-2) on push to `master` (see `amplify.yml`).
@@ -45,10 +48,11 @@ Because it is a client-routed SPA, every deep link depends on an Amplify rewrite
 
 - `src/main.jsx` is the thin entrypoint: it mounts `App` inside `BrowserRouter`. `src/App.jsx` is the top-level class component and defines all routes (it renders no router itself, so tests can wrap it in `MemoryRouter`). Adding a new top-level page means adding a `<Route>` in `App.jsx`, (usually) a link in the `menuItems` state, and an entry in `PAGES` in `src/App.test.jsx`.
 - `src/firebase.js` initializes the Firebase compat SDK (auth + firestore) and exports `auth`, `db`, `provider`. Auth state lives on `App`'s `state.user`; `login`/`logout` use `signInWithPopup`/`signOut` and are passed down to `BSnavbar`.
+- Page metadata: `index.html` holds the static head (home title/description, canonical, Open Graph, JSON-LD) for bots that don't run JS, and each page renders `<PageMeta>` (`src/components/PageMeta.jsx`), which React 19 hoists into `<head>`. `main.jsx` strips the `data-static-head` tags first so there is one title per page. Project and tool pages get theirs from their list entry's `title`/`description`. Don't add react-helmet. **`docs/seo.md` covers metadata, the sitemap and the dev `noindex` mechanism.**
 - Firestore security rules are committed as `firestore.rules` (wired up by `firebase.json`) and deployed with `firebase deploy --only firestore:rules` — that deploy **replaces the console ruleset wholesale**, so the file must cover every collection the app touches, NWmap's pinned `/Games/PM2ahWu01w0wb5KQcoV8/Points` included. It supersedes a console-only ruleset that granted `allow read` on `/{document=**}`; do not reintroduce a global match block. `/tools/applyforjobs` persists saved generations to `users/{uid}/jobApplications`, a per-user subcollection whose isolation comes from the path plus a `request.auth.uid == userId` rule. **`docs/firestore-rules.md` is the source of truth for deploying, verifying and rolling back rules**; see also `docs/applyforjobs-history.md`.
 - `src/components/projects/index.jsx` is its own nested-router subtree: the `projectlist` array in `projectlist.jsx` drives both the card grid (`CardContainer` → `ProjectCard`) and the per-project routes. To add a project, append to `projectlist` with `{path, endpoint, element, title, description, tags, imgsrc?}` and create the page component under `src/components/projects/pages/`. `ProjectHome` is mounted at `/projects/*`, so its descendant `<Routes>` matches only the remaining segment: `path` is the bare slug (`gps-tracker`) and `endpoint` is the full path minus the leading slash (`projects/gps-tracker`), which `ProjectCard` links to absolutely. Pages are served at `/projects/<slug>`. This mirrors `toollist.jsx`/`ToolCard.jsx`; re-adding a `projects/` prefix to `path` is what caused the doubled `/projects/projects/<slug>` URLs in #36.
 - `src/components/askme/index.jsx` is a chat UI that POSTs `{question, sessionId?}` to the AWS API Gateway endpoint above and types the response character-by-character via a `setInterval`. The `sessionId` returned by the API is reused for follow-up questions to maintain conversation context.
-- Styling is Bootstrap 5 + react-bootstrap, with the bundle JS imported once in `main.jsx`.
+- Styling is Bootstrap 5 + react-bootstrap. Both the Bootstrap 5 CSS (`bootstrap/dist/css/bootstrap.min.css`, before `./index.css` so site CSS overrides it) and the bundle JS are imported from npm once in `main.jsx` — no Bootstrap CDN. Leaflet's CSS is imported by the map component (`nwmap.jsx`) so it ships only with that route. The only remaining CDN stylesheet in `index.html` is Font Awesome 4.7. The navbar is `sticky-top` and rendered outside `.app-shell` so it spans the viewport; it takes its own space in the flow, so there is no `body` padding to keep in sync with its height.
 
 ## Branch protection
 

@@ -5,6 +5,7 @@ import { auth, provider } from './firebase.js'
 import BSnavbar from './components/BSnavbar.jsx';
 import ToolHome from './components/tools/index.jsx';
 import ProjectHome from './components/projects/index.jsx';
+import Home from './components/home/index.jsx';
 import AboutMe from './components/aboutme/index.jsx';
 import AskMe from './components/askme/index.jsx';
 
@@ -43,18 +44,22 @@ class App extends Component {
     }  
     render(){
         return (
-            <div className="app-shell">
+            <>
+                {/* Outside .app-shell so the sticky-top navbar spans the full
+                    viewport rather than the shell's narrower content width. */}
                 <BSnavbar user={this.state.user} login={this.login} logout={this.logout}/>
-                <div role="main" className="row contentwrapper">
-                    <Routes>
-                        <Route path="/" element={<AboutMe/>}/>
-                        <Route path="/tools/*" element={<ToolHome user={this.state.user} login={this.login}/>}/>
-                        <Route path="/projects/*" element={<ProjectHome/>}/>
-                        <Route path="/about" element={<AboutMe/>}/>
-                        <Route path="/askme" element={<AskMe/>}/>
-                    </Routes>
+                <div className="app-shell">
+                    <div role="main" className="row contentwrapper">
+                        <Routes>
+                            <Route path="/" element={<Home/>}/>
+                            <Route path="/tools/*" element={<ToolHome user={this.state.user} login={this.login}/>}/>
+                            <Route path="/projects/*" element={<ProjectHome/>}/>
+                            <Route path="/about" element={<AboutMe/>}/>
+                            <Route path="/askme" element={<AskMe/>}/>
+                        </Routes>
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 };

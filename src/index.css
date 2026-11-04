@@ -59,11 +59,6 @@
     margin: 0px;
     text-align: right;
 }
-.socialDiv{
-    padding: 5px;
-    margin: 0px;
-    text-align: left;
-}
 .resume{
     padding: 10px;
     /*border: solid 1px #42c5f4;*/
@@ -147,24 +142,17 @@
     padding-bottom: 0px;
 }
 
-body { padding-top: 90px; }
-
-/** About page **/
-.highlightSkill{
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.diminishSkill{
-    font-size: 0.65em;
-}
-
-#skillList{
-    display:block;
+/** Home and About **/
+/* A readable line length for running text. */
+.prose{
+    max-width: 65ch;
 }
 
 /** Home **/
 .contentwrapper{
+    /* The navbar is sticky-top, so it occupies its own space in the flow and
+       the body needs no padding to clear it; this is just breathing room. */
+    padding-top: 2rem;
     margin-bottom: 60px;
 }
 

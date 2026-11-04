@@ -38,7 +38,7 @@ export default function ProgressModal({ show, elapsedSeconds, company, position,
                 {target && <p className="afj-progress-target">{target}</p>}
                 {/* role=timer is not announced on every tick, unlike a live region. */}
                 <p role="timer" className="afj-timer">
-                    <span className="visually-hidden sr-only">Elapsed time: </span>
+                    <span className="visually-hidden">Elapsed time: </span>
                     <span className="afj-timer-value">{formatElapsed(elapsedSeconds)}</span>
                     <span className="afj-timer-caption" aria-hidden="true">elapsed</span>
                 </p>

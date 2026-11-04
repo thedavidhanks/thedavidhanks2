@@ -267,11 +267,7 @@ const ItemPicker = ({ items = [], value = [], onChange }) => {
                                 </Col>
 
                                 <Col xs={6} md={3} lg={4} xl={3}>
-                                    {/* `sr-only` as well as `visually-hidden`: index.html still
-                                        serves Bootstrap 4 CSS, which has no `.visually-hidden`,
-                                        so on its own the label renders as visible body text.
-                                        Drop `sr-only` once the app loads Bootstrap 5 CSS. */}
-                                    <label htmlFor={qtyId} className="visually-hidden sr-only">
+                                    <label htmlFor={qtyId} className="visually-hidden">
                                         Quantity per minute for {name} (optional)
                                     </label>
                                     {/* type="text" + inputMode="decimal" rather than
@@ -299,7 +295,7 @@ const ItemPicker = ({ items = [], value = [], onChange }) => {
                                 </Col>
 
                                 <Col xs={6} md={3} lg={4} xl={3}>
-                                    <label htmlFor={weightId} className="visually-hidden sr-only">
+                                    <label htmlFor={weightId} className="visually-hidden">
                                         Relative cost weight for {name}
                                     </label>
                                     <input

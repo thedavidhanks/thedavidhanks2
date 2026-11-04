@@ -7,6 +7,8 @@ import {
 import styles from './styles.js';
 import ProjectCard from './ProjectCard.jsx';
 import { projectlist } from './projectlist.jsx';
+import PageMeta from '../PageMeta.jsx';
+import { pageTitle } from '../../seo.js';
 
 class ProjectHome extends Component {
   // create a list of Route components based on project list
@@ -16,14 +18,24 @@ class ProjectHome extends Component {
       <Route 
         key={i} 
         path={project.path}
-        element={project.element}
+        element={<>
+          <PageMeta title={pageTitle(project.title)} description={project.description} path={`/${project.endpoint}`} />
+          {project.element}
+        </>}
       />
     )});
 
     render(){
         return (
             <Routes>
-              <Route path="/" element={<CardContainer projectlist={projectlist}/>} />
+              <Route path="/" element={<>
+                <PageMeta
+                  title={pageTitle('Projects')}
+                  description="Hardware and software projects by David Hanks: an Arduino GPS tracker, a cell antenna, an offshore shear calculator, Python reporting and more."
+                  path="/projects"
+                />
+                <CardContainer projectlist={projectlist}/>
+              </>} />
               {this.projectRoutes}
                  {/* <Route path="/projects/kaleidoscope" element={<Kaleidoscope/>} /> }
                 <Route path="/projects" element={<CardContainer projectlist={projectlist}/>} /> */}

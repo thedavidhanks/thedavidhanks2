@@ -6,6 +6,8 @@ import ToolCard from './ToolCard.jsx';
 import RequireAuth from './RequireAuth.jsx';
 import styles from '../projects/styles.js';
 import { toollist } from './toollist.jsx';
+import PageMeta from '../PageMeta.jsx';
+import { pageTitle } from '../../seo.js';
 
 const toolCardStyle = styles.projectCard;
 
@@ -30,7 +32,13 @@ const ToolHome = ({ user, login }) => {
         const element = tool.requireAuth
             ? <RequireAuth user={user} login={login}>{tool.element}</RequireAuth>
             : tool.element;
-        return <Route key={i} path={tool.path} element={element} />;
+        // Outside RequireAuth, so the login prompt gets the tool's title too.
+        return (
+            <Route key={i} path={tool.path} element={<>
+                <PageMeta title={pageTitle(tool.title)} description={tool.description} path={`/${tool.endpoint}`} />
+                {element}
+            </>} />
+        );
     });
 
     // The card grid only advertises tools the visitor can actually use, so
@@ -41,7 +49,14 @@ const ToolHome = ({ user, login }) => {
 
     return (
         <Routes>
-            <Route path="/" element={<CardContainer tools={visibleTools} />} />
+            <Route path="/" element={<>
+                <PageMeta
+                    title={pageTitle('Tools')}
+                    description="Web tools built by David Hanks, including a Satisfactory AWESOME Sink optimizer and an interactive New World map."
+                    path="/tools"
+                />
+                <CardContainer tools={visibleTools} />
+            </>} />
             {toolRoutes}
         </Routes>
     );

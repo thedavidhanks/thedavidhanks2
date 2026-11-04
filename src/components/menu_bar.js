@@ -10,7 +10,7 @@ const MenuBar = (props) => {
         <nav className="navbar navbar-expand-md navbar-dark bg-dark">
             <span className="navbar-brand mb-0 h1">TheDavidHanks</span>
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul className="navbar-nav mr-auto">
+                <ul className="navbar-nav me-auto">
                     {menuItems}
                 </ul>
                 <SearchBar />

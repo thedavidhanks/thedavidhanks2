@@ -10,9 +10,10 @@
  * uptime check and `curl` saw a hard 404. A visual check cannot catch that
  * class of bug; only the status line can. See docs/amplify-redirects.md.
  *
- * The path list is derived from the same route tables App.jsx renders, so a
- * newly added tool or project is covered the moment it is added and nobody has
- * to remember to update a hardcoded list here.
+ * The path list is derived from the same route tables App.jsx renders (see
+ * scripts/routes.ts, which also feeds the sitemap), so a newly added tool or
+ * project is covered the moment it is added and nobody has to remember to
+ * update a hardcoded list here.
  *
  * Usage:
  *   node scripts/check-routes.ts                           # checks dev
@@ -21,8 +22,7 @@
  *   node scripts/check-routes.ts --no-cache-bust
  */
 
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { deployedPaths } from './routes.ts'
 
 /* ------------------------------------------------------------------ *
  * Config
@@ -30,63 +30,8 @@ import { resolve } from 'node:path'
 
 const DEFAULT_BASE = 'https://dev.thedavidhanks.com'
 
-const APP = 'src/App.jsx'
-const TOOLLIST = 'src/components/tools/toollist.jsx'
-const PROJECTLIST = 'src/components/projects/projectlist.jsx'
-
-/**
- * `<Route path="/about" .../>`. The two splat routes (`/tools/*`,
- * `/projects/*`) are mount points for the nested routers; the splat is
- * stripped so we check the index page the nested router serves at its root.
- */
-const ROUTE_PATH = /<Route\s+path=["']([^"']+)["']/g
-
-/**
- * `endpoint: 'tools/satisfactory-sink'` -- the full path minus the leading
- * slash. Deliberately NOT `path:`, which holds the bare slug the nested
- * router matches after the parent segment is consumed. Confusing the two is
- * what produced the doubled /projects/projects/<slug> URLs in #36.
- */
-const ENDPOINT = /\bendpoint:\s*["']([^"']+)["']/g
-
 /** Hashed bundle emitted by Vite, discovered from the live index.html. */
 const BUNDLE = /\/assets\/[A-Za-z0-9._-]+\.js/
-
-/* ------------------------------------------------------------------ *
- * Deriving the path list
- * ------------------------------------------------------------------ */
-
-function read(relative: string): string {
-  return readFileSync(resolve(process.cwd(), relative), 'utf8')
-}
-
-function matchAll(source: string, pattern: RegExp, label: string): string[] {
-  const found = [...source.matchAll(pattern)].map((m) => m[1])
-  // These files are parsed as text because they cannot be imported: the data
-  // holds JSX elements, and the transitive imports pull in .png/.css and
-  // src/firebase.js (which throws at module load without VITE_FIREBASE_API_KEY).
-  // A silent zero-match would make this script vacuously pass, so refuse.
-  if (found.length === 0) {
-    throw new Error(
-      `No ${label} found in the source. The file was probably reformatted or ` +
-        `restructured -- update the pattern in scripts/check-routes.ts.`,
-    )
-  }
-  return found
-}
-
-function deployedPaths(): string[] {
-  const topLevel = matchAll(read(APP), ROUTE_PATH, 'top-level <Route path>')
-    // '/tools/*' -> '/tools'; '/' stays '/'
-    .map((p) => (p.endsWith('/*') ? p.slice(0, -2) : p))
-
-  const nested = [
-    ...matchAll(read(TOOLLIST), ENDPOINT, 'tool endpoints'),
-    ...matchAll(read(PROJECTLIST), ENDPOINT, 'project endpoints'),
-  ].map((e) => `/${e}`)
-
-  return [...new Set([...topLevel, ...nested])].sort()
-}
 
 /* ------------------------------------------------------------------ *
  * Probing
@@ -190,6 +135,18 @@ async function main(): Promise<void> {
   console.log(
     `${okMissing ? 'ok  ' : 'FAIL'}  ${'/assets/does-not-exist.js'.padEnd(32)} ${missing.status} ${missing.contentType}`,
   )
+
+  /* robots.txt and sitemap.xml (scripts/build-seo.ts) must reach the origin
+   * too. Rule 2's regex only lets allow-listed extensions through, so an
+   * extension missing from that list is rewritten to index.html: a 200 with an
+   * HTML body, which a status check alone would wave through. See
+   * docs/seo.md. */
+  for (const [file, type] of [['/robots.txt', 'text/plain'], ['/sitemap.xml', 'xml']]) {
+    const seo = await probe(`${base}${file}`, bust)
+    const okSeo = seo.status === 200 && seo.contentType.includes(type)
+    if (!okSeo) failures++
+    console.log(`${okSeo ? 'ok  ' : 'FAIL'}  ${file.padEnd(32)} ${seo.status} ${seo.contentType}`)
+  }
 
   /* The apex -> www redirect is a custom rule living in the same app-level
    * list as the SPA rewrite, and every write replaces that list wholesale. It

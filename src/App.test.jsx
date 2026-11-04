@@ -7,7 +7,9 @@ import { http, HttpResponse } from 'msw';
 import App from './App.jsx';
 import { toollist } from './components/tools/toollist.jsx';
 import { projectlist } from './components/projects/projectlist.jsx';
+import { RESUME_SOFTWARE, RESUME_MECHANICAL } from './components/home/index.jsx';
 import { auth } from './firebase.js';
+import { HOME_TITLE, SITE_URL } from './seo.js';
 import { server, ASK_URL, APPLICATION_URL, fixtures } from './test/server.js';
 
 // The spec: every leaf URL the app serves and a heading that only that page
@@ -15,8 +17,8 @@ import { server, ASK_URL, APPLICATION_URL, fixtures } from './test/server.js';
 // renaming a route without updating this list fails, and the coverage test
 // below fails if a tool or project is added without an entry here.
 const PAGES = {
-    '/': "Greetings! I'm David Hanks.",
-    '/about': "Greetings! I'm David Hanks.",
+    '/': 'David Hanks',
+    '/about': 'About David Hanks',
     '/askme': 'Ask Me Anything',
 
     '/tools/applyforjobs': 'Apply for Jobs',
@@ -125,6 +127,81 @@ describe('index pages', () => {
             expect(card).toHaveAttribute('href', projectUrl(project));
             expect(PAGES).toHaveProperty([projectUrl(project)]);
         }
+    });
+});
+
+describe('page metadata', () => {
+    // Index pages are not in PAGES (they have no unique heading), but they
+    // render their own metadata too.
+    const urls = [...Object.keys(PAGES), '/projects', '/tools'];
+
+    it('/ and /about set distinct document titles', () => {
+        const { unmount } = renderAt('/');
+        const home = document.title;
+        unmount();
+        renderAt('/about');
+        expect(home).toBe(HOME_TITLE);
+        expect(document.title).toBe('About · David Hanks');
+    });
+
+    it.each(urls)('%s has exactly one title, description and canonical', (url) => {
+        renderAt(url);
+        const head = document.head;
+        expect(head.querySelectorAll('title')).toHaveLength(1);
+        expect(head.querySelectorAll('meta[name="description"]')).toHaveLength(1);
+        expect(head.querySelector('meta[name="description"]').content).not.toBe('');
+        const canonicals = head.querySelectorAll('link[rel="canonical"]');
+        expect(canonicals).toHaveLength(1);
+        expect(canonicals[0]).toHaveAttribute('href', `${SITE_URL}${url}`);
+    });
+
+    it('every page has a different title', () => {
+        const titles = urls.map((url) => {
+            const { unmount } = renderAt(url);
+            const title = document.title;
+            unmount();
+            return title;
+        });
+        expect(new Set(titles).size).toBe(urls.length);
+    });
+});
+
+describe('home and about', () => {
+    it('/ links both resumes and an email address', () => {
+        renderAt('/');
+        expect(main().getByRole('link', { name: 'Download resume (Software Developer)' }))
+            .toHaveAttribute('href', RESUME_SOFTWARE);
+        expect(main().getByRole('link', { name: 'Mechanical engineering resume' }))
+            .toHaveAttribute('href', RESUME_MECHANICAL);
+        expect(main().getByRole('link', { name: 'Email' }))
+            .toHaveAttribute('href', 'mailto:dphanks@gmail.com');
+    });
+
+    it('/about is the long form, not a copy of /', () => {
+        renderAt('/about');
+        expect(main().queryByRole('link', { name: /Download resume/ })).not.toBeInTheDocument();
+        expect(main().getByRole('heading', { name: 'Skills' })).toBeInTheDocument();
+        expect(main().getByRole('link', { name: 'dphanks@gmail.com' }))
+            .toHaveAttribute('href', 'mailto:dphanks@gmail.com');
+    });
+
+    it.each(['/', '/about'])('%s has one h1 and never skips a heading level', (url) => {
+        renderAt(url);
+        const levels = main().getAllByRole('heading').map((h) => Number(h.tagName[1]));
+        expect(levels.filter((level) => level === 1)).toHaveLength(1);
+        expect(levels[0]).toBe(1);
+        levels.slice(1).forEach((level, i) => expect(level - levels[i]).toBeLessThanOrEqual(1));
+    });
+
+    // A plain <a href="/"> would not route inside MemoryRouter, so this fails
+    // if the brand goes back to a full-reload link.
+    it('the navbar About link and brand navigate client-side', async () => {
+        const user = userEvent.setup();
+        renderAt('/askme');
+        await user.click(screen.getByRole('link', { name: 'About' }));
+        expect(main().getByRole('heading', { level: 1, name: 'About David Hanks' })).toBeInTheDocument();
+        await user.click(screen.getByRole('link', { name: 'TheDavidHanks' }));
+        expect(main().getByRole('heading', { level: 1, name: 'David Hanks' })).toBeInTheDocument();
     });
 });
 
